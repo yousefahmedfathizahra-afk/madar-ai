@@ -170,8 +170,8 @@ async function healthCheck(){
       setConnectionStatus('error','Backend unavailable');
       return false;
     }
-    if (h.configured === true){setConnectionStatus('online','AI connection configured');return true;}
-    setConnectionStatus('error','OpenAI key missing');
+    if (h.configured === true){setConnectionStatus('online','Free AI connected');return true;}
+    setConnectionStatus('error','Free AI key missing');
     return false;
   }catch{
     setConnectionStatus('error','Backend unavailable');
@@ -193,7 +193,7 @@ async function sendMessage(prefill){
   const controller=new AbortController();busyController=controller;
   const timeout=setTimeout(()=>controller.abort(),33000);
   try{
-    if(location.protocol === 'file:') throw Error('MADAR needs its server to chat with OpenAI. This HTML file alone is a design preview.');
+    if(location.protocol === 'file:') throw Error('MADAR needs its server for live AI chat. This HTML file alone is a design preview.');
     let response;
     try{
       response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chat.messages.slice(-18)}),signal:controller.signal});
@@ -204,7 +204,7 @@ async function sendMessage(prefill){
     const data=await readApiJson(response);
     if(!response.ok)throw Error(apiError(response,data));
     if(typeof data?.reply !== 'string' || !data.reply.trim()) {
-      throw Error('The chat API returned no valid answer. Make sure /api/chat points to the MADAR backend, not an HTML page.');
+      throw Error('The AI service returned no valid answer. Please try again.');
     }
     chat.messages.push({role:'assistant',content:data.reply});chat.updatedAt=Date.now();saveChats();
   }catch(err){
