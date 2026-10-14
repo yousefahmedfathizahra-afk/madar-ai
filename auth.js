@@ -57,7 +57,7 @@
    return new Promise((resolve,reject)=>{
      if (window.supabase?.createClient) return resolve(window.supabase);
      const script=document.createElement('script');
-     script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3';
+     script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js';
      script.crossOrigin='anonymous';
      script.onload=()=>window.supabase?.createClient?resolve(window.supabase):reject(new Error('Auth library could not load.'));
      script.onerror=()=>reject(new Error('Auth library is unavailable. Check your internet connection.'));
