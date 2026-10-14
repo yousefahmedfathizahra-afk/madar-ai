@@ -55,6 +55,19 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .auth-dialog .auth-status{color:var(--text);font-size:12px;line-height:1.7;margin-top:12px;min-height:21px}
 .auth-dialog .auth-hint{font-size:11px;line-height:1.6;color:var(--muted);margin:11px 0 0}
 .auth-user{font-size:13px;color:var(--purple-light);overflow-wrap:anywhere}
+
+/* Passwordless WhatsApp sign-in (inactive until SMS/WhatsApp provider is connected). */
+.auth-methods{display:flex;gap:8px;margin:15px 0 12px}
+.auth-methods button{flex:1;border:1px solid var(--line-strong);background:var(--control);color:var(--text);border-radius:10px;padding:11px;font:inherit;font-size:12px;font-weight:750}
+.auth-methods button.selected{background:var(--soft);border-color:var(--purple);color:var(--purple-light)}
+.auth-phone-panel{display:grid;gap:10px;margin-top:10px}
+.auth-phone-panel label{font-size:12px;color:var(--text)}
+.auth-phone-panel input{width:100%;border:1px solid var(--line-strong);border-radius:10px;padding:12px;background:var(--control);color:var(--fg);font:inherit;font-size:13px;outline-color:var(--purple)}
+.auth-phone-help{font-size:11px;line-height:1.7;color:var(--muted);margin:0}
+.auth-sms-notice{border:1px solid var(--line-strong);border-radius:11px;background:var(--soft);padding:10px 12px;font-size:11px;line-height:1.7;color:var(--text);margin:1px 0}
+.auth-phone-panel .auth-actions button:first-child{background:var(--purple);color:white}
+.auth-phone-panel button:disabled{opacity:.5;cursor:default}
+.auth-dialog [hidden]{display:none !important}
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -135,6 +148,25 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
     <p class="auth-hint">Create an account to keep your chats private and sync them between devices. Guest chats stay on this device and are never uploaded automatically.</p>
     <div id="authStatus" class="auth-status" role="status"></div>
     <div id="authUser" class="auth-user" hidden></div>
+    <div id="authMethods" class="auth-methods" role="group" aria-label="Sign-in options">
+      <button id="authUseWhatsApp" type="button" aria-pressed="false">WhatsApp code</button>
+      <button id="authUseEmail" type="button" class="selected" aria-pressed="true">Email</button>
+    </div>
+    <div id="authWhatsAppPanel" class="auth-phone-panel" hidden>
+      <p class="auth-phone-help">Enter your phone number to get a 6-digit sign-in code on WhatsApp. No password needed.</p>
+      <label for="authPhone">Phone number (with country code)</label>
+      <input id="authPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="22" placeholder="+201012345678" aria-describedby="authWhatsAppNotice">
+      <div class="auth-actions"><button id="authSendWhatsApp" type="button" disabled>Send WhatsApp code</button></div>
+      <div id="authOtpPanel" class="auth-phone-panel" hidden>
+        <label for="authOtp">6-digit verification code</label>
+        <input id="authOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+        <div class="auth-actions">
+          <button id="authVerifyWhatsApp" type="button">Verify &amp; sign in</button>
+          <button id="authResendWhatsApp" type="button">Resend code</button>
+        </div>
+      </div>
+      <p id="authWhatsAppNotice" class="auth-sms-notice">WhatsApp sign-in is coming soon. It needs a message provider (Twilio or Twilio Verify), which may charge fees. Use Email to sign in for now.</p>
+    </div>
     <form id="authForm" class="auth-form" autocomplete="on">
       <label id="authEmailLabel" for="authEmail">Email</label>
       <input id="authEmail" type="email" name="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required>
