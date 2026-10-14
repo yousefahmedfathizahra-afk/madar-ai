@@ -11,6 +11,7 @@
  const resetBtn = $('authReset'), recoveryBtn = $('authRecovery'), userBadge = $('authUser');
  let client = null, currentUser = null, connectedUserId = null, booting = null;
  let syncTimer = null, lastMessage = '';
+ let whatsappEnabled=false, authMethod='email', sentToPhone=null, lastCodeSentAt=0;
  const APP_URL = window.location.origin + '/';
 
  function note(message, isError) {
@@ -20,8 +21,19 @@
  }
  function setMode(mode) {
    const signedIn = mode === 'signedin', recovery = mode === 'recovery';
-   const requiresEmail = mode === 'guest';
-   $('authForm').hidden = signedIn || mode === 'disabled';
+   const guest=mode==='guest';
+   const requiresEmail = guest && authMethod==='email';
+   $('authForm').hidden = signedIn || mode === 'disabled' || (guest && authMethod==='whatsapp');
+   $('authMethods').hidden = !guest;
+   $('authWhatsAppPanel').hidden = !guest || authMethod!=='whatsapp';
+   $('authUseEmail').classList.toggle('selected',authMethod==='email');
+   $('authUseWhatsApp').classList.toggle('selected',authMethod==='whatsapp');
+   $('authUseEmail').setAttribute('aria-pressed',String(authMethod==='email'));
+   $('authUseWhatsApp').setAttribute('aria-pressed',String(authMethod==='whatsapp'));
+   $('authSendWhatsApp').disabled=!whatsappEnabled || Date.now()-lastCodeSentAt<60000;
+   $('authWhatsAppNotice').textContent=whatsappEnabled
+     ?'Your code will be delivered by WhatsApp. Never share it with anyone.'
+     :'WhatsApp sign-in is not enabled yet. It needs a Twilio or Twilio Verify message provider, which may charge fees. Use Email for now.';
    email.hidden = !requiresEmail;
    $('authEmailLabel').hidden = !requiresEmail;
    passwordLabel.textContent = recovery ? 'New password' : 'Password';
@@ -34,7 +46,7 @@
    recoveryBtn.hidden = !recovery;
    logoutBtn.hidden = !signedIn;
    userBadge.hidden = !signedIn;
-   if (signedIn) userBadge.textContent = currentUser?.email || 'Signed in';
+   if (signedIn) userBadge.textContent = currentUser?.email || currentUser?.phone || 'Signed in';
    if (recovery) password.value='';
  }
  function show() {
@@ -71,6 +83,8 @@
      if(!response.ok)throw new Error('Auth configuration is unavailable.');
      const config=await response.json();
      if(!config?.configured)return false;
+     whatsappEnabled=config.whatsappEnabled===true;
+     if(whatsappEnabled)authMethod='whatsapp';
      if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(config.url) ||
        typeof config.publishableKey!=='string')throw new Error('Invalid authentication settings.');
      const sdk=await loadSdk();
@@ -101,7 +115,7 @@
    }
    const user=session?.user || null;
    currentUser=user;
-   accountBtn.textContent=user ? '● '+String(user.email||'Account').slice(0,22) : 'Sign in';
+   accountBtn.textContent=user ? '● '+String(user.email||user.phone||'Account').slice(0,22) : 'Sign in';
    accountBtn.title=user?'Manage your account':'Sign in or create an account';
    if(user?.id===connectedUserId)return;
    if(syncTimer){clearTimeout(syncTimer);syncTimer=null;}
@@ -168,7 +182,7 @@
    if(!booting)await init();
    if(client && dialog.open && dialog.dataset.recovery !== 'true'){
      if(currentUser){setMode('signedin');note(connectedUserId?'Your account is connected.':'Your account is signed in but private chat storage is not ready.',!connectedUserId);}
-     else{setMode('guest');note('Enter your email and password.',false);}
+     else{setMode('guest');note(authMethod==='whatsapp'?(whatsappEnabled?'Enter your phone number to get a WhatsApp code.':'WhatsApp codes are not set up yet. Choose Email to sign in.'): 'Enter your email and password.',false);}
    }
  });
  $('authClose').addEventListener('click',()=>dialog.close());
@@ -208,6 +222,67 @@
    }
    finally{loginBtn.disabled=signupBtn.disabled=resetBtn.disabled=recoveryBtn.disabled=false;}
  }
+
+ function displayAuthMethod(method){
+   if(currentUser||dialog.dataset.recovery==='true')return;
+   authMethod=method;
+   setMode('guest');
+   if(method==='whatsapp'){
+     note(whatsappEnabled?'Enter your mobile number with country code. You will receive a WhatsApp code.':'WhatsApp codes need a messaging provider and are not enabled yet. You can still use Email.',!whatsappEnabled);
+   }else note('Use your email and password to sign in or create an account.',false);
+ }
+ $('authUseWhatsApp').addEventListener('click',()=>displayAuthMethod('whatsapp'));
+ $('authUseEmail').addEventListener('click',()=>displayAuthMethod('email'));
+ function normalizePhone(input){
+   let n=String(input||'').trim().replace(/[\s()-]/g,'');
+   if(/^01[0125]\d{8}$/.test(n))n='+20'+n.slice(1);
+   if(/^00[1-9]\d{7,14}$/.test(n))n='+'+n.slice(2);
+   return /^\+[1-9]\d{7,14}$/.test(n)?n:null;
+ }
+ async function requestWhatsAppCode(){
+   if(!client||!whatsappEnabled)return note('WhatsApp codes are not active yet. Use Email to sign in.',true);
+   if(Date.now()-lastCodeSentAt<60000)return note('Please wait at least 60 seconds before requesting another code.',true);
+   const phone=normalizePhone($('authPhone').value);
+   if(!phone)return note('Enter a valid mobile number including country code, such as +201012345678.',true);
+   const send=$('authSendWhatsApp'),resend=$('authResendWhatsApp');
+   send.disabled=resend.disabled=true;
+   try{
+     const {error}=await client.auth.signInWithOtp({phone,options:{channel:'whatsapp',shouldCreateUser:true}});
+     if(error)throw error;
+     sentToPhone=phone;lastCodeSentAt=Date.now();
+     $('authOtpPanel').hidden=false;
+     $('authOtp').value='';$('authOtp').focus();
+     note('A 6-digit code was requested on WhatsApp. Enter it below. Never share your code.',false);
+     setTimeout(()=>{
+       if(whatsappEnabled&&Date.now()-lastCodeSentAt>=59000){
+         send.disabled=false;resend.disabled=false;
+       }
+     },60500);
+   }catch(err){
+     note('Could not send a WhatsApp code: '+String(err?.message||'Message service unavailable').slice(0,170),true);
+     send.disabled=!whatsappEnabled;resend.disabled=false;
+   }
+ }
+ async function verifyWhatsAppCode(){
+   if(!client||!whatsappEnabled||!sentToPhone)return note('Request a WhatsApp code first.',true);
+   const token=$('authOtp').value.trim();
+   if(!/^\d{6}$/.test(token))return note('Please enter the 6-digit code from WhatsApp.',true);
+   const btn=$('authVerifyWhatsApp');btn.disabled=true;
+   try{
+     // Supabase uses the "sms" OTP type for phone numbers even if the channel was WhatsApp.
+     const {error}=await client.auth.verifyOtp({phone:sentToPhone,token,type:'sms'});
+     if(error)throw error;
+     $('authOtp').value='';sentToPhone=null;
+     note('Phone verified. Welcome to MADAR!',false);
+     dialog.close();
+   }catch(err){note('The code could not be verified. Check the six digits or request a new code.',true);}
+   finally{btn.disabled=false;}
+ }
+ $('authSendWhatsApp').addEventListener('click',requestWhatsAppCode);
+ $('authResendWhatsApp').addEventListener('click',requestWhatsAppCode);
+ $('authVerifyWhatsApp').addEventListener('click',verifyWhatsAppCode);
+ $('authOtp').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();verifyWhatsAppCode();}});
+
  $('authForm').addEventListener('submit',e=>{e.preventDefault();runAction(e.submitter?.value||'login');});
  resetBtn.addEventListener('click',()=>runAction('reset'));
  recoveryBtn.addEventListener('click',()=>runAction('change'));
