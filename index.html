@@ -74,6 +74,21 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .auth-saved-code p{font-size:12px;line-height:1.8;color:var(--fg)}
 .auth-saved-code code{display:block;overflow-wrap:anywhere;user-select:all;background:var(--control);border-radius:8px;padding:12px;color:var(--purple-light);font-size:12px;line-height:1.8}
 .auth-saved-code[hidden],.auth-recovery-fields[hidden]{display:none}
+
+/* Make MADAR answers clear and readable, without visible Markdown stars. */
+.message.assistant .message-text{white-space:normal;line-height:1.85}
+.message.assistant .message-text p{margin:0 0 8px}
+.message.assistant .message-text p:last-child{margin-bottom:0}
+.message.assistant .message-text h3{font-size:15px;font-weight:800;color:var(--fg);margin:13px 0 7px}
+.message.assistant .message-text h3:first-child{margin-top:0}
+.message.assistant .message-text ul,.message.assistant .message-text ol{padding-inline-start:26px;margin:8px 0 12px;list-style-position:outside}
+.message.assistant .message-text ul{list-style-type:disc}
+.message.assistant .message-text ol{list-style-type:decimal}
+.message.assistant .message-text li{padding:2px 0}
+.message.assistant .message-text strong{font-weight:800;color:var(--fg)}
+.message.assistant .message-text a{color:var(--purple-light);text-decoration:underline;text-underline-offset:3px}
+.message.assistant .message-text em{font-style:italic}
+
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -232,11 +247,64 @@ function renderHistory(){el.history.replaceChildren();el.chatCount.textContent=S
   const del=document.createElement('button');del.className='tab-delete';del.setAttribute('aria-label',`Delete ${chat.title}`);del.title='Delete conversation';del.textContent='✕';del.addEventListener('click',()=>deleteChat(chat.id));
   row.append(icon,open,del);el.history.append(row);
 }}
+// Format AI replies as readable text, bold emphasis and lists.
+// All reply content is attached via textContent, never through innerHTML.
+function appendReplyInline(parent, value){
+  const content=String(value||'');
+  const pattern=/\*\*([^*\n]+)\*\*|\*([^*\n]+)\*|\[([^\]\n]{1,100})\]\((https?:\/\/[^\s)]+)\)/g;
+  let start=0,match;
+  while((match=pattern.exec(content))!==null){
+    if(match.index>start)parent.append(document.createTextNode(content.slice(start,match.index)));
+    if(match[1]!==undefined){
+      const bold=document.createElement('strong');
+      bold.textContent=match[1];parent.append(bold);
+    }else if(match[2]!==undefined){
+      const italic=document.createElement('em');
+      italic.textContent=match[2];parent.append(italic);
+    }else{
+      const link=document.createElement('a');
+      link.href=match[4];link.textContent=match[3];
+      link.target='_blank';link.rel='noopener noreferrer';
+      parent.append(link);
+    }
+    start=pattern.lastIndex;
+  }
+  if(start<content.length)parent.append(document.createTextNode(content.slice(start)));
+}
+function formatMadarAnswer(container, answer){
+  container.replaceChildren();
+  const lines=String(answer||'').replace(/\r\n?/g,'\n').split('\n');
+  let lastList=null,lastKind='';
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line){lastList=null;lastKind='';continue;}
+    const heading=line.match(/^#{1,3}\s+(.+)$/);
+    const bullet=line.match(/^[-*•]\s+(.+)$/);
+    const numbered=line.match(/^(\d{1,3})[.)]\s+(.+)$/);
+    if(bullet||numbered){
+      const kind=bullet?'ul':'ol';
+      if(!lastList||lastKind!==kind){
+        lastList=document.createElement(kind);
+        if(numbered&&Number(numbered[1])>1)lastList.start=Number(numbered[1]);
+        container.append(lastList);lastKind=kind;
+      }
+      const item=document.createElement('li');
+      appendReplyInline(item,bullet?bullet[1]:numbered[2]);
+      lastList.append(item);
+      continue;
+    }
+    lastList=null;lastKind='';
+    const p=document.createElement(heading?'h3':'p');
+    appendReplyInline(p,heading?heading[1]:line);
+    container.append(p);
+  }
+}
+
 function appendMessage(message, isPending=false){const row=document.createElement('div');row.className=`message ${message.role}`;
   const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=message.role==='assistant'?'M':'●';
   const body=document.createElement('div');body.className='message-body';
   const heading=document.createElement('div');heading.className='message-head';heading.textContent=message.role==='user'?'You':'MADAR';
-  const text=document.createElement('div');text.className='message-text';text.dir='auto';text.textContent=message.content;
+  const text=document.createElement('div');text.className='message-text';text.dir='auto';if(message.role==='assistant'&&!isPending)formatMadarAnswer(text,message.content);else text.textContent=message.content;
   if(isPending){text.classList.add('dots');text.textContent='• • •'}
   const preview=message.photoId&&temporaryPhotos.get(message.photoId);
   if(preview){const img=document.createElement('img');img.className='message-photo';img.src=preview;img.alt='Attached photo';body.append(heading,img,text);}
