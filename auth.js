@@ -199,7 +199,13 @@
      } else if(action==='reset')note('If the email is registered, you will receive a password reset link.',false);
      else if(action==='change'){note('Password updated successfully.',false);delete dialog.dataset.recovery;setMode('signedin');}
      else{note('Signed in successfully.',false);dialog.close();}
-   } catch(e){note(String(e?.message||'Account request failed.').slice(0,220),true);}
+   } catch(e){
+     const raw=String(e?.message||'Account request failed.');
+     const friendly=/invalid login credentials/i.test(raw)
+       ?'Email or password not recognized. New to MADAR? Click Create account first. Otherwise, check your details or use Forgot password?'
+       :raw;
+     note(friendly.slice(0,250),true);
+   }
    finally{loginBtn.disabled=signupBtn.disabled=resetBtn.disabled=recoveryBtn.disabled=false;}
  }
  $('authForm').addEventListener('submit',e=>{e.preventDefault();runAction(e.submitter?.value||'login');});
