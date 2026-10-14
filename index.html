@@ -40,6 +40,21 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .feature-dialog button{background:var(--control);color:var(--text);padding:11px 15px;border:1px solid var(--line-strong);border-radius:10px}
 .feature-dialog a[hidden]{display:none}
 @media(max-width:550px){.tools-row{gap:5px}.tool{padding:7px 8px;font-size:10px}.account-btn{padding:8px}.compose-wrap{padding-top:5px}}
+
+/* Secure MADAR accounts — uses the original dark/light theme colors. */
+.auth-dialog{background:var(--panel);border:1px solid var(--line-strong);border-radius:19px;color:var(--fg);width:min(440px,calc(100% - 28px));padding:25px;box-shadow:0 25px 70px rgba(0,0,0,.45)}
+.auth-dialog::backdrop{background:rgba(0,0,0,.62)}
+.auth-heading{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px}
+.auth-heading h2{font-size:21px;margin:0}.auth-form{display:grid;gap:9px;margin-top:14px}
+.auth-form label{font-size:12px;color:var(--text)}
+.auth-form input{border:1px solid var(--line-strong);border-radius:10px;padding:12px;background:var(--control);color:var(--fg);font:inherit;font-size:13px;outline-color:var(--purple)}
+.auth-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.auth-actions button{background:var(--soft);color:var(--purple-light);padding:10px 14px;border:1px solid var(--line-strong);border-radius:11px;font-size:12px;font-weight:700}
+.auth-actions button:first-child{background:var(--purple);color:white}
+.auth-actions button[hidden],.auth-dialog [hidden]{display:none}
+.auth-dialog .auth-status{color:var(--text);font-size:12px;line-height:1.7;margin-top:12px;min-height:21px}
+.auth-dialog .auth-hint{font-size:11px;line-height:1.6;color:var(--muted);margin:11px 0 0}
+.auth-user{font-size:13px;color:var(--purple-light);overflow-wrap:anywhere}
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -57,7 +72,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       <div id="history" class="history" role="list"></div>
       <div class="side-footer">
         <div class="privacy-icon">✧</div>
-        <p><strong>Your private space</strong><span>Chats are stored on this device only.</span></p>
+        <p><strong>Your private space</strong><span id="sidePrivacyText">Chats are stored on this device only.</span></p>
         <button id="exportChats" class="export-button" title="Export conversations">↧</button>
       </div>
     </aside>
@@ -115,6 +130,27 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
     <p id="dialogMessage"></p>
     <div class="dialog-actions"><a id="dialogLink" href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" hidden>Open AI Studio ↗</a><button id="dialogClose">Close</button></div>
   </dialog>
+  <dialog id="authDialog" class="auth-dialog" aria-labelledby="authTitle">
+    <div class="auth-heading"><h2 id="authTitle">MADAR account</h2><button id="authClose" class="icon-btn" aria-label="Close account window">×</button></div>
+    <p class="auth-hint">Create an account to keep your chats private and sync them between devices. Guest chats stay on this device and are never uploaded automatically.</p>
+    <div id="authStatus" class="auth-status" role="status"></div>
+    <div id="authUser" class="auth-user" hidden></div>
+    <form id="authForm" class="auth-form" autocomplete="on">
+      <label id="authEmailLabel" for="authEmail">Email</label>
+      <input id="authEmail" type="email" name="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required>
+      <label id="authPasswordLabel" for="authPassword">Password</label>
+      <input id="authPassword" type="password" name="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required>
+      <div class="auth-actions">
+        <button id="authLogin" type="submit" value="login">Sign in</button>
+        <button id="authSignup" type="submit" value="signup">Create account</button>
+      </div>
+    </form>
+    <div class="auth-actions">
+      <button id="authReset" type="button">Forgot password?</button>
+      <button id="authRecovery" type="button" hidden>Set new password</button>
+      <button id="authLogout" type="button" hidden>Sign out</button>
+    </div>
+  </dialog>
   <script>
 'use strict';
 const $ = (id) => document.getElementById(id);
@@ -132,6 +168,7 @@ let chats = loadChats();
 let currentId = chats[0]?.id ?? null;
 let isWaiting = false;
 let busyController = null;
+let authActiveUser=null;
 let pendingImage=null;
 let wikiResearch=false;
 const temporaryPhotos=new Map();
@@ -144,14 +181,14 @@ function escapeState(input) {
   }));
 }
 function loadChats(){try{return escapeState(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'));}catch{return []}}
-function saveChats(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(chats));}catch{showError('Browser storage is full. Export your chats and delete old conversations.')}}
+function saveChats(){if(authActiveUser){window.MADAR_CLOUD?.queueSave(chats);return;}try{localStorage.setItem(STORAGE_KEY,JSON.stringify(chats));}catch{showError('Browser storage is full. Export your chats and delete old conversations.')}}
 function createId(){return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`}
 function activeChat(){return chats.find(c=>c.id===currentId)}
 function showError(message){el.inlineError.textContent=message;el.inlineError.hidden=false}
 function hideError(){el.inlineError.hidden=true;el.inlineError.textContent=''}
 function newChat(){if(isWaiting)return; currentId=null; hideError(); el.prompt.value=''; clearPendingPhoto();resizePrompt(); render(); el.prompt.focus(); closeSidebar()}
 function selectChat(id){if(isWaiting)return;currentId=id; hideError();render();closeSidebar();el.prompt.focus()}
-function deleteChat(id){if(isWaiting)return;const chat=chats.find(c=>c.id===id);if(!chat)return;if(!confirm(`Delete the conversation “${chat.title}”?`))return;chats=chats.filter(c=>c.id!==id);if(currentId===id)currentId=chats[0]?.id??null;saveChats();render()}
+function deleteChat(id){if(isWaiting)return;const chat=chats.find(c=>c.id===id);if(!chat)return;if(!confirm(`Delete the conversation “${chat.title}”?`))return;chats=chats.filter(c=>c.id!==id);if(authActiveUser)window.MADAR_CLOUD?.deleteChat(id);if(currentId===id)currentId=chats[0]?.id??null;saveChats();render()}
 function renderHistory(){el.history.replaceChildren();el.chatCount.textContent=String(chats.length);for(const chat of [...chats].sort((a,b)=>b.updatedAt-a.updatedAt)){
   const row=document.createElement('div');row.className=`chat-tab${chat.id===currentId?' active':''}`;row.setAttribute('role','listitem');
   const open=document.createElement('button');open.className='tab-title history-open';open.textContent=chat.title;open.title=chat.title;open.addEventListener('click',()=>selectChat(chat.id));
@@ -326,16 +363,31 @@ $('googleSearchBtn').addEventListener('click',()=>{
 $('imageMakerBtn').addEventListener('click',()=>showFeature('Create AI images',
  'Google does not provide API image generation on your current free tier. We have not enabled any paid calls. You can try image creation inside Google AI Studio, or add a paid image provider to MADAR later.',
  'https://aistudio.google.com/'));
-$('accountBtn').addEventListener('click',()=>showFeature('Secure sign in',
- 'Real accounts are not configured yet. MADAR currently saves chats only in this browser, not in a cloud account. Secure sign-in needs a separate authentication project, such as a dedicated Supabase project. No fake login is used.',
- null));
+/* Real account control is installed by /auth.js once its configuration is available. */
 $('dialogClose').addEventListener('click',()=>$('featureDialog').close());
 el.prompt.addEventListener('input',resizePrompt);
 el.prompt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMessage()}});
 for(const starter of document.querySelectorAll('.starter'))starter.addEventListener('click',()=>sendMessage(starter.dataset.prompt));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});
 let storedTheme='dark';try{if(localStorage.getItem(THEME_KEY)==='light')storedTheme='light'}catch{}setTheme(storedTheme);render();healthCheck();
+window.MADAR_APP={
+ enterCloud(userId,cloudChats){
+   if(!userId||authActiveUser===userId)return;
+   authActiveUser=userId;
+   chats=escapeState(cloudChats);currentId=chats[0]?.id??null;
+   $('sidePrivacyText').textContent='Your account chats are stored privately in the cloud.';
+   hideError();render();
+ },
+ leaveCloud(){
+   if(!authActiveUser)return;
+   authActiveUser=null;chats=loadChats();currentId=chats[0]?.id??null;
+   $('sidePrivacyText').textContent='Chats are stored on this device only.';
+   hideError();render();
+ },
+ notice:showError
+};
 
 </script>
+  <script src="/auth.js" defer></script>
 </body>
 </html>
