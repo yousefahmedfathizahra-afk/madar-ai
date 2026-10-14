@@ -11,5 +11,7 @@ module.exports=function handler(req,res){
   // Only new-format publishable keys are allowed here. Never reveal service_role or secret keys.
   const validKey=/^sb_publishable_[a-zA-Z0-9_-]+$/.test(publishableKey);
   if(!validUrl||!validKey)return res.status(200).json({configured:false});
-  return res.status(200).json({configured:true,url:url.replace(/\/$/,''),publishableKey});
+  // SMS must remain off until the project owner configures a real provider and abuse protection.
+  const phoneEnabled=process.env.MADAR_PHONE_AUTH_ENABLED==='true';
+  return res.status(200).json({configured:true,url:url.replace(/\/$/,''),publishableKey,phoneEnabled});
 };
