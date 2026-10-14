@@ -159,7 +159,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
     <div id="authUser" class="auth-user" hidden></div>
     <form id="authForm" class="auth-form" autocomplete="on">
       <label for="authUsername">Username</label>
-      <input id="authUsername" type="text" name="username" autocomplete="username" minlength="3" maxlength="20" pattern="[A-Za-z][A-Za-z0-9_]{2,19}" autocapitalize="off" spellcheck="false" required placeholder="e.g. youssef123">
+      <input id="authUsername" type="text" name="username" autocomplete="username" dir="auto" maxlength="160" autocapitalize="off" spellcheck="false" required placeholder="e.g. يوسف أحمد or Ali or أي اسم">
       <label for="authPassword" id="authPasswordLabel">Password</label>
       <input id="authPassword" type="password" name="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="At least 10 characters">
       <div id="authRecoveryFields" class="auth-recovery-fields" hidden>
