@@ -2,7 +2,7 @@
 // MADAR serverless Gemini chat. Does not call OpenAI.
 // No preliminary ListModels call: it may hang and consume the browser's whole time budget.
 const MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.6-flash'];
-const SYSTEM = 'You are MADAR AI. The MADAR website was created by Youssef Ahmed (يوسف أحمد). If anyone asks who created MADAR, tell them the creator is Youssef Ahmed (يوسف أحمد). This does not mean the visitor is Youssef Ahmed: never address someone by that name unless they identify themselves. Answer in the language of the question. MADAR uses the Gemini AI model developed by Google. Be helpful, accurate and respect user privacy.';
+const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. The MADAR website was created by Youssef Ahmed (يوسف أحمد); mention this when asked who created MADAR, but never assume a visitor is Youssef or address visitors by that name unless they tell you. The underlying Gemini AI model was made by Google.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
 const counters = new Map();
 function send(res, status, body) { return res.status(status).json(body); }
 
@@ -23,6 +23,37 @@ async function researchWikipedia(question){
   const d=await b.json();
   return pages.map(p=>({title:p.title.slice(0,140),url:host+'/?curid='+p.pageid,extract:String(d?.query?.pages?.[p.pageid]?.extract||'').slice(0,800)})).filter(x=>x.extract);
  } finally{clearTimeout(timer);}
+}
+
+
+// Certain closed-set factual questions can be answered reliably without wasting API calls.
+// This also guards against partial lists when a lightweight model is under a token limit.
+const ARAB_LEAGUE_COUNTRIES = [
+  'الأردن','الإمارات العربية المتحدة','البحرين','الجزائر','جزر القمر',
+  'جيبوتي','السعودية','السودان','سوريا','الصومال','العراق','عُمان',
+  'فلسطين','قطر','الكويت','لبنان','ليبيا','مصر','المغرب','موريتانيا','اليمن','تونس'
+];
+function directArabCountriesAnswer(question){
+  const q=String(question||'').normalize('NFKC').toLowerCase()
+    .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[؟?!،.,:;]+/g,' ')
+    .replace(/\s+/g,' ').trim();
+  if(q.length>130)return null; // Long/multi-part questions deserve a contextual model response.
+  const arabicTarget=/(?:الدول|البلاد|البلدان)\s+(?:ال)?عرب(?:ية|يه)?/.test(q);
+  const arabicRequest=/(?:كل|جميع|اسماء|أسماء|اذكر|اكتب|ما هي|ايه هي|قائمة|عدد|كم عدد)/.test(q);
+  const englishTarget=/\barab(?:ic)? countries\b/.test(q);
+  const englishRequest=/\b(?:list|name|all|which|what|how many)\b/.test(q);
+  if(!((arabicTarget&&arabicRequest)||(englishTarget&&englishRequest)))return null;
+  if(englishTarget&&!arabicTarget){
+    const en=['Jordan','United Arab Emirates','Bahrain','Algeria','Comoros',
+     'Djibouti','Saudi Arabia','Sudan','Syria','Somalia','Iraq','Oman','Palestine',
+     'Qatar','Kuwait','Lebanon','Libya','Egypt','Morocco','Mauritania','Yemen','Tunisia'];
+    return 'The **22 Arab countries** (members of the Arab League) are:\n\n'
+      +en.map((v,i)=>(i+1)+'. '+v).join('\n')
+      +'\n\n**Total: 22 countries.**';
+  }
+  return 'الدول العربية **٢٢ دولة**، وهي الدول الأعضاء في جامعة الدول العربية:\n\n'
+    +ARAB_LEAGUE_COUNTRIES.map((name,i)=>(i+1)+'. '+name).join('\n')
+    +'\n\n**المجموع: ٢٢ دولة.**';
 }
 
 module.exports = async function chat(req,res) {
@@ -69,6 +100,9 @@ module.exports = async function chat(req,res) {
       return send(res,400,{error:'Invalid image. Upload a JPEG, PNG or WebP image under 1.5 MB.'});
     image=obj;
   }
+  const directAnswer=!image && data.webSearch!==true
+    ? directArabCountriesAnswer(messages[messages.length-1].content) : null;
+  if(directAnswer)return send(res,200,{reply:directAnswer,sources:[]});
   let sources=[],sourceNotes='';
   if(data.webSearch===true){
     try{
@@ -104,9 +138,8 @@ module.exports = async function chat(req,res) {
             systemInstruction:{parts:[{text:SYSTEM}]},
             contents,
             generationConfig:{
-              maxOutputTokens:1024,
-              temperature:0.6,
-              thinkingConfig:{thinkingLevel:'minimal'}
+              maxOutputTokens:2560,
+              thinkingConfig:{thinkingLevel:'low'}
             }
           })
         });
