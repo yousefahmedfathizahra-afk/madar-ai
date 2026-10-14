@@ -13,9 +13,15 @@ const savedCode=$('authSavedCode'),codeLabel=$('authNewRecoveryCode');
 const logoutBtn=$('authLogout'),userBadge=$('authUser');
 let client=null,config=null,currentUser=null,connectedUserId=null,booting=null,syncTimer=null;
 let mode='login',busy=false,pending=null;
-const internalEmail=(name)=>'madar_'+name+'@example.com';
-const cleanUsername=(x)=>String(x||'').trim().toLowerCase();
-const validUsername=(x)=>/^[a-z][a-z0-9_]{2,19}$/.test(x);
+const cleanUsername=x=>String(x??'').normalize('NFKC').trim().replace(/\s+/gu,' ').toLowerCase();
+const validUsername=name=>name.length>0&&[...name].length<=80&&new TextEncoder().encode(name).length<=512&&!/[\x00-\x1f\x7f-\x9f]/u.test(name);
+// Keep earlier accounts compatible, including usernames that existed before this update.
+const internalEmail=async name=>{
+ if(/^[a-z][a-z0-9_]{2,19}$/.test(name))return 'madar_'+name+'@example.com';
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(name));
+ const hash=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+ return 'madar_u_'+hash.slice(0,40)+'@example.com';
+};
 const displayName=(user)=>String(user?.app_metadata?.madar_username||'Account').slice(0,22);
 
 function note(message,bad){
@@ -151,7 +157,7 @@ async function edgeRequest(action,data){
 async function login(username,password){
  if(!client)throw Error('Account connection is unavailable.');
  const {error}=await client.auth.signInWithPassword({
-  email:internalEmail(username),password
+  email:await internalEmail(username),password
  });
  if(error)throw Error('Username or password is incorrect. New here? Click Create account.');
 }
@@ -163,7 +169,7 @@ function showRecoveryCode(code,username,password){
 }
 function validInput(){
  const name=cleanUsername(usernameEl.value),pass=passwordEl.value;
- if(!validUsername(name))throw Error('Username: 3–20 letters, numbers or underscores; start with a letter.');
+ if(!validUsername(name))throw Error('Write any name you like, up to 80 characters. Arabic, spaces and symbols are welcome.');
  if(typeof pass!=='string'||pass.length<10||pass.length>128)throw Error('Password must have at least 10 characters.');
  return {username:name,password:pass};
 }
