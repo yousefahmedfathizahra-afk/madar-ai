@@ -21,7 +21,7 @@
  function setMode(mode) {
    const signedIn = mode === 'signedin', recovery = mode === 'recovery';
    const requiresEmail = mode === 'guest';
-   $('authForm').hidden = signedIn;
+   $('authForm').hidden = signedIn || mode === 'disabled';
    email.hidden = !requiresEmail;
    $('authEmailLabel').hidden = !requiresEmail;
    passwordLabel.textContent = recovery ? 'New password' : 'Password';
@@ -44,8 +44,10 @@
      note('Secure sign-in needs a dedicated MADAR account database. Chat still works, and guest chats stay only on this device.',true);
      return;
    }
-   if (currentUser) {
-     setMode('signedin');note('Your account is connected. Your text conversations sync privately.',false);
+   if (dialog.dataset.recovery === 'true') {
+     setMode('recovery');note('Choose a new password of at least 8 characters.',false);
+   } else if (currentUser) {
+     setMode('signedin');note(connectedUserId?'Your account is connected. Your text conversations sync privately.':'You are signed in, but private chat storage is not ready yet.',!connectedUserId);
    } else {
      setMode('guest');note('Use your email address to sign in or create an account.',false);
    }
@@ -92,6 +94,7 @@
  }
  async function updateAccount(session,event) {
    if(event==='PASSWORD_RECOVERY') {
+     dialog.dataset.recovery='true';
      if(!dialog.open)dialog.showModal();
      setMode('recovery');
      note('Choose a new password (at least 8 characters).',false);
@@ -163,8 +166,8 @@
  accountBtn.addEventListener('click',async()=>{
    show();
    if(!booting)await init();
-   if(client && dialog.open && !dialog.dataset.recovery){
-     if(currentUser){setMode('signedin');note('Your account is connected.',false);}
+   if(client && dialog.open && dialog.dataset.recovery !== 'true'){
+     if(currentUser){setMode('signedin');note(connectedUserId?'Your account is connected.':'Your account is signed in but private chat storage is not ready.',!connectedUserId);}
      else{setMode('guest');note('Enter your email and password.',false);}
    }
  });
@@ -194,7 +197,7 @@
        if(result.data?.session){note('Your account is ready!',false);dialog.close();}
        else note('Check your email for a confirmation link, then come back to MADAR.',false);
      } else if(action==='reset')note('If the email is registered, you will receive a password reset link.',false);
-     else if(action==='change'){note('Password updated successfully.',false);dialog.dataset.recovery='';setMode('signedin');}
+     else if(action==='change'){note('Password updated successfully.',false);delete dialog.dataset.recovery;setMode('signedin');}
      else{note('Signed in successfully.',false);dialog.close();}
    } catch(e){note(String(e?.message||'Account request failed.').slice(0,220),true);}
    finally{loginBtn.disabled=signupBtn.disabled=resetBtn.disabled=recoveryBtn.disabled=false;}
