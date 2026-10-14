@@ -5,6 +5,26 @@ const MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.6-fl
 const SYSTEM = 'You are MADAR, a helpful and accurate AI assistant. Reply in English by default, or in the language the user writes in. Be honest about uncertainty. Do not claim live web access. Do not reveal secrets.';
 const counters = new Map();
 function send(res, status, body) { return res.status(status).json(body); }
+
+async function researchWikipedia(question){
+ const lang=/[\u0600-\u06FF]/.test(question)?'ar':'en';
+ const host='https://'+lang+'.wikipedia.org';
+ const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),6500);
+ try{
+  const p=new URLSearchParams({action:'query',list:'search',srsearch:question.slice(0,150),srlimit:'3',format:'json'});
+  const a=await fetch(host+'/w/api.php?'+p.toString(),{signal:ctrl.signal,headers:{'User-Agent':'MADAR-AI/1.0 (encyclopedia search)'}});
+  if(!a.ok)throw Error('Wikipedia lookup failed');
+  const j=await a.json();
+  const pages=(j?.query?.search||[]).filter(p=>Number.isInteger(p.pageid)&&typeof p.title==='string').slice(0,3);
+  if(!pages.length)return[];
+  const q=new URLSearchParams({action:'query',prop:'extracts',exintro:'1',explaintext:'1',exchars:'650',pageids:pages.map(x=>x.pageid).join('|'),format:'json'});
+  const b=await fetch(host+'/w/api.php?'+q.toString(),{signal:ctrl.signal,headers:{'User-Agent':'MADAR-AI/1.0 (encyclopedia search)'}});
+  if(!b.ok)throw Error('Wikipedia extract failed');
+  const d=await b.json();
+  return pages.map(p=>({title:p.title.slice(0,140),url:host+'/?curid='+p.pageid,extract:String(d?.query?.pages?.[p.pageid]?.extract||'').slice(0,800)})).filter(x=>x.extract);
+ } finally{clearTimeout(timer);}
+}
+
 module.exports = async function chat(req,res) {
   res.setHeader('Cache-Control','no-store');
   res.setHeader('X-Content-Type-Options','nosniff');
@@ -40,13 +60,35 @@ module.exports = async function chat(req,res) {
   entry.count++; counters.set(addr,entry);
   if(counters.size>1000) for(const [k,e] of counters) if(now-e.start>=900000) counters.delete(k);
 
+  let image=null;
+  if(data.image!==undefined){
+    const obj=data.image;
+    if(!obj||typeof obj!=='object'||!['image/jpeg','image/png','image/webp'].includes(obj.mimeType)
+      ||typeof obj.data!=='string'||obj.data.length<24||obj.data.length>2100000
+      ||obj.data.length%4!==0||!/^[A-Za-z0-9+/]+={0,2}$/.test(obj.data))
+      return send(res,400,{error:'Invalid image. Upload a JPEG, PNG or WebP image under 1.5 MB.'});
+    image=obj;
+  }
+  let sources=[],sourceNotes='';
+  if(data.webSearch===true){
+    try{
+      sources=await researchWikipedia(messages[messages.length-1].content.trim());
+      if(!sources.length)return send(res,404,{error:'No Wikipedia articles found. Try different words or use full web search.'});
+      sourceNotes='\n\nWikipedia excerpts. Base your answer on these excerpts. Clearly identify them as Wikipedia sources and cite the URLs:\n'
+        +sources.map((s,i)=>'['+(i+1)+'] '+s.title+'\n'+s.url+'\n'+s.extract).join('\n\n');
+    }catch(err){
+      console.warn('MADAR Wikipedia lookup',err?.name);
+      return send(res,502,{error:'Wikipedia research is temporarily unavailable. Turn off Wikipedia research to chat normally.'});
+    }
+  }
   const controller=new AbortController();
   const started=Date.now();
   // Browser currently times out at 33 seconds. Allow 24 seconds for Google plus overhead.
   const timer=setTimeout(()=>controller.abort(),24000);
-  const contents=messages.map(m=>({
-    role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]
+  const contents=messages.map((m,i)=>({
+    role:m.role==='assistant'?'model':'user',parts:[{text:m.content+(i===messages.length-1?sourceNotes:'')}]
   }));
+  if(image)contents[contents.length-1].parts.push({inlineData:{mimeType:image.mimeType,data:image.data}});
   let sawBusy=false;
   try {
     for (const model of MODELS) {
@@ -103,7 +145,7 @@ module.exports = async function chat(req,res) {
         .filter(p=>typeof p?.text==='string')
         .map(p=>p.text).join('\n').trim();
       if(!reply)return send(res,422,{error:'Gemini returned no text. Try rephrasing your question.'});
-      return send(res,200,{reply});
+      return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url}))});
       }
     }
     return send(res,sawBusy?503:502,{error:sawBusy?'Gemini is temporarily busy across all tried free models. Please try again later.':'Google has not enabled a compatible free Gemini model for this API key. Check AI Studio access.'});
