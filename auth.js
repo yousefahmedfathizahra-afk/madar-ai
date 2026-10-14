@@ -1,298 +1,241 @@
-/* MADAR: real email/password authentication and private chat sync.
-   No account is created until a dedicated Supabase project is configured. */
-(function () {
- 'use strict';
- const ui = window.MADAR_APP;
- if (!ui) return;
- const $ = id => document.getElementById(id);
- const dialog = $('authDialog'), status = $('authStatus'), accountBtn = $('accountBtn');
- const email = $('authEmail'), password = $('authPassword'), passwordLabel = $('authPasswordLabel');
- const loginBtn = $('authLogin'), signupBtn = $('authSignup'), logoutBtn = $('authLogout');
- const resetBtn = $('authReset'), recoveryBtn = $('authRecovery'), userBadge = $('authUser');
- let client = null, currentUser = null, connectedUserId = null, booting = null;
- let syncTimer = null, lastMessage = '';
- let whatsappEnabled=false, authMethod='email', sentToPhone=null, lastCodeSentAt=0;
- const APP_URL = window.location.origin + '/';
+/* MADAR: username-only sign-in powered by Supabase Auth.
+   No email/phone required from visitors. Passwords are never stored by MADAR.
+   Recovery codes are generated on the server and shown only once. */
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const app=window.MADAR_APP;if(!app)return;
+const dialog=$('authDialog'),accountBtn=$('accountBtn'),status=$('authStatus');
+const usernameEl=$('authUsername'),passwordEl=$('authPassword'),recoveryEl=$('authRecoveryCode');
+const form=$('authForm'),loginBtn=$('authLogin'),signupBtn=$('authSignup');
+const recoverBtn=$('authRecovery'),resetBtn=$('authReset'),backBtn=$('authBackLogin');
+const savedCode=$('authSavedCode'),codeLabel=$('authNewRecoveryCode');
+const logoutBtn=$('authLogout'),userBadge=$('authUser');
+let client=null,config=null,currentUser=null,connectedUserId=null,booting=null,syncTimer=null;
+let mode='login',busy=false,pending=null;
+const internalEmail=(name)=>'madar_'+name+'@example.com';
+const cleanUsername=(x)=>String(x||'').trim().toLowerCase();
+const validUsername=(x)=>/^[a-z][a-z0-9_]{2,19}$/.test(x);
+const displayName=(user)=>String(user?.app_metadata?.madar_username||'Account').slice(0,22);
 
- function note(message, isError) {
-   lastMessage = message;
-   status.textContent = message || '';
-   status.style.color = isError ? '#eb91a2' : 'var(--text)';
- }
- function setMode(mode) {
-   const signedIn = mode === 'signedin', recovery = mode === 'recovery';
-   const guest=mode==='guest';
-   const requiresEmail = guest && authMethod==='email';
-   $('authForm').hidden = signedIn || mode === 'disabled' || (guest && authMethod==='whatsapp');
-   $('authMethods').hidden = !guest;
-   $('authWhatsAppPanel').hidden = !guest || authMethod!=='whatsapp';
-   $('authUseEmail').classList.toggle('selected',authMethod==='email');
-   $('authUseWhatsApp').classList.toggle('selected',authMethod==='whatsapp');
-   $('authUseEmail').setAttribute('aria-pressed',String(authMethod==='email'));
-   $('authUseWhatsApp').setAttribute('aria-pressed',String(authMethod==='whatsapp'));
-   $('authSendWhatsApp').disabled=!whatsappEnabled || Date.now()-lastCodeSentAt<60000;
-   $('authWhatsAppNotice').textContent=whatsappEnabled
-     ?'Your code will be delivered by WhatsApp. Never share it with anyone.'
-     :'WhatsApp sign-in is not enabled yet. It needs a Twilio or Twilio Verify message provider, which may charge fees. Use Email for now.';
-   email.hidden = !requiresEmail;
-   $('authEmailLabel').hidden = !requiresEmail;
-   passwordLabel.textContent = recovery ? 'New password' : 'Password';
-   passwordLabel.hidden = signedIn;
-   password.hidden = signedIn;
-   password.autocomplete = recovery ? 'new-password' : 'current-password';
-   loginBtn.hidden = mode !== 'guest';
-   signupBtn.hidden = mode !== 'guest';
-   resetBtn.hidden = mode !== 'guest';
-   recoveryBtn.hidden = !recovery;
-   logoutBtn.hidden = !signedIn;
-   userBadge.hidden = !signedIn;
-   if (signedIn) userBadge.textContent = currentUser?.email || currentUser?.phone || 'Signed in';
-   if (recovery) password.value='';
- }
- function show() {
-   if (!dialog.open) dialog.showModal();
-   if (!client) {
-     setMode('disabled');
-     note('Secure sign-in needs a dedicated MADAR account database. Chat still works, and guest chats stay only on this device.',true);
-     return;
-   }
-   if (dialog.dataset.recovery === 'true') {
-     setMode('recovery');note('Choose a new password of at least 8 characters.',false);
-   } else if (currentUser) {
-     setMode('signedin');note(connectedUserId?'Your account is connected. Your text conversations sync privately.':'You are signed in, but private chat storage is not ready yet.',!connectedUserId);
-   } else {
-     setMode('guest');note('Use your email address to sign in or create an account.',false);
-   }
- }
-
- function loadSdk() {
-   return new Promise((resolve,reject)=>{
-     if (window.supabase?.createClient) return resolve(window.supabase);
-     const script=document.createElement('script');
-     script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js';
-     script.crossOrigin='anonymous';
-     script.onload=()=>window.supabase?.createClient?resolve(window.supabase):reject(new Error('Auth library could not load.'));
-     script.onerror=()=>reject(new Error('Auth library is unavailable. Check your internet connection.'));
-     document.head.append(script);
-   });
- }
- async function init() {
-   if(booting)return booting;
-   booting=(async()=>{
-     const response=await fetch('/api/auth-config',{cache:'no-store'});
-     if(!response.ok)throw new Error('Auth configuration is unavailable.');
-     const config=await response.json();
-     if(!config?.configured)return false;
-     whatsappEnabled=config.whatsappEnabled===true;
-     if(whatsappEnabled)authMethod='whatsapp';
-     if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(config.url) ||
-       typeof config.publishableKey!=='string')throw new Error('Invalid authentication settings.');
-     const sdk=await loadSdk();
-     client=sdk.createClient(config.url,config.publishableKey,{
-       auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
-     });
-     client.auth.onAuthStateChange((event,session)=>{
-       // Supabase cautions against async DB calls directly inside this callback.
-       setTimeout(()=>updateAccount(session,event),0);
-     });
-     const {data,error}=await client.auth.getSession();
-     if(error)throw error;
-     await updateAccount(data.session,'INITIAL_SESSION');
-     return true;
-   })().catch(err=>{
-     console.warn('MADAR auth setup unavailable:',err?.message);
-     accountBtn.title='Sign-in is not configured';
-     return false;
-   });
-   return booting;
- }
- async function updateAccount(session,event) {
-   if(event==='PASSWORD_RECOVERY') {
-     dialog.dataset.recovery='true';
-     if(!dialog.open)dialog.showModal();
-     setMode('recovery');
-     note('Choose a new password (at least 8 characters).',false);
-   }
-   const user=session?.user || null;
-   currentUser=user;
-   accountBtn.textContent=user ? '● '+String(user.email||user.phone||'Account').slice(0,22) : 'Sign in';
-   accountBtn.title=user?'Manage your account':'Sign in or create an account';
-   if(user?.id===connectedUserId)return;
-   if(syncTimer){clearTimeout(syncTimer);syncTimer=null;}
-   connectedUserId=null;
-   if(!user){
-     ui.leaveCloud();
-     return;
-   }
-   // Do not mix guest conversations with another person's private account.
-   try {
-     const result=await client.from('madar_chats')
-       .select('id,title,messages,updated_at')
-       .eq('user_id',user.id).order('updated_at',{ascending:false}).limit(35);
-     if(result.error)throw result.error;
-     if(currentUser?.id!==user.id)return;
-     connectedUserId=user.id;
-     ui.enterCloud(user.id,(result.data||[]).map(row=>({
-       id:row.id,title:row.title,updatedAt:Date.parse(row.updated_at)||Date.now(),
-       messages:Array.isArray(row.messages)?row.messages:[]
-     })));
-   } catch (err) {
-     note('Signed in, but cloud conversations are not ready. The MADAR database needs the chat table and access policies.',true);
-     ui.notice('Your account signed in, but cloud storage is not configured. Guest chats are still saved on this device.');
-   }
- }
-
- window.MADAR_CLOUD = {
-   queueSave(chats) {
-     if(!client||!connectedUserId || currentUser?.id!==connectedUserId)return;
-     clearTimeout(syncTimer);
-     const userId=connectedUserId;
-     const snapshot=chats.slice(0,35).map(c=>({
-       id:c.id,user_id:userId,title:String(c.title||'New chat').slice(0,70),
-       messages:(c.messages||[]).slice(-100).map(m=>({
-         role:m.role,content:String(m.content||'').slice(0,5000),
-         sources:Array.isArray(m.sources)?m.sources.slice(0,3):[]
-       })),
-       updated_at:new Date(Number(c.updatedAt)||Date.now()).toISOString()
-     }));
-     syncTimer=setTimeout(async()=>{
-       if(!snapshot.length||connectedUserId!==userId)return;
-       try {
-         const {error}=await client.from('madar_chats').upsert(snapshot,{onConflict:'id'});
-         if(error)throw error;
-       }catch(err){
-         console.warn('MADAR chat sync error:',err?.message);
-         ui.notice('Could not sync your private conversations. Please check your connection.');
-       }
-     },1100);
-   },
-   async deleteChat(id){
-     if(!client||!connectedUserId)return;
-     const userId=connectedUserId;
-     try {
-       const {error}=await client.from('madar_chats').delete()
-         .eq('id',id).eq('user_id',userId);
-       if(error)throw error;
-     }catch(e){ui.notice('This conversation could not be deleted from your cloud account.');}
-   }
- };
-
- accountBtn.addEventListener('click',async()=>{
-   show();
-   if(!booting)await init();
-   if(client && dialog.open && dialog.dataset.recovery !== 'true'){
-     if(currentUser){setMode('signedin');note(connectedUserId?'Your account is connected.':'Your account is signed in but private chat storage is not ready.',!connectedUserId);}
-     else{setMode('guest');note(authMethod==='whatsapp'?(whatsappEnabled?'Enter your phone number to get a WhatsApp code.':'WhatsApp codes are not set up yet. Choose Email to sign in.'): 'Enter your email and password.',false);}
-   }
+function note(message,bad){
+ status.textContent=message||'';
+ status.style.color=bad?'#eb91a2':'var(--text)';
+}
+function display(next){
+ mode=next;
+ const guest=['login','recover'].includes(mode);
+ form.hidden=!guest;
+ usernameEl.disabled=passwordEl.disabled=recoveryEl.disabled=!guest;
+ $('authRecoveryFields').hidden=mode!=='recover';
+ loginBtn.hidden=mode!=='login';signupBtn.hidden=mode!=='login';
+ recoverBtn.hidden=mode!=='recover';
+ resetBtn.hidden=mode!=='login';backBtn.hidden=mode!=='recover';
+ logoutBtn.hidden=mode!=='signedin';userBadge.hidden=mode!=='signedin';
+ savedCode.hidden=mode!=='code';
+ $('authPasswordLabel').textContent=mode==='recover'?'New password':'Password';
+ passwordEl.autocomplete=mode==='recover'?'new-password':'current-password';
+ if(mode==='signedin')userBadge.textContent='Signed in as '+displayName(currentUser);
+}
+function openDialog(){
+ if(!dialog.open)dialog.showModal();
+ if(mode==='code')return;
+ if(!client){display('disabled');note('Connecting to account service...',false);return;}
+ if(currentUser){display('signedin');note(connectedUserId?'Your account is connected and chats sync privately.':'Account connected; private chat sync is unavailable.',!connectedUserId);}
+ else{display('login');note('Sign in using only your username and password.',false);}
+}
+function loadSdk(){
+ return new Promise((resolve,reject)=>{
+  if(window.supabase?.createClient)return resolve(window.supabase);
+  const script=document.createElement('script');
+  script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.8/dist/umd/supabase.js';
+  script.crossOrigin='anonymous';
+  script.onload=()=>window.supabase?.createClient?resolve(window.supabase):reject(Error('Account library could not load.'));
+  script.onerror=()=>reject(Error('Account library is temporarily unavailable.'));
+  document.head.append(script);
  });
- $('authClose').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
- async function runAction(action) {
-   if(!client)return note('Account service is not connected yet.',true);
-   const address=email.value.trim().toLowerCase();
-   const secret=password.value;
-   if(!/^.+@.+\..+$/.test(address)&&action!=='logout'&&action!=='change')
-     return note('Enter a valid email address.',true);
-   if(['login','signup','change'].includes(action)&&secret.length<8)
-     return note('Password must be at least 8 characters.',true);
-   loginBtn.disabled=signupBtn.disabled=resetBtn.disabled=recoveryBtn.disabled=true;
-   try {
-     let result;
-     if(action==='login') result=await client.auth.signInWithPassword({email:address,password:secret});
-     else if(action==='signup') result=await client.auth.signUp({
-       email:address,password:secret,options:{emailRedirectTo:APP_URL}
-     });
-     else if(action==='reset') result=await client.auth.resetPasswordForEmail(address,{redirectTo:APP_URL});
-     else if(action==='change') result=await client.auth.updateUser({password:secret});
-     else return;
-     if(result.error)throw result.error;
-     password.value='';
-     if(action==='signup') {
-       if(result.data?.session){note('Your account is ready!',false);dialog.close();}
-       else note('Check your email for a confirmation link, then come back to MADAR.',false);
-     } else if(action==='reset')note('If the email is registered, you will receive a password reset link.',false);
-     else if(action==='change'){note('Password updated successfully.',false);delete dialog.dataset.recovery;setMode('signedin');}
-     else{note('Signed in successfully.',false);dialog.close();}
-   } catch(e){
-     const raw=String(e?.message||'Account request failed.');
-     const friendly=/invalid login credentials/i.test(raw)
-       ?'Email or password not recognized. New to MADAR? Click Create account first. Otherwise, check your details or use Forgot password?'
-       :raw;
-     note(friendly.slice(0,250),true);
-   }
-   finally{loginBtn.disabled=signupBtn.disabled=resetBtn.disabled=recoveryBtn.disabled=false;}
- }
-
- function displayAuthMethod(method){
-   if(currentUser||dialog.dataset.recovery==='true')return;
-   authMethod=method;
-   setMode('guest');
-   if(method==='whatsapp'){
-     note(whatsappEnabled?'Enter your mobile number with country code. You will receive a WhatsApp code.':'WhatsApp codes need a messaging provider and are not enabled yet. You can still use Email.',!whatsappEnabled);
-   }else note('Use your email and password to sign in or create an account.',false);
- }
- $('authUseWhatsApp').addEventListener('click',()=>displayAuthMethod('whatsapp'));
- $('authUseEmail').addEventListener('click',()=>displayAuthMethod('email'));
- function normalizePhone(input){
-   let n=String(input||'').trim().replace(/[\s()-]/g,'');
-   if(/^01[0125]\d{8}$/.test(n))n='+20'+n.slice(1);
-   if(/^00[1-9]\d{7,14}$/.test(n))n='+'+n.slice(2);
-   return /^\+[1-9]\d{7,14}$/.test(n)?n:null;
- }
- async function requestWhatsAppCode(){
-   if(!client||!whatsappEnabled)return note('WhatsApp codes are not active yet. Use Email to sign in.',true);
-   if(Date.now()-lastCodeSentAt<60000)return note('Please wait at least 60 seconds before requesting another code.',true);
-   const phone=normalizePhone($('authPhone').value);
-   if(!phone)return note('Enter a valid mobile number including country code, such as +201012345678.',true);
-   const send=$('authSendWhatsApp'),resend=$('authResendWhatsApp');
-   send.disabled=resend.disabled=true;
-   try{
-     const {error}=await client.auth.signInWithOtp({phone,options:{channel:'whatsapp',shouldCreateUser:true}});
-     if(error)throw error;
-     sentToPhone=phone;lastCodeSentAt=Date.now();
-     $('authOtpPanel').hidden=false;
-     $('authOtp').value='';$('authOtp').focus();
-     note('A 6-digit code was requested on WhatsApp. Enter it below. Never share your code.',false);
-     setTimeout(()=>{
-       if(whatsappEnabled&&Date.now()-lastCodeSentAt>=59000){
-         send.disabled=false;resend.disabled=false;
-       }
-     },60500);
-   }catch(err){
-     note('Could not send a WhatsApp code: '+String(err?.message||'Message service unavailable').slice(0,170),true);
-     send.disabled=!whatsappEnabled;resend.disabled=false;
-   }
- }
- async function verifyWhatsAppCode(){
-   if(!client||!whatsappEnabled||!sentToPhone)return note('Request a WhatsApp code first.',true);
-   const token=$('authOtp').value.trim();
-   if(!/^\d{6}$/.test(token))return note('Please enter the 6-digit code from WhatsApp.',true);
-   const btn=$('authVerifyWhatsApp');btn.disabled=true;
-   try{
-     // Supabase uses the "sms" OTP type for phone numbers even if the channel was WhatsApp.
-     const {error}=await client.auth.verifyOtp({phone:sentToPhone,token,type:'sms'});
-     if(error)throw error;
-     $('authOtp').value='';sentToPhone=null;
-     note('Phone verified. Welcome to MADAR!',false);
-     dialog.close();
-   }catch(err){note('The code could not be verified. Check the six digits or request a new code.',true);}
-   finally{btn.disabled=false;}
- }
- $('authSendWhatsApp').addEventListener('click',requestWhatsAppCode);
- $('authResendWhatsApp').addEventListener('click',requestWhatsAppCode);
- $('authVerifyWhatsApp').addEventListener('click',verifyWhatsAppCode);
- $('authOtp').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();verifyWhatsAppCode();}});
-
- $('authForm').addEventListener('submit',e=>{e.preventDefault();runAction(e.submitter?.value||'login');});
- resetBtn.addEventListener('click',()=>runAction('reset'));
- recoveryBtn.addEventListener('click',()=>runAction('change'));
- logoutBtn.addEventListener('click',async()=>{
-   if(!client)return;
-   try{
-     const {error}=await client.auth.signOut();
-     if(error)throw error;
-     dialog.close();
-   }catch(e){note(String(e?.message||'Could not sign out.'),true);}
+}
+async function init(){
+ if(booting)return booting;
+ booting=(async()=>{
+  const r=await fetch('/api/auth-config',{cache:'no-store'});
+  if(!r.ok)throw Error('Account settings could not load.');
+  config=await r.json();
+  if(!config?.configured)throw Error('Accounts are not configured.');
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(config.url)||!String(config.publishableKey||'').startsWith('sb_publishable_'))throw Error('Invalid account settings.');
+  const sdk=await loadSdk();
+  client=sdk.createClient(config.url,config.publishableKey,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+  });
+  client.auth.onAuthStateChange((event,session)=>{
+    setTimeout(()=>updateAccount(session,event),0);
+  });
+  const {data,error}=await client.auth.getSession();
+  if(error)throw error;
+  await updateAccount(data.session,'INITIAL_SESSION');
+  if(dialog.open&&mode==='disabled')openDialog();
+  return true;
+ })().catch(e=>{
+   console.warn('MADAR account setup',String(e?.message||'unavailable').slice(0,110));
+   if(dialog.open){display('disabled');note('Accounts are temporarily unavailable. You can still chat as a guest.',true);}
+   return false;
  });
- init();
+ return booting;
+}
+async function updateAccount(session){
+ const user=session?.user||null;
+ currentUser=user;
+ accountBtn.textContent=user?'● '+displayName(user):'Sign in';
+ accountBtn.title=user?'Manage your MADAR account':'Sign in or create a MADAR account';
+ if(user?.id===connectedUserId)return;
+ if(syncTimer){clearTimeout(syncTimer);syncTimer=null;}
+ connectedUserId=null;
+ if(!user){app.leaveCloud();return;}
+ try{
+  const {data,error}=await client.from('madar_chats').select('id,title,messages,updated_at')
+   .eq('user_id',user.id).order('updated_at',{ascending:false}).limit(35);
+  if(error)throw error;
+  if(currentUser?.id!==user.id)return;
+  connectedUserId=user.id;
+  app.enterCloud(user.id,(data||[]).map(row=>({
+    id:row.id,title:row.title,updatedAt:Date.parse(row.updated_at)||Date.now(),
+    messages:Array.isArray(row.messages)?row.messages:[]
+  })));
+ }catch{
+   app.notice('Signed in, but chat syncing is currently unavailable.');
+ }
+}
+window.MADAR_CLOUD={
+ queueSave(chats){
+  if(!client||!connectedUserId||currentUser?.id!==connectedUserId)return;
+  clearTimeout(syncTimer);
+  const owner=connectedUserId;
+  const snapshot=chats.slice(0,35).map(c=>({
+   id:c.id,user_id:owner,title:String(c.title||'New chat').slice(0,70),
+   messages:(c.messages||[]).slice(-100).map(m=>({
+    role:m.role,content:String(m.content||'').slice(0,5000),
+    sources:Array.isArray(m.sources)?m.sources.slice(0,3):[]
+   })),
+   updated_at:new Date(Number(c.updatedAt)||Date.now()).toISOString()
+  }));
+  syncTimer=setTimeout(async()=>{
+   if(!snapshot.length||connectedUserId!==owner)return;
+   try{
+    const {error}=await client.from('madar_chats').upsert(snapshot,{onConflict:'id'});
+    if(error)throw error;
+   }catch{app.notice('Could not sync this conversation. Please check your connection.');}
+  },1100);
+ },
+ async deleteChat(id){
+  if(!client||!connectedUserId)return;
+  const owner=connectedUserId;
+  try{
+   const {error}=await client.from('madar_chats').delete().eq('id',id).eq('user_id',owner);
+   if(error)throw error;
+  }catch{app.notice('Could not delete the conversation from your cloud account.');}
+ }
+};
+async function edgeRequest(action,data){
+ const abort=new AbortController();
+ const timeout=setTimeout(()=>abort.abort(),18000);
+ try{
+  const r=await fetch(config.url+'/functions/v1/madar-username-auth',{
+   method:'POST',headers:{'Content-Type':'application/json','apikey':config.publishableKey},
+   body:JSON.stringify({action,...data}),signal:abort.signal
+  });
+  const result=await r.json().catch(()=>null);
+  if(!r.ok)throw Error(result?.error||'Account service unavailable.');
+  return result;
+ }finally{clearTimeout(timeout);}
+}
+async function login(username,password){
+ if(!client)throw Error('Account connection is unavailable.');
+ const {error}=await client.auth.signInWithPassword({
+  email:internalEmail(username),password
+ });
+ if(error)throw Error('Username or password is incorrect. New here? Click Create account.');
+}
+function showRecoveryCode(code,username,password){
+ pending={username,password};
+ codeLabel.textContent=code;
+ display('code');
+ note('Important: copy and save this private recovery code. You will not see it again.',false);
+}
+function validInput(){
+ const name=cleanUsername(usernameEl.value),pass=passwordEl.value;
+ if(!validUsername(name))throw Error('Username: 3–20 letters, numbers or underscores; start with a letter.');
+ if(typeof pass!=='string'||pass.length<10||pass.length>128)throw Error('Password must have at least 10 characters.');
+ return {username:name,password:pass};
+}
+async function submit(action){
+ if(busy||!client)return;
+ busy=true;loginBtn.disabled=signupBtn.disabled=recoverBtn.disabled=true;
+ try{
+  const input=validInput();
+  if(action==='login'){
+   await login(input.username,input.password);
+   passwordEl.value='';dialog.close();
+  }else if(action==='signup'){
+   const result=await edgeRequest('register',input);
+   if(!result?.recoveryCode)throw Error('Recovery code was not returned. Contact the owner.');
+   showRecoveryCode(result.recoveryCode,input.username,input.password);
+  }else if(action==='recover'){
+   if(!recoveryEl.value.trim())throw Error('Enter your recovery code.');
+   const result=await edgeRequest('recover',{...input,recoveryCode:recoveryEl.value.trim()});
+   if(!result?.recoveryCode)throw Error('Recovery code was not returned.');
+   recoveryEl.value='';
+   showRecoveryCode(result.recoveryCode,input.username,input.password);
+  }
+ }catch(e){note(String(e?.message||'Could not sign in.').slice(0,230),true);}
+ finally{busy=false;loginBtn.disabled=signupBtn.disabled=recoverBtn.disabled=false;}
+}
+accountBtn.addEventListener('click',async()=>{
+ openDialog();
+ if(!booting)await init();
+ if(client&&dialog.open&&mode==='disabled')openDialog();
+});
+form.addEventListener('submit',e=>{e.preventDefault();submit(e.submitter?.value||'login');});
+resetBtn.addEventListener('click',()=>{
+ passwordEl.value='';recoveryEl.value='';display('recover');
+ note('Use the recovery code you saved when you registered. Enter your new password.',false);
+});
+backBtn.addEventListener('click',()=>{
+ passwordEl.value='';recoveryEl.value='';display('login');
+ note('Sign in or create an account with no email.',false);
+});
+$('authCopyRecovery').addEventListener('click',async()=>{
+ try{
+  await navigator.clipboard.writeText(codeLabel.textContent||'');
+  note('Recovery code copied. Save it somewhere private.',false);
+ }catch{note('Select and copy the recovery code manually, then save it privately.',true);}
+});
+$('authSavedRecovery').addEventListener('click',async()=>{
+ if(!pending||busy)return;
+ busy=true;
+ try{
+  await login(pending.username,pending.password);
+  pending=null;codeLabel.textContent='';passwordEl.value='';display('signedin');
+  dialog.close();
+ }catch(e){note(String(e?.message||'Could not sign in.').slice(0,220),true);}
+ finally{busy=false;}
+});
+function closeDialog(){
+ if(mode==='code'&&codeLabel.textContent){
+  if(!confirm('Did you safely save your recovery code? You cannot see it again after closing this window.'))return;
+ }
+ pending=null;codeLabel.textContent='';passwordEl.value='';recoveryEl.value='';
+ dialog.close();
+ if(!currentUser)display('login');
+}
+$('authClose').addEventListener('click',closeDialog);
+dialog.addEventListener('cancel',e=>{e.preventDefault();closeDialog();});
+logoutBtn.addEventListener('click',async()=>{
+ if(!client)return;
+ try{
+  const {error}=await client.auth.signOut();
+  if(error)throw error;
+  dialog.close();display('login');note('Signed out.',false);
+ }catch(e){note(String(e?.message||'Could not sign out.'),true);}
+});
+init();
 })();
