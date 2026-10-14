@@ -68,6 +68,12 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .auth-phone-panel .auth-actions button:first-child{background:var(--purple);color:white}
 .auth-phone-panel button:disabled{opacity:.5;cursor:default}
 .auth-dialog [hidden]{display:none !important}
+
+.auth-recovery-fields{display:grid;gap:8px}
+.auth-saved-code{border:1px solid var(--line-strong);background:var(--soft);padding:14px;border-radius:12px;margin-top:15px}
+.auth-saved-code p{font-size:12px;line-height:1.8;color:var(--fg)}
+.auth-saved-code code{display:block;overflow-wrap:anywhere;user-select:all;background:var(--control);border-radius:8px;padding:12px;color:var(--purple-light);font-size:12px;line-height:1.8}
+.auth-saved-code[hidden],.auth-recovery-fields[hidden]{display:none}
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -144,44 +150,42 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
     <div class="dialog-actions"><a id="dialogLink" href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" hidden>Open AI Studio ↗</a><button id="dialogClose">Close</button></div>
   </dialog>
   <dialog id="authDialog" class="auth-dialog" aria-labelledby="authTitle">
-    <div class="auth-heading"><h2 id="authTitle">MADAR account</h2><button id="authClose" class="icon-btn" aria-label="Close account window">×</button></div>
-    <p class="auth-hint">Create an account to keep your chats private and sync them between devices. Guest chats stay on this device and are never uploaded automatically.</p>
+    <div class="auth-heading">
+      <h2 id="authTitle">MADAR account</h2>
+      <button id="authClose" class="icon-btn" type="button" aria-label="Close account window">×</button>
+    </div>
+    <p class="auth-hint">A username and password are all you need. No email or phone number.</p>
     <div id="authStatus" class="auth-status" role="status"></div>
     <div id="authUser" class="auth-user" hidden></div>
-    <div id="authMethods" class="auth-methods" role="group" aria-label="Sign-in options">
-      <button id="authUseWhatsApp" type="button" aria-pressed="false">WhatsApp code</button>
-      <button id="authUseEmail" type="button" class="selected" aria-pressed="true">Email</button>
-    </div>
-    <div id="authWhatsAppPanel" class="auth-phone-panel" hidden>
-      <p class="auth-phone-help">Enter your phone number to get a 6-digit sign-in code on WhatsApp. No password needed.</p>
-      <label for="authPhone">Phone number (with country code)</label>
-      <input id="authPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="22" placeholder="+201012345678" aria-describedby="authWhatsAppNotice">
-      <div class="auth-actions"><button id="authSendWhatsApp" type="button" disabled>Send WhatsApp code</button></div>
-      <div id="authOtpPanel" class="auth-phone-panel" hidden>
-        <label for="authOtp">6-digit verification code</label>
-        <input id="authOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
-        <div class="auth-actions">
-          <button id="authVerifyWhatsApp" type="button">Verify &amp; sign in</button>
-          <button id="authResendWhatsApp" type="button">Resend code</button>
-        </div>
-      </div>
-      <p id="authWhatsAppNotice" class="auth-sms-notice">WhatsApp sign-in is coming soon. It needs a message provider (Twilio or Twilio Verify), which may charge fees. Use Email to sign in for now.</p>
-    </div>
     <form id="authForm" class="auth-form" autocomplete="on">
-      <label id="authEmailLabel" for="authEmail">Email</label>
-      <input id="authEmail" type="email" name="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required>
-      <label id="authPasswordLabel" for="authPassword">Password</label>
-      <input id="authPassword" type="password" name="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required>
+      <label for="authUsername">Username</label>
+      <input id="authUsername" type="text" name="username" autocomplete="username" minlength="3" maxlength="20" pattern="[A-Za-z][A-Za-z0-9_]{2,19}" autocapitalize="off" spellcheck="false" required placeholder="e.g. youssef123">
+      <label for="authPassword" id="authPasswordLabel">Password</label>
+      <input id="authPassword" type="password" name="password" autocomplete="current-password" minlength="10" maxlength="128" required placeholder="At least 10 characters">
+      <div id="authRecoveryFields" class="auth-recovery-fields" hidden>
+        <label for="authRecoveryCode">Your recovery code</label>
+        <input id="authRecoveryCode" type="text" name="recovery-code" autocomplete="off" maxlength="65" placeholder="Paste your saved recovery code">
+      </div>
       <div class="auth-actions">
         <button id="authLogin" type="submit" value="login">Sign in</button>
         <button id="authSignup" type="submit" value="signup">Create account</button>
+        <button id="authRecovery" type="submit" value="recover" hidden>Reset password</button>
       </div>
     </form>
+    <div id="authSavedCode" class="auth-saved-code" hidden>
+      <p><strong>Save this recovery code now!</strong> It is shown only once. You will need it if you forget your password. Keep it private.</p>
+      <code id="authNewRecoveryCode" dir="ltr"></code>
+      <div class="auth-actions">
+        <button id="authCopyRecovery" type="button">Copy recovery code</button>
+        <button id="authSavedRecovery" type="button">I've saved it — continue</button>
+      </div>
+    </div>
     <div class="auth-actions">
       <button id="authReset" type="button">Forgot password?</button>
-      <button id="authRecovery" type="button" hidden>Set new password</button>
+      <button id="authBackLogin" type="button" hidden>Back to sign in</button>
       <button id="authLogout" type="button" hidden>Sign out</button>
     </div>
+    <p class="auth-hint">Your account's chats sync privately across devices. Guest chats remain on your device.</p>
   </dialog>
   <script>
 'use strict';
