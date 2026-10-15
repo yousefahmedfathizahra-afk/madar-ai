@@ -11,7 +11,9 @@ function notify(text){app.notice(text);}
 function language(text){
  const selected=$('madarVoiceLang').value;
  if(selected!=='auto')return selected;
- return /[\u0600-\u06ff]/.test(String(text||''))?'ar-EG':(navigator.language||'en-US');
+ const value=String(text||'').trim();
+ if(!value)return (navigator.language||'en-US').toLowerCase().startsWith('ar')?'ar-EG':'en-US';
+ return /[\u0600-\u06ff]/.test(value)?'ar-EG':'en-US';
 }
 function stopSpeech(){
  if(speechSupported)window.speechSynthesis.cancel();
