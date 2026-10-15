@@ -89,6 +89,19 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .message.assistant .message-text a{color:var(--purple-light);text-decoration:underline;text-underline-offset:3px}
 .message.assistant .message-text em{font-style:italic}
 
+
+/* MADAR voice, AI modes and interactive study mode */
+.madar-extras{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.madar-extras label{color:var(--muted);font-size:11px;font-weight:700}
+.madar-extras select{color:var(--fg);background:var(--control);border:1px solid var(--line-strong);border-radius:10px;padding:7px 8px;font-size:12px;max-width:100%}
+.madar-extras select:focus-visible{outline:2px solid var(--purple)}
+.madar-extras .tool{white-space:nowrap}
+.madar-study-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:0 0 11px}
+.madar-study-actions[hidden]{display:none}
+.madar-study-actions span{font-size:11px;font-weight:800;color:var(--purple-light)}
+.madar-study-actions small{font-size:10px;color:var(--muted)}
+#madarMicBtn[aria-pressed="true"]{color:#fff;background:#902b68;box-shadow:0 0 0 3px rgba(220,80,150,.25)}
+@media(max-width:550px){.madar-extras{gap:5px}.madar-extras select{padding:7px 5px;font-size:11px}.madar-extras .tool{font-size:10px;padding:7px 8px}}
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -107,6 +120,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       <div class="side-footer">
         <div class="privacy-icon">✧</div>
         <p><strong>Your private space</strong><span id="sidePrivacyText">Chats are stored on this device only.</span></p>
+        <button id="shareChatBtn" type="button" class="export-button" title="Share this chat (text only)" aria-label="Share current chat">↗</button>
         <button id="exportChats" class="export-button" title="Export conversations">↧</button>
       </div>
     </aside>
@@ -144,6 +158,31 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       <div class="compose-wrap">
         <div id="inlineError" class="inline-error" role="alert" hidden></div>
         <div class="composer" id="composer">
+          <div class="madar-extras">
+            <label for="madarMode">✨ Mode</label>
+            <select id="madarMode" aria-label="Choose an AI assistant mode">
+              <option value="chat">💬 Chat</option>
+              <option value="study">📚 Study</option>
+              <option value="code">💻 Code</option>
+              <option value="translate">🌍 Translate</option>
+              <option value="write">✍️ Write</option>
+            </select>
+            <label for="madarVoiceLang">Voice</label>
+            <select id="madarVoiceLang" aria-label="Speech language">
+              <option value="auto">Auto</option>
+              <option value="ar-EG">العربية</option>
+              <option value="en-US">English</option>
+            </select>
+            <button type="button" id="madarMicBtn" class="tool" aria-pressed="false" title="Speak your message (if supported)">🎙️ Talk</button>
+            <button type="button" id="madarSpeakToggle" class="tool" aria-pressed="false" title="Read new replies aloud (if supported)">🔈 Voice off</button>
+          </div>
+          <div id="madarStudyActions" class="madar-study-actions" hidden>
+            <span>📚 Study with MADAR:</span>
+            <button type="button" id="madarExplain" class="tool">💡 Explain</button>
+            <button type="button" id="madarQuiz" class="tool">📝 Quiz me</button>
+            <button type="button" id="madarCheck" class="tool">✅ Check answer</button>
+            <small>Type a topic or attach a homework photo</small>
+          </div>
           <div class="tools-row" role="toolbar" aria-label="AI tools">
             <button id="photoBtn" type="button" class="tool" title="Upload a photo to ask questions about it">＋ Photo</button>
             <button id="wikiToggle" type="button" class="tool" aria-pressed="false" title="Look up Wikipedia sources and ask MADAR to use them">⌕ Wikipedia research</button>
@@ -318,7 +357,16 @@ function appendMessage(message, isPending=false){const row=document.createElemen
     }
     body.append(sources);
   }
-  if(message.role==='assistant'&&!isPending){const copy=document.createElement('button');copy.className='message-action';copy.textContent='▢ Copy reply';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(message.content);copy.textContent='✓ Copied';setTimeout(()=>copy.textContent='▢ Copy reply',1500)}catch{showError('Could not copy the reply automatically.')}});body.append(copy)}
+  if(message.role==='assistant'&&!isPending){
+    const buttons=document.createElement('div');buttons.style.cssText='display:flex;gap:14px;align-items:center;flex-wrap:wrap';
+    const copy=document.createElement('button');copy.className='message-action';copy.textContent='▢ Copy';
+    copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(message.content);copy.textContent='✓ Copied';setTimeout(()=>copy.textContent='▢ Copy',1500)}catch{showError('Could not copy the reply automatically.')}});
+    const listen=document.createElement('button');listen.className='message-action';listen.textContent='🔊 Listen';
+    listen.title='Listen to this MADAR answer';listen.addEventListener('click',()=>window.MADAR_FEATURES?.speak(message.content));
+    const share=document.createElement('button');share.className='message-action';share.textContent='↗ Share';
+    share.title='Share only this answer';share.addEventListener('click',()=>window.MADAR_FEATURES?.shareReply(message.content,share));
+    buttons.append(copy,listen,share);body.append(buttons);
+  }
   row.append(avatar,body);el.messages.append(row);
 }
 function render(){renderHistory();const chat=activeChat();const hasMessages=!!chat?.messages.length;el.welcome.hidden=hasMessages;el.messages.hidden=!hasMessages;el.messages.replaceChildren();if(hasMessages)for(const m of chat.messages)appendMessage(m);if(isWaiting)appendMessage({role:'assistant',content:''},true);updateSend();scrollDown()}
@@ -392,7 +440,7 @@ async function sendMessage(prefill){
     if(location.protocol === 'file:') throw Error('MADAR needs its server for live AI chat. This HTML file alone is a design preview.');
     let response;
     try{
-      response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chat.messages.slice(-18).map(m=>({role:m.role,content:m.content})),image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch}),signal:controller.signal});
+      response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chat.messages.slice(-18).map(m=>({role:m.role,content:m.content})),image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch,mode:window.MADAR_FEATURES?.getMode()||'chat'}),signal:controller.signal});
     }catch(err){
       if(err?.name === 'AbortError') throw err;
       throw Error('Cannot reach /api/chat. Deploy the full MADAR server on HTTPS, not only the HTML file.');
@@ -404,6 +452,7 @@ async function sendMessage(prefill){
     }
     const verifiedSources=Array.isArray(data.sources)?data.sources.filter(s=>s&&typeof s.title==='string'&&/^https:\/\/(en|ar)\.wikipedia\.org\/\?curid=\d+$/.test(s.url)).slice(0,3):[];
     chat.messages.push({role:'assistant',content:data.reply,sources:verifiedSources});chat.updatedAt=Date.now();saveChats();
+    window.MADAR_FEATURES?.onReply(data.reply);
   }catch(err){
     showError(err?.name === 'AbortError'?'The request timed out. Try again shortly.':err?.message||'The AI server could not respond.');
     await healthCheck();
@@ -488,10 +537,17 @@ window.MADAR_APP={
    $('sidePrivacyText').textContent='Chats are stored on this device only.';
    hideError();render();
  },
- notice:showError
+ notice:showError,
+ getDraft(){return el.prompt.value;},
+ setDraft(value){el.prompt.value=String(value??'').slice(0,5000);resizePrompt();el.prompt.focus();},
+ sendText(text){sendMessage(String(text??''));},
+ isWaiting(){return isWaiting;},
+ hasPendingImage(){return !!pendingImage;},
+ getActiveChat(){const chat=activeChat();return chat?{title:chat.title,messages:chat.messages.map(m=>({role:m.role,content:m.content}))}:null;}
 };
 
 </script>
   <script src="/auth.js" defer></script>
+  <script src="/madar-features.js" defer></script>
 </body>
 </html>
