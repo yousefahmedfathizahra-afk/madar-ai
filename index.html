@@ -125,6 +125,12 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-image-download{display:inline-block;border-radius:11px;background:var(--purple);color:white;font-size:12px;font-weight:750;text-decoration:none;margin-top:12px;padding:10px 15px}
 .madar-image-result p{font-size:10px;color:var(--muted);margin:7px 0 0}
 @media(max-width:550px){.madar-image-dialog{padding:17px}.madar-image-head h2{font-size:19px}}
+
+.madar-image-connection{border:1px solid var(--line-strong);background:var(--soft);border-radius:12px;padding:11px 12px;display:grid;gap:9px}
+.madar-image-connection p{font-size:12px;font-weight:700;margin:0;color:var(--fg)}
+.madar-image-connection button{background:var(--purple);border:0;color:white;border-radius:10px;font-size:12px;font-weight:750;padding:11px}
+.madar-image-connection button[hidden]{display:none}
+.madar-image-generate:disabled{opacity:.5;cursor:not-allowed}
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -240,8 +246,12 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
         <option value="fast">⚡ Fast • FLUX (1024 × 1024)</option>
         <option value="detailed">✨ Detailed • Gemini Flash Lite Image</option>
       </select>
-      <p class="madar-image-note">Images use <strong>Puter</strong> (a separate service). You may be asked to sign in to Puter. Every user starts with some free AI allowance; extra usage may require adding credit to their own Puter account. MADAR's owner is never billed for images. Images are only requested when you press Generate.</p>
-      <button id="madarGenerateImage" class="madar-image-generate" type="submit">✦ Generate image</button>
+      <p class="madar-image-note">Images use <strong>Puter</strong> (a separate service). Connect a separate Puter account before generating images. Free allowance may be limited; extra usage may require adding credit to your own Puter account. MADAR's owner is never billed for images. Images are only requested when you press Generate.</p>
+      <div class="madar-image-connection" aria-label="Connect to Puter for image creation">
+        <p id="madarPuterConnection" role="status">Step 1: Connect your Puter account.</p>
+        <button id="madarConnectPuter" type="button" disabled>⏳ Loading Puter...</button>
+      </div>
+      <button id="madarGenerateImage" class="madar-image-generate" type="submit" disabled>✦ Generate image</button>
       <p id="madarImageState" class="madar-image-state" role="status" aria-live="polite"></p>
     </form>
     <section id="madarImageResult" class="madar-image-result" aria-label="Generated image" hidden>
