@@ -102,6 +102,29 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-study-actions small{font-size:10px;color:var(--muted)}
 #madarMicBtn[aria-pressed="true"]{color:#fff;background:#902b68;box-shadow:0 0 0 3px rgba(220,80,150,.25)}
 @media(max-width:550px){.madar-extras{gap:5px}.madar-extras select{padding:7px 5px;font-size:11px}.madar-extras .tool{font-size:10px;padding:7px 8px}}
+
+/* MADAR Image Studio: on-demand, user-authorized image generation */
+.madar-image-dialog{background:var(--panel);color:var(--fg);border:1px solid var(--line-strong);border-radius:22px;width:min(600px,calc(100% - 24px));max-height:90dvh;overflow-y:auto;padding:22px 24px;box-shadow:0 24px 90px rgba(0,0,0,.52)}
+.madar-image-dialog::backdrop{background:rgba(0,0,0,.72);backdrop-filter:blur(5px)}
+.madar-image-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px}
+.madar-image-head h2{margin:0;font-size:21px;font-weight:850}
+.madar-image-head button{color:var(--fg);background:var(--control);border:1px solid var(--line-strong);border-radius:10px;width:34px;height:34px;font-size:21px}
+.madar-image-description{font-size:12px;color:var(--text);line-height:1.8;margin:4px 0 15px}
+.madar-image-form{display:grid;gap:10px}
+.madar-image-form label{color:var(--fg);font-size:12px;font-weight:750}
+.madar-image-form textarea{min-height:104px;resize:vertical;max-height:190px;border:1px solid var(--line-strong);border-radius:13px;padding:12px;background:var(--control);color:var(--fg);font:inherit;font-size:13px;line-height:1.75;outline-color:var(--purple)}
+.madar-image-form select{width:100%;border:1px solid var(--line-strong);border-radius:11px;background:var(--control);color:var(--fg);padding:10px;font-size:12px}
+.madar-image-ideas{display:flex;flex-wrap:wrap;gap:7px}
+.madar-image-ideas button{border:1px solid var(--line-strong);border-radius:9px;background:var(--soft);color:var(--purple-light);padding:7px 10px;font-size:11px}
+.madar-image-generate{border:0;border-radius:12px;padding:13px;background:linear-gradient(130deg,#b18cff,#704ed8);color:white;font-size:13px;font-weight:800;cursor:pointer;margin-top:5px}
+.madar-image-note{border:1px solid var(--line-strong);border-radius:11px;background:var(--soft);color:var(--text);font-size:11px;line-height:1.7;padding:10px 12px}
+.madar-image-state{min-height:18px;color:var(--text);font-size:12px;line-height:1.6;margin:2px 0}
+.madar-image-result{border:1px solid var(--line-strong);border-radius:13px;padding:12px;background:var(--soft);margin-top:10px;text-align:center}
+.madar-image-result[hidden]{display:none}
+.madar-image-result img{max-height:52dvh;max-width:100%;height:auto;width:auto;object-fit:contain;border-radius:9px}
+.madar-image-download{display:inline-block;border-radius:11px;background:var(--purple);color:white;font-size:12px;font-weight:750;text-decoration:none;margin-top:12px;padding:10px 15px}
+.madar-image-result p{font-size:10px;color:var(--muted);margin:7px 0 0}
+@media(max-width:550px){.madar-image-dialog{padding:17px}.madar-image-head h2{font-size:19px}}
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -198,6 +221,35 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       </div>
     </main>
   </div>
+  <dialog id="madarImageDialog" class="madar-image-dialog" aria-labelledby="madarImageTitle">
+    <div class="madar-image-head">
+      <h2 id="madarImageTitle">🎨 MADAR Image Studio</h2>
+      <button type="button" id="madarImageClose" title="Close" aria-label="Close image studio">×</button>
+    </div>
+    <p class="madar-image-description">Describe your idea in Arabic or English. MADAR will create an AI image right here. ✨</p>
+    <form id="madarImageForm" class="madar-image-form">
+      <label for="madarImagePrompt">What should MADAR draw?</label>
+      <textarea id="madarImagePrompt" dir="auto" maxlength="900" required placeholder="مثال: أسد لابس تاج ذهبي وقاعد على عرش في الفضاء" aria-label="Describe the image to create"></textarea>
+      <div class="madar-image-ideas" aria-label="Example image ideas">
+        <button type="button" data-image-idea="أسد لابس تاج ذهبي، جالس على عرش ملكي في الفضاء، صورة خيالية سينمائية">🦁 ملك الفضاء</button>
+        <button type="button" data-image-idea="مدينة مستقبلية مصرية فيها الأهرامات ومبانٍ مضيئة ليلاً، فن سينمائي واقعي">🌆 مصر المستقبل</button>
+        <button type="button" data-image-idea="A cute astronaut cat in a purple galaxy, highly detailed digital illustration">🐱 قطة رائدة فضاء</button>
+      </div>
+      <label for="madarImageModel">Image style / engine</label>
+      <select id="madarImageModel">
+        <option value="fast">⚡ Fast • FLUX (1024 × 1024)</option>
+        <option value="detailed">✨ Detailed • Gemini Flash Lite Image</option>
+      </select>
+      <p class="madar-image-note">Images use <strong>Puter</strong> (a separate service). You may be asked to sign in to Puter. Every user starts with some free AI allowance; extra usage may require adding credit to their own Puter account. MADAR's owner is never billed for images. Images are only requested when you press Generate.</p>
+      <button id="madarGenerateImage" class="madar-image-generate" type="submit">✦ Generate image</button>
+      <p id="madarImageState" class="madar-image-state" role="status" aria-live="polite"></p>
+    </form>
+    <section id="madarImageResult" class="madar-image-result" aria-label="Generated image" hidden>
+      <img id="madarImagePreview" alt="Your generated image">
+      <div><a id="madarImageDownload" class="madar-image-download" href="#" rel="noopener noreferrer" target="_blank">⬇ Save image</a></div>
+      <p>Save the image now. MADAR doesn't store generated pictures in your chats yet.</p>
+    </section>
+  </dialog>
   <dialog id="featureDialog" class="feature-dialog" aria-labelledby="dialogTitle">
     <h2 id="dialogTitle"></h2>
     <p id="dialogMessage"></p>
@@ -513,9 +565,7 @@ $('googleSearchBtn').addEventListener('click',()=>{
  if(!q)return showError('Type what you want to search for first, then click Web search.');
  window.open('https://www.google.com/search?q='+encodeURIComponent(q),'_blank','noopener,noreferrer');
 });
-$('imageMakerBtn').addEventListener('click',()=>showFeature('Create AI images',
- 'Google does not provide API image generation on your current free tier. We have not enabled any paid calls. You can try image creation inside Google AI Studio, or add a paid image provider to MADAR later.',
- 'https://aistudio.google.com/'));
+/* Image Studio owns the Create image button in /madar-image.js. */
 /* Real account control is installed by /auth.js once its configuration is available. */
 $('dialogClose').addEventListener('click',()=>$('featureDialog').close());
 el.prompt.addEventListener('input',resizePrompt);
@@ -549,5 +599,6 @@ window.MADAR_APP={
 </script>
   <script src="/auth.js" defer></script>
   <script src="/madar-features.js" defer></script>
+  <script src="/madar-image.js" defer></script>
 </body>
 </html>
