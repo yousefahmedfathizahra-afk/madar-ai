@@ -215,5 +215,16 @@ graphics.value='realistic';
 updateGraphicsChoice();
 const restored=load();
 if(restored){current=restored;report('Your last project is saved. Open Builder to preview it.');}
-window.MADAR_BUILDER={open};
+function setProject(project){
+ if(!validProject(project))throw Error('Invalid MADAR Builder project.');
+ current=project;refresh();
+}
+function downloadProject(project){
+ if(!validProject(project))throw Error('Invalid MADAR Builder project.');
+ const previous=current;
+ current=project;
+ try{downloadHtml();}
+ finally{current=previous;}
+}
+window.MADAR_BUILDER={open,setProject,standalone,downloadProject,validProject};
 })();
