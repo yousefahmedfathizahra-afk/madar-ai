@@ -6,7 +6,7 @@
 'use strict';
 const PROJECTS_KEY='madar_chat_projects_v1';
 const MAX_PROJECTS=4;
-const projects=new Map(),pictures=new Map();
+const projects=new Map(),projectKinds=new Map(),pictures=new Map();
 function normalize(text){
  return String(text||'').normalize('NFKC').toLowerCase()
   .replace(/[\u064b-\u065f\u0670]/g,'').replace(/ـ/g,'')
@@ -66,39 +66,66 @@ function restore(){
  try{
   const data=JSON.parse(localStorage.getItem(PROJECTS_KEY)||'[]');
   if(Array.isArray(data))for(const x of data.slice(0,MAX_PROJECTS)){
-   if(typeof x?.id==='string'&&window.MADAR_BUILDER?.validProject(x.project))projects.set(x.id,x.project);
+   if(typeof x?.id==='string'&&window.MADAR_BUILDER?.validProject(x.project)){
+    projects.set(x.id,x.project);projectKinds.set(x.id,['game','website','tool'].includes(x.kind)?x.kind:'game');
+   }
   }
  }catch{}
 }
-function cacheProject(project){
+function cacheProject(project,kind='game'){
  const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
- projects.set(id,project);
- while(projects.size>MAX_PROJECTS)projects.delete(projects.keys().next().value);
- try{localStorage.setItem(PROJECTS_KEY,JSON.stringify([...projects].map(([key,p])=>({id:key,project:p}))));}catch{}
+ projects.set(id,project);projectKinds.set(id,kind);
+ while(projects.size>MAX_PROJECTS){const old=projects.keys().next().value;projects.delete(old);projectKinds.delete(old);}
+ try{localStorage.setItem(PROJECTS_KEY,JSON.stringify([...projects].map(([key,p])=>({id:key,kind:projectKinds.get(key),project:p}))));}catch{}
  return id;
 }
 async function run(request,options={}){
+ if(request?.type==='clarify'){
+  const type=request.kind==='image'?'الصورة':request.kind==='website'?'الموقع':request.kind==='tool'?'التطبيق':'اللعبة';
+  const example=request.kind==='image'?'عايز صورة قطة بيضا في حديقة وقت الغروب':
+   request.kind==='website'?'عايز موقع لمحل هدوم فيه منتجات وأسعار':
+   request.kind==='tool'?'عايز تطبيق للمهام فيه إضافة وحذف':'عايز لعبة عربيات 3D فيها سباق ومراحل وتحكم موبايل';
+  return{content:'تمام! 💜 بس عشان أعمل '+type+' زي ما إنت عايز بالظبط، اوصفهالي شوية. مثال: «'+example+'».'};
+ }
+ if(request?.type==='refine'&&request.kind==='image'){
+  const previous=pictures.get(request.toolKey);
+  if(!previous)return{content:'قولّي وصف الصورة كامل مع التعديل، لأن الصورة الأصلية مش متاحة بعد تحديث الصفحة.'};
+  const oldPrompt=typeof previous==='string'?'':previous.prompt||'';
+  const imagePrompt=(oldPrompt+'؛ التعديل المطلوب: '+request.prompt).slice(0,900);
+  const source=await window.MADAR_IMAGE_STUDIO.generateFromChat(imagePrompt);
+  const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
+  pictures.set(id,{src:source,prompt:imagePrompt});
+  return{toolType:'image',toolKey:id,content:'🎨 عملت صورة جديدة بناءً على وصفك وتعديلك. (دي إعادة توليد، مش تعديل مباشر على نفس الصورة.)'};
+ }
  if(request?.type==='image'){
   const maker=window.MADAR_IMAGE_STUDIO;
   if(!maker?.generateFromChat)throw Error('خدمة الصور مش جاهزة. حدّث الصفحة وجرب تاني.');
   const source=await maker.generateFromChat(request.prompt);
   const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
-  pictures.set(id,source);
+  pictures.set(id,{src:source,prompt:request.prompt});
   return{toolType:'image',toolKey:id,content:'🎨 خلصت الصورة! هتلاقيها هنا تحت. تقدر تحفظها على جهازك. (الصور مش بتتحفظ في سجل الشات بعد إعادة فتح الصفحة.)'};
  }
- if(request?.type==='builder'){
+ if(request?.type==='builder'||(request?.type==='refine'&&request.kind==='builder')){
+  const editing=request.type==='refine';
+  const previous=editing?projects.get(request.toolKey):null;
+  if(editing&&!previous)return{content:'المشروع القديم مش موجود على الجهاز ده. ابعت وصفه من جديد وأنا هبنيه لك.'};
+  const kind=editing?projectKinds.get(request.toolKey)||'game':request.kind;
+  // Sending the prior complete source enables Gemini to change precisely what was requested.
+  // The Builder endpoint limits previous source to 42K characters.
+  const previousSize=previous?['html','css','js'].reduce((n,k)=>n+previous[k].length,0):0;
+  if(editing&&previousSize>42000)return{content:'المشروع القديم كبير جدًا للتعديل المباشر. ابعتلي وصف المشروع بالتفاصيل الجديدة وأنا هعمل نسخة جديدة.'};
   const result=await fetch('/api/builder',{
    method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({prompt:request.prompt,kind:request.kind,graphics:request.kind==='game'?'realistic':'standard'}),
+   body:JSON.stringify({prompt:request.prompt,kind,graphics:kind==='game'?'realistic':'standard',previous:editing?previous:undefined}),
    signal:options.signal
   });
   const payload=await result.json().catch(()=>null);
   if(!result.ok)throw Error(String(payload?.error||'تعذر بناء المشروع. حاول تاني.').slice(0,300));
   const project=payload?.project;
   if(!window.MADAR_BUILDER?.validProject(project))throw Error('الذكاء الاصطناعي رجّع مشروع ناقص. حاول تاني.');
-  const id=cacheProject(project);
-  const what=request.kind==='game'?'اللعبة':request.kind==='website'?'الموقع':'التطبيق';
-  return{toolType:'builder',toolKey:id,content:'🎮 جاهز! مدار بنى '+what+' **'+project.title+'**. تقدر تجرّبه مباشرة تحت، وتحفظه كملف HTML. '+(project.explanation||'')};
+  const id=cacheProject(project,kind);
+  const what=kind==='game'?'اللعبة':kind==='website'?'الموقع':'التطبيق';
+  return{toolType:'builder',toolKey:id,content:(editing?'✅ عدّلت ':'🎮 جهزت ')+what+' **'+project.title+'** حسب وصفك. جربها في الشات، والتغيير اللي طلبته موجود في النسخة الجديدة. '+(project.explanation||'')};
  }
  throw Error('نوع الطلب غير معروف.');
 }
@@ -108,7 +135,8 @@ function element(tag,cls,text){
 }
 function render(message,body){
  if(message?.toolType==='image'){
-  const src=pictures.get(message.toolKey);
+  const picture=pictures.get(message.toolKey);
+  const src=typeof picture==='string'?picture:picture?.src;
   if(!src){
    body.append(element('p','madar-tool-note','الصورة اتعملت قبل كده، لكن مش متخزنة بعد تحديث الصفحة. ابعت وصفها تاني عشان مدار يعملها من جديد.'));return;
   }
