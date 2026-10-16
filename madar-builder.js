@@ -10,6 +10,8 @@ if(!dialog)return;
 const form=get('madarBuilderForm');
 const idea=get('madarBuilderIdea');
 const kind=get('madarBuilderKind');
+const graphics=get('madarBuilderGraphics');
+const graphicsRow=get('madarBuilderGraphicsRow');
 const submit=get('madarBuilderGenerate');
 const status=get('madarBuilderStatus');
 const results=get('madarBuilderResults');
@@ -38,6 +40,7 @@ const POLICY=[
  "navigate-to 'none'"
 ].join('; ');
 let current=null,busy=false,requestController=null;
+function updateGraphicsChoice(){graphicsRow.hidden=kind.value!=='game';}
 function report(message,error=false){
  status.textContent=String(message||'');
  status.classList.toggle('bad',!!error);
@@ -136,7 +139,7 @@ async function generate(keepPrevious){
   const response=await fetch('/api/builder',{
    method:'POST',
    headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({prompt,kind:kind.value,previous}),
+   body:JSON.stringify({prompt,kind:kind.value,graphics:kind.value==='game'?graphics.value:'standard',previous}),
    signal:controller.signal
   });
   const type=response.headers?.get('content-type')||'';
@@ -158,6 +161,7 @@ async function generate(keepPrevious){
  }
 }
 form.addEventListener('submit',event=>{event.preventDefault();generate(false);});
+kind.addEventListener('change',updateGraphicsChoice);
 refine.addEventListener('click',()=>generate(true));
 function applyEdits(){
  if(!current||busy)return;
@@ -199,11 +203,16 @@ for(const sample of dialog.querySelectorAll('[data-builder-idea]')){
  sample.addEventListener('click',()=>{
   idea.value=sample.getAttribute('data-builder-idea')||'';
   kind.value=sample.getAttribute('data-builder-kind')||'website';
+  graphics.value=sample.getAttribute('data-builder-graphics')||'realistic';
+  updateGraphicsChoice();
   idea.focus();
  });
 }
 // Project source stays only in browser local storage. No secrets, chats or account
 // tokens are transferred to the iframe or included in downloaded projects.
+// Use realistic 2.5D mode for games by default; classic mode is optional.
+graphics.value='realistic';
+updateGraphicsChoice();
 const restored=load();
 if(restored){current=restored;report('Your last project is saved. Open Builder to preview it.');}
 window.MADAR_BUILDER={open};
