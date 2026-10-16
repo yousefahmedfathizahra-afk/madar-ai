@@ -9,38 +9,51 @@ const MAX_PROJECTS=4;
 const projects=new Map(),pictures=new Map();
 function normalize(text){
  return String(text||'').normalize('NFKC').toLowerCase()
- .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[ـ]/g,'')
- .replace(/\s+/g,' ').trim();
+  .replace(/[\u064b-\u065f\u0670]/g,'').replace(/ـ/g,'')
+  .replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
+  .replace(/\s+/g,' ').trim();
 }
-function detect(input){
- const text=normalize(input);
+// Natural Egyptian-Arabic wishes and English requests are creation intents.
+// Only act on an identifiable requested output, otherwise keep normal chat.
+function detect(input,history=[]){
+ const raw=String(input||'').trim(),text=normalize(raw);
  if(!text||text.length>1200)return null;
- // Learning HOW to make a game is a question, not a request to build it.
- if(/^(?:ازاي|إزاي|كيف|طريقة|علمني|علمنى|اشرح|how (?:do|can|to)|tutorial|teach me)\s/.test(text))return null;
- const arabicRequest=/(?:^|[\s،.!؟])(?:اعمللي|اعمل لي|اعملي|اعمل|انشئ|أنشئ|اصنع|صمم|سوي|سوى|هات|عايزة|عايز|محتاج|ممكن\s+تعملي|ممكن\s+تعمل|ممكن\s+تصمم|ابنيل[يي]|ابني)\s*(?:لي|لنا|لينا)?\s*/;
- const ar=arabicRequest.exec(text);
- const en=/\b(?:make|create|build|generate|design|draw)\s+(?:me\s+)?(?:(?:a|an|some)\s+)?/i.exec(text);
- let tail=(ar?text.slice(ar.index+ar[0].length):en?text.slice(en.index+en[0].length):'').trim();
- const directDraw=/^(?:ارسم|ارسمي|ارسملي|ارسم لي|رسملي|طلّع لي|طلعلي)\s+/.exec(text);
- if(directDraw)return{type:'image',prompt:text.slice(directDraw[0].length).trim()||text};
- const directGenerate=/^(?:ولّد|ولد|توليد|generate)\s+(?:لي\s+)?(?:صورة|صوره|image|picture|photo)\s*/.exec(text);
- if(directGenerate)return{type:'image',prompt:text.slice(directGenerate[0].length).trim()||text};
- if(!tail)return null;
- // Explicit creation commands only. Do not hijack normal photo analysis.
- const targets=[
-  {type:'image',regex:/^(?:صورة|صوره|صور|رسمة|رسمه|لوحة|image|picture|photo|drawing|artwork)(?=\s|$)/},
-  {type:'builder',kind:'game',regex:/^(?:لعبة|لعبه|العاب|ألعاب|game|video game|3d game)(?=\s|$)/},
-  {type:'builder',kind:'website',regex:/^(?:موقع|موقع ويب|صفحة ويب|ويب سايت|website|web\s?site|webpage|landing page)(?=\s|$)/},
-  {type:'builder',kind:'tool',regex:/^(?:تطبيق|ابلكيشن|أداة|اداة|app|application|tool)(?=\s|$)/}
+ const how=/^(?:(?:يا مدار|مدار|لو سمحت|بص|انا|ممكن)\s+){0,3}(?:ازاي|كيف|اشرح|علمني|طريقه|خطوات|why|what|how|teach|explain)\s+/;
+ const studying=/(?:عايز|عاوز|اريد|i want|i need)\s+(?:اعرف|اتعلم|افهم|شرح|طريقه|معلومات|to learn|to know|to understand)\s+/;
+ const negation=/(?:مش عايز|مش عاوز|لا اريد|متعملش|ما تعملش|don't (?:make|create)|do not (?:make|create))/;
+ if(how.test(text)||studying.test(text)||negation.test(text))return null;
+ const wants=/(?:^|[\s،.!؟:])(?:اعمل(?:لي|نا|ي)?|اصنع(?:لي)?|انشئ|سوي|صمم(?:لي)?|ارسم(?:لي|ي)?|هات|طلع(?:لي)?|ابني(?:لي)?|عايز(?:ه|ها|ك|ره)?|عاوز(?:ه|ها|ك)?|محتاج(?:ه)?|نفسي\s+في|ياريت|اتمني|اريد|ابغي|ودي\s+ب|ممكن|ينفع|خلينا\s+نعمل|i want|i need|i(?:'d| would) like|i wish|can you|could you|please|make|create|build|generate|design|draw)/;
+ const action=wants.exec(text);
+ const types=[
+  {type:'image',re:/(?:^|[\s،:])(?:صوره|صور|رسمه|لوحه|image|picture|photo|drawing|artwork)(?=$|[\s،.!؟:])/g},
+  {type:'builder',kind:'game',re:/(?:^|[\s،:])(?:لعبه|العاب|game|video game|3d game)(?=$|[\s،.!؟:])/g},
+  {type:'builder',kind:'website',re:/(?:^|[\s،:])(?:موقع|صفحه ويب|ويب سايت|ويبسايت|website|web ?site|webpage|landing page)(?=$|[\s،.!؟:])/g},
+  {type:'builder',kind:'tool',re:/(?:^|[\s،:])(?:تطبيق|ابلكيشن|اداه|app|application|tool)(?=$|[\s،.!؟:])/g}
  ];
- for(const t of targets){
-  const match=tail.match(t.regex);
-  if(match){
-   const content=tail.slice(match[0].length).trim().replace(/^(?:ل|عن|فيه|في|of|for)\s+/,'');
-   if(t.type==='image')return{type:'image',prompt:content.length>=3?content:text};
-   return{type:'builder',kind:t.kind,prompt:text};
+ let found=null;
+ for(const t of types){
+  t.re.lastIndex=0;let match;
+  while((match=t.re.exec(text))){
+   const position=match.index+match[0].length-match[0].trimStart().length;
+   if(action){
+    if(position<action.index||position-action.index>105)continue;
+   }else if(position>12||text.length>180||/^(?:كنت|ده|هي|دي|this|the|what|which)\s/.test(text))continue;
+   if(!found||position<found.position)found={type:t.type,kind:t.kind,position,word:match[0].trim()};
+   break;
   }
  }
+ if(found){
+  const details=text.slice(found.position+found.word.length).replace(/^[\s،:.!؟]+/,'').trim();
+  if(details.length<2||/^(?:حلوه|كويسه|جديده|جميله|واقعيه|3d|ثلاثيه الابعاد|بقي)\s*[.!؟]*$/.test(details))
+   return{type:'clarify',kind:found.type==='image'?'image':found.kind};
+  if(found.type==='image')return{type:'image',prompt:details.slice(0,900)};
+  return{type:'builder',kind:found.kind,prompt:raw};
+ }
+ const last=Array.isArray(history)?[...history].reverse().find(m=>m?.role==='assistant'&&
+  ['builder','image'].includes(m.toolType)&&typeof m.toolKey==='string'):null;
+ const adjust=/^(?:(?:لا|بس|طب|طيب|معلش|انا|يا مدار)\s+){0,3}(?:خلي(?:ه|ها)?|عايز(?:ه|ها)?|عاوز(?:ه|ها)?|نفسي|غير|عدل|حسن|طور|زود|ضيف|شيل|كبر|صغر|بدل|بلاش|مش|make it|change|improve|update|add|remove|more)\s+/;
+ if(last&&adjust.test(text)&&text.length>=7)
+  return{type:'refine',kind:last.toolType,toolKey:last.toolKey,prompt:raw};
  return null;
 }
 function restore(){
