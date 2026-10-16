@@ -17,7 +17,7 @@ function detect(input){
  if(!text||text.length>1200)return null;
  // Learning HOW to make a game is a question, not a request to build it.
  if(/^(?:ازاي|إزاي|كيف|طريقة|علمني|علمنى|اشرح|how (?:do|can|to)|tutorial|teach me)\s/.test(text))return null;
- const arabicRequest=/(?:^|[\s،.!؟])(?:اعمل|اعملي|اعمللي|اعمل لي|انشئ|أنشئ|اصنع|صمم|سوي|سوى|هات|عايز|عايزة|محتاج|ممكن\s+تعمل|ممكن\s+تعملي|ممكن\s+تصمم|ابني|ابنيل[يي])\s*(?:لي|لنا|لينا)?\s*/;
+ const arabicRequest=/(?:^|[\s،.!؟])(?:اعمللي|اعمل لي|اعملي|اعمل|انشئ|أنشئ|اصنع|صمم|سوي|سوى|هات|عايزة|عايز|محتاج|ممكن\s+تعملي|ممكن\s+تعمل|ممكن\s+تصمم|ابنيل[يي]|ابني)\s*(?:لي|لنا|لينا)?\s*/;
  const ar=arabicRequest.exec(text);
  const en=/\b(?:make|create|build|generate|design|draw)\s+(?:me\s+)?(?:(?:a|an|some)\s+)?/i.exec(text);
  let tail=(ar?text.slice(ar.index+ar[0].length):en?text.slice(en.index+en[0].length):'').trim();
