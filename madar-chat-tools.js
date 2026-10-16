@@ -25,8 +25,8 @@ function detect(input,history=[]){
  const wants=/(?:^|[\s،.!؟:])(?:اعمل(?:لي|نا|ي)?|اصنع(?:لي)?|انشئ|سوي|صمم(?:لي)?|ارسم(?:لي|ي)?|هات|طلع(?:لي)?|ابني(?:لي)?|عايز(?:ه|ها|ك|ره)?|عاوز(?:ه|ها|ك)?|محتاج(?:ه)?|نفسي\s+في|ياريت|اتمني|اريد|ابغي|ودي\s+ب|ممكن|ينفع|خلينا\s+نعمل|i want|i need|i(?:'d| would) like|i wish|can you|could you|please|make|create|build|generate|design|draw)/;
  const action=wants.exec(text);
  // "ارسملي منظر طبيعي" is clearly a picture request without the noun "صورة".
- const draw=text.match(/^(?:(?:يا مدار|مدار|لو سمحت|بص)s+){0,2}(?:ارسم(?:لي|ي)?|رسملي|draw me)s+(.+)$/);
- if(draw&&!/(?:لعبه|موقع|تطبيق|game|website|app)(?=$|[s،.!؟:])/.test(draw[1]))
+ const draw=text.match(/^(?:(?:يا مدار|مدار|لو سمحت|بص)\s+){0,2}(?:ارسم(?:لي|ي)?|رسملي|draw me)\s+(.+)$/);
+ if(draw&&!/(?:لعبه|موقع|تطبيق|game|website|app)(?=$|[\s،.!؟:])/.test(draw[1]))
   return{type:'image',prompt:draw[1].trim().slice(0,900)};
  const types=[
   {type:'image',re:/(?:^|[\s،:])(?:صوره|صور|رسمه|لوحه|image|picture|photo|drawing|artwork)(?=$|[\s،.!؟:])/g},
@@ -48,7 +48,7 @@ function detect(input,history=[]){
  }
  if(found){
   const details=text.slice(found.position+found.word.length).replace(/^[\s،:.!؟]+/,'').trim();
-  const before=action?text.slice(action.index+action[0].length,found.position).replace(/(?:a|an|the|some|of|for|me)/g,'').trim():'';
+  const before=action?text.slice(action.index+action[0].length,found.position).replace(/\b(?:a|an|the|some|of|for|me)\b/g,'').trim():'';
   const specified=details.length>=2||before.length>=3;
   if(!specified||(!before&&/^(?:حلوه|كويسه|جديده|جميله|واقعيه|3d|ثلاثيه الابعاد|بقي)\s*[.!؟]*$/.test(details)))
    return{type:'clarify',kind:found.type==='image'?'image':found.kind};
