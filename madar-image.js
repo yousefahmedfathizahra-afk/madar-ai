@@ -19,6 +19,7 @@ const model=$('madarImageModel');
 const connectButton=$('madarConnectPuter');
 const accountState=$('madarPuterConnection');
 let pending=false,connecting=false,bootPromise=null,everGenerated=false;
+let chatImageRequest=null;
 // Official @heyputer/puter.js SDK and version-pinned npm CDN backups.
 const SDK_SOURCES=[
  'https://js.puter.com/v2/',
@@ -109,8 +110,15 @@ function open(){
  loadSdk().then(()=>{updateConnection();if(!signedIn())note('Click Connect Puter first. The Puter account is separate from your MADAR account.');})
   .catch(error=>{updateConnection();note('Puter could not load: '+String(error?.message||'Try again later.').slice(0,140),true);});
 }
+function cancelChatImage(){
+ if(chatImageRequest&&!chatImageRequest.started){
+  const task=chatImageRequest;chatImageRequest=null;
+  task.reject(Error('تم إلغاء تسجيل الدخول لإنشاء الصورة. تقدر تبعت الطلب تاني من الشات.'));
+ }
+}
 function close(){
  if(pending){note('Your image is still generating. Please wait a moment.');return;}
+ cancelChatImage();
  dialog.close();
 }
 function errorText(error){
@@ -155,7 +163,22 @@ async function connect(){
  }
  try{
    await request;
-   if(signedIn())note('✅ Connected to Puter. Describe your image and press Generate image.');
+   if(signedIn()){
+    if(chatImageRequest&&!chatImageRequest.started){
+      const task=chatImageRequest;
+      task.started=true;
+      note('🎨 جاري توليد الصورة وإرسالها إلى الشات...');
+      generateFromProvider(task.prompt).then(src=>{
+        if(chatImageRequest===task)chatImageRequest=null;
+        if(dialog.open)dialog.close();
+        task.resolve(src);
+      }).catch(err=>{
+        if(chatImageRequest===task)chatImageRequest=null;
+        note(errorText(err),true);
+        task.reject(Error(errorText(err)));
+      });
+    }else note('✅ Connected to Puter. Describe your image and press Generate image.');
+   }
    else note('Puter sign-in did not finish. Please try Connect Puter again.',true);
  }catch(error){note(errorText(error),true);}
  finally{connecting=false;updateConnection();}
@@ -199,14 +222,45 @@ async function generate(event){
    console.warn('MADAR Image Studio:',String(error?.code||error?.name||'unavailable').slice(0,60));
  }finally{busy(false);}
 }
+async function generateFromProvider(description){
+ const instance=await loadSdk();
+ if(!signedIn())throw Error('Puter sign-in is required.');
+ // Use the free-allowance fast model by default, without paid calls on MADAR.
+ const result=await instance.ai.txt2img(description,MODELS.fast);
+ const source=typeof result?.src==='string'?result.src:'';
+ if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
+   throw Error('Puter لم يرجع صورة صالحة. حاول تاني.');
+ return source;
+}
+async function generateFromChat(description){
+ const promptText=String(description||'').trim().slice(0,900);
+ if(promptText.length<3)throw Error('اكتب وصف الصورة بعد كلمة اعمل صورة.');
+ if(chatImageRequest)throw Error('استنى الصورة الحالية تخلص الأول.');
+ try{await loadSdk();}
+ catch(e){throw Error('مش قادر أحمل خدمة الصور Puter. جرّب تغيير الشبكة أو المتصفح.');}
+ if(signedIn()){
+   try{return await generateFromProvider(promptText);}
+   catch(e){throw Error(errorText(e));}
+ }
+ // Puter authentication must be initiated from the user's Connect click
+ // because browsers block login popups launched asynchronously.
+ return await new Promise((resolve,reject)=>{
+   chatImageRequest={prompt:promptText,resolve,reject,started:false};
+   prompt.value=promptText;
+   open();
+   note('🔐 لتوليد الصور من الشات: اضغط Connect Puter مرة واحدة، وبعدها مدار هيكمّل تلقائيًا. مفيش اشتراك مدفوع من MADAR.');
+ });
+}
+
 button.addEventListener('click',open);
 connectButton.addEventListener('click',connect);
 $('madarImageClose').addEventListener('click',close);
-dialog.addEventListener('cancel',event=>{if(pending){event.preventDefault();note('Please wait for image creation to finish.');}});
+dialog.addEventListener('cancel',event=>{if(pending){event.preventDefault();note('Please wait for image creation to finish.');}else cancelChatImage();});
+dialog.addEventListener('close',cancelChatImage);
 form.addEventListener('submit',generate);
 for(const example of dialog.querySelectorAll('[data-image-idea]')){
  example.addEventListener('click',()=>{prompt.value=example.getAttribute('data-image-idea')||'';prompt.focus();});
 }
 updateConnection();
-window.MADAR_IMAGE_STUDIO={open};
+window.MADAR_IMAGE_STUDIO={open,generateFromChat};
 })();
