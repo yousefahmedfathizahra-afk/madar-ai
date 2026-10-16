@@ -2,6 +2,8 @@
 // MADAR Builder — generates a self-contained HTML/CSS/JS project via existing Gemini key.
 // All generated code executes only in a sandboxed iframe on the client.
 const MODELS=['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.6-flash','gemini-2.5-flash-lite','gemini-2.5-flash'];
+// Realistic games benefit from the more capable free-eligible model when available.
+const REALISTIC_MODELS=['gemini-3.6-flash','gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite'];
 const LIMITS={prompt:1200,html:22000,css:20000,js:26000,explanation:800,previous:42000};
 const requestsByIp=new Map();
 const SYSTEM=[
@@ -19,6 +21,19 @@ const SYSTEM=[
  'Keep explanation one brief sentence in the user language; title descriptive and short.',
  'If previous source code is given, apply requested changes without breaking existing working features.',
  'Never construct malicious, deceptive or unsafe functionality.'
+].join('\n');
+const REALISTIC_SYSTEM=[
+ 'REALISTIC GAME MODE: create an immersive PLAYABLE original browser game with convincing graphics. User describes it and MADAR writes every line.',
+ 'Visual reference quality: third-person camera as if following an actual vehicle/character, horizon with atmospheric depth, perspective road or landscape, distant background scenery, high-contrast lighting, shaded silhouettes, depth, shadows, smooth animation, and a polished heads-up display.',
+ 'Avoid childish emoji, primitive squares and plain color backgrounds for the actual game world. Use procedural Canvas 2D drawing with gradients, transform projections and layered shapes. Use WebGL only if all shaders, setup and renderer are completely written and likely to run without libraries.',
+ 'For realistic racing: a behind-the-car view, 2.5D perspective roadway with vanishing point and curves, continuous road markings, shaded car body, wheels, exhaust/speed particles, roadside buildings or trees shrinking into the distance, other cars and collision detection.',
+ 'Use requestAnimationFrame with delta time, camera motion, acceleration, braking, momentum, steering inertia, sensible hitboxes, speedometer, score and meaningful win/game over with restart.',
+ 'Provide working keyboard controls (WASD / arrows) AND large clear touch buttons for mobile, including press and release handling. Use touch-action:none on controls, prevent default scrolling as needed.',
+ 'For football or other sports, apply camera perspective, shaded field, procedural athletes or vehicles, a visible ball, basic physics and realistic-feeling game rules instead of emoji-only scenes.',
+ 'Prioritize an original convincing 2.5D demo over an empty 3D scaffold. No remote images, models, APIs, music, libraries or external assets; all art must be drawn procedurally.',
+ 'Keep drawing performant: resize canvas for DPR capped at 2, avoid unbounded arrays or costly loops, cap delta time, and provide a start/pause/restart button.',
+ 'Make a complete playable mini-game, NOT a still image, static mock-up or placeholder. This can be 3D-inspired, but do not claim it is photorealistic AAA quality.',
+ 'When asked for a racing car game, choose the rich 3rd-person behind-car view by default.'
 ].join('\n');
 function send(res,status,payload){return res.status(status).json(payload);}
 function validProject(p){
@@ -56,8 +71,9 @@ module.exports=async function builder(req,res){
  let data=req.body;
  if(typeof data==='string'){try{data=JSON.parse(data);}catch{return send(res,400,{error:'Invalid JSON.'});}}
  const prompt=data?.prompt,kind=data?.kind||'website';
+ const graphics=data?.graphics===undefined?(kind==='game'?'realistic':'standard'):data.graphics;
  if(typeof prompt!=='string'||prompt.trim().length<6||prompt.length>LIMITS.prompt
-  ||!['website','game','tool'].includes(kind))
+  ||!['website','game','tool'].includes(kind)||!['realistic','standard'].includes(graphics))
   return send(res,400,{error:'Describe a website, game or tool in 6–1200 characters.'});
  const previous=data?.previous;
  if(previous!==undefined&&(!validProject(previous)
@@ -70,21 +86,26 @@ module.exports=async function builder(req,res){
  if(entry.count>=6)return send(res,429,{error:'Builder allows 6 generations per 15 minutes on this connection. Try again shortly.'});
  entry.count++;requestsByIp.set(addr,entry);
  if(requestsByIp.size>600)for(const [ip,v] of requestsByIp)if(now-v.start>900000)requestsByIp.delete(ip);
- const descriptions=[kind==='game'?'Build a PLAYABLE browser game.':kind==='tool'?'Build an INTERACTIVE utility app.':'Build a RESPONSIVE website.','USER IDEA:\n'+prompt.trim()];
+ const realistic=kind==='game'&&graphics==='realistic';
+ const descriptions=[
+  kind==='game'?'Build a PLAYABLE browser game.':kind==='tool'?'Build an INTERACTIVE utility app.':'Build a RESPONSIVE website.',
+  realistic?'VISUALS: Realistic 2.5D / cinematic 3D-inspired, convincing perspective and responsive physics, not emoji or blocks.':'VISUALS: polished and responsive.',
+  'USER IDEA:\n'+prompt.trim()
+ ];
  if(previous)descriptions.push('PREVIOUS PROJECT FOR REFINEMENT:\n'+JSON.stringify({title:previous.title,html:previous.html,css:previous.css,js:previous.js}));
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),27000);
  let busy=false,invalid=false;
  try{
-  for(const model of MODELS){
+  for(const model of (realistic?REALISTIC_MODELS:MODELS)){
    let response;
    try{
     response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{
      method:'POST',signal:controller.signal,
      headers:{'Content-Type':'application/json','x-goog-api-key':key},
      body:JSON.stringify({
-      systemInstruction:{parts:[{text:SYSTEM}]},
+      systemInstruction:{parts:[{text:SYSTEM+(realistic?'\n'+REALISTIC_SYSTEM:'')}]},
       contents:[{role:'user',parts:[{text:descriptions.join('\n\n')}]}],
-      generationConfig:{responseMimeType:'application/json',maxOutputTokens:11000,temperature:0.65}
+      generationConfig:{responseMimeType:'application/json',maxOutputTokens:realistic?13500:11000,temperature:0.65}
      })
     });
    }catch(error){
