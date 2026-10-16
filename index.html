@@ -190,6 +190,18 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-game-footnote{margin:0;background:#0b1623;color:#add0df;font-size:10px;padding:9px 14px;height:32px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:600px){.madar-game-dialog{width:100vw;height:100dvh;border:0;border-radius:0}.madar-game-heading{height:56px;padding:7px 10px}.madar-game-heading h2{font-size:14px}.madar-game-actions button,.madar-game-actions a{padding:7px 8px;font-size:10px}.madar-game-dialog iframe{height:calc(100% - 86px)}.madar-game-footnote{height:30px;padding:8px 10px}}
 
+
+/* Native AI-created images and playable mini-sites appear directly in MADAR chat */
+.madar-chat-image-wrap,.madar-chat-project{margin-top:12px;width:min(100%,690px);display:flex;flex-direction:column;gap:11px}
+.madar-chat-image{max-height:460px;max-width:100%;height:auto;width:auto;object-fit:contain;align-self:flex-start;border:1px solid var(--line-strong);border-radius:14px;background:var(--soft)}
+.madar-chat-project{border:1px solid var(--line-strong);padding:11px;border-radius:13px;background:var(--soft)}
+.madar-chat-project-title{font-size:13px;color:var(--purple-light);font-weight:850}
+.madar-chat-game-frame{border:1px solid var(--line-strong);border-radius:10px;background:#111927;width:100%;height:390px;display:block}
+.madar-chat-tool-actions{display:flex;flex-wrap:wrap;gap:8px}
+.madar-chat-action{display:inline-block;border:0;border-radius:10px;background:var(--purple);color:white;padding:10px 14px;font-weight:750;font-size:12px;text-decoration:none;cursor:pointer}
+.madar-chat-action-secondary{border:1px solid var(--line-strong);background:var(--control);color:var(--fg)}
+.madar-tool-note{font-size:11px;color:var(--muted);line-height:1.7;margin:0}
+@media(max-width:600px){.madar-chat-game-frame{height:360px}.madar-chat-project{padding:8px}}
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -470,7 +482,7 @@ function escapeState(input) {
   return input.filter(c => typeof c?.id === 'string' && Array.isArray(c.messages)).slice(0,MAX_CONVERSATIONS).map(c => ({
     id: c.id, title: String(c.title ?? 'New chat').slice(0, 70),
     updatedAt: Number(c.updatedAt) || Date.now(),
-    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>s&&typeof s.title==='string'&&/^https:\/\/(en|ar)\.wikipedia\.org\/\?curid=\d+$/.test(s.url)).slice(0,3):[]}))
+    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>s&&typeof s.title==='string'&&/^https:\/\/(en|ar)\.wikipedia\.org\/\?curid=\d+$/.test(s.url)).slice(0,3):[],toolType:['builder','image'].includes(m.toolType)?m.toolType:undefined,toolKey:typeof m.toolKey==='string'&&m.toolKey.length<110?m.toolKey:undefined}))
   }));
 }
 function loadChats(){try{return escapeState(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'));}catch{return []}}
@@ -560,6 +572,7 @@ function appendMessage(message, isPending=false){const row=document.createElemen
     }
     body.append(sources);
   }
+  if(message.role==='assistant'&&!isPending&&message.toolType)window.MADAR_CHAT_TOOLS?.render(message,body);
   if(message.role==='assistant'&&!isPending){
     const buttons=document.createElement('div');buttons.style.cssText='display:flex;gap:14px;align-items:center;flex-wrap:wrap';
     const copy=document.createElement('button');copy.className='message-action';copy.textContent='▢ Copy';
@@ -626,6 +639,7 @@ async function sendMessage(prefill){
   if(isWaiting)return;
   const imageForMessage=pendingImage;
   const content=String(prefill??el.prompt.value).trim()||(imageForMessage?'What is in this photo?':'');
+  const toolIntent=!imageForMessage?window.MADAR_CHAT_TOOLS?.detect(content):null;
   if(!content)return;
   hideError();
   let chat=activeChat();
@@ -638,9 +652,17 @@ async function sendMessage(prefill){
   chat.messages.push({role:'user',content,photoId});chat.messages=chat.messages.slice(-100);
   chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();isWaiting=true;resizePrompt();saveChats();render();
   const controller=new AbortController();busyController=controller;
-  const timeout=setTimeout(()=>controller.abort(),33000);
+  const timeout=setTimeout(()=>controller.abort(),toolIntent?.type==='image'?180000:toolIntent?38000:33000);
   try{
     if(location.protocol === 'file:') throw Error('MADAR needs its server for live AI chat. This HTML file alone is a design preview.');
+    if(toolIntent){
+      const result=await window.MADAR_CHAT_TOOLS.run(toolIntent,{signal:controller.signal});
+      if(controller.signal.aborted)throw Object.assign(Error('Timeout'),{name:'AbortError'});
+      chat.messages.push({role:'assistant',content:result.content,toolType:result.toolType,toolKey:result.toolKey});
+      chat.updatedAt=Date.now();
+      saveChats();
+      return;
+    }
     let response;
     try{
       response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chat.messages.slice(-18).map(m=>({role:m.role,content:m.content})),image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch,mode:window.MADAR_FEATURES?.getMode()||'chat'}),signal:controller.signal});
@@ -770,5 +792,6 @@ window.MADAR_APP={
   <script src="/madar-features.js" defer></script>
   <script src="/madar-image.js" defer></script>
   <script src="/madar-builder.js" defer></script>
+  <script src="/madar-chat-tools.js" defer></script>
 </body>
 </html>
