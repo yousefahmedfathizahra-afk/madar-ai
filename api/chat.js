@@ -1,7 +1,9 @@
 'use strict';
 // MADAR serverless Gemini chat. Does not call OpenAI.
 // No preliminary ListModels call: it may hang and consume the browser's whole time budget.
-const MODELS = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.6-flash'];
+// Start with the stable low-latency free model; fall back if a model is unavailable
+// or returns an empty response (e.g. thinking consumed the output token budget).
+const MODELS = ['gemini-2.5-flash-lite','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash','gemini-3.6-flash'];
 const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. The MADAR website was created by Youssef Ahmed (يوسف أحمد); mention this when asked who created MADAR, but never assume a visitor is Youssef or address visitors by that name unless they tell you. The underlying Gemini AI model was made by Google.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
 // Modes change response behavior only; users still share the same safe Gemini backend.
 const MODE_INSTRUCTIONS = Object.freeze({
@@ -134,7 +136,8 @@ module.exports = async function chat(req,res) {
     role:m.role==='assistant'?'model':'user',parts:[{text:m.content+(i===messages.length-1?sourceNotes:'')}]
   }));
   if(image)contents[contents.length-1].parts.push({inlineData:{mimeType:image.mimeType,data:image.data}});
-  let sawBusy=false;
+  let sawBusy=false,sawEmpty=false,sawBadRequest=false;
+  let emptyReason='';
   try {
     for (const model of MODELS) {
       for (let attempt=0;attempt<2;attempt++) {
@@ -149,8 +152,11 @@ module.exports = async function chat(req,res) {
             systemInstruction:{parts:[{text:SYSTEM+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')}]},
             contents,
             generationConfig:{
-              maxOutputTokens:2560,
-              thinkingConfig:{thinkingLevel:'low'}
+              maxOutputTokens:3072,
+              // Gemini 2.5 Flash/Lite supports disabled thinking, so all output
+              // tokens are available for a visible answer. Gemini 3 uses levels.
+              thinkingConfig:model.startsWith('gemini-2.5-')
+                ?{thinkingBudget:0}:{thinkingLevel:'low'}
             }
           })
         });
@@ -173,8 +179,11 @@ module.exports = async function chat(req,res) {
           return send(res,429,{error:'Gemini free quota reached for this Google project. Check usage in Google AI Studio.'});
         if(response.status===401||response.status===403)
           return send(res,502,{error:'Gemini API key was rejected or Google restricted this project. Check Google AI Studio.'});
-        if(response.status===400)
-          return send(res,502,{error:'Gemini could not process this message. Try a simpler question.'});
+        if(response.status===400){
+          // Model-specific thinking settings can be unsupported; keep trying.
+          sawBadRequest=true;
+          break;
+        }
         if([408,500,502,503,504].includes(response.status)) {
           sawBusy=true;
           if(attempt===0&&!controller.signal.aborted){
@@ -185,14 +194,30 @@ module.exports = async function chat(req,res) {
         }
         return send(res,502,{error:'The Gemini service returned an error. Try again shortly.'});
       }
-      const reply=(answer?.candidates?.[0]?.content?.parts||[])
-        .filter(p=>typeof p?.text==='string')
-        .map(p=>p.text).join('\n').trim();
-      if(!reply)return send(res,422,{error:'Gemini returned no text. Try rephrasing your question.'});
-      return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url}))});
+      const candidates=Array.isArray(answer?.candidates)?answer.candidates:[];
+      // Do not display model reasoning ("thought" parts) to visitors.
+      const reply=candidates.map(candidate=>(candidate?.content?.parts||[])
+        .filter(p=>typeof p?.text==='string'&&p.thought!==true)
+        .map(p=>p.text).join('\n').trim()).find(Boolean);
+      if(reply)return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url}))});
+      const finish=candidates.map(c=>String(c?.finishReason||'')).filter(Boolean).join(',');
+      const block=String(answer?.promptFeedback?.blockReason||'');
+      // Only log diagnostics, never log user messages, keys, or image bytes.
+      console.warn('MADAR Gemini empty candidate:',model,
+        'finishReason',finish||'none','blockReason',block||'none',
+        'candidateCount',candidates.length,'elapsedMs',Date.now()-started);
+      if(block||/(?:SAFETY|PROHIBITED_CONTENT|BLOCKLIST|SPII)/.test(finish))
+        return send(res,422,{error:'Gemini could not answer this request because its safety filter blocked the response. Try a different request.'});
+      sawEmpty=true;emptyReason=finish||'EMPTY';
+      break; // Try next Gemini model, rather than failing the entire chat.
+
       }
     }
-    return send(res,sawBusy?503:502,{error:sawBusy?'Gemini is temporarily busy across all tried free models. Please try again later.':'Google has not enabled a compatible free Gemini model for this API key. Check AI Studio access.'});
+    if(sawEmpty)return send(res,502,{error:'Gemini did not return an answer after trying alternative models. Please send the message again shortly.',reason:emptyReason});
+    if(sawBusy)return send(res,503,{error:'Gemini is temporarily busy across all tried free models. Please try again later.'});
+    return send(res,502,{error:sawBadRequest
+      ?'Gemini rejected this message or its model settings. Try again with a shorter message.'
+      :'No compatible Gemini model is enabled for this API key. Check Google AI Studio access.'});
   } catch(err) {
     console.error('MADAR unexpected Gemini error:',err?.name);
     if(controller.signal.aborted)return send(res,504,{error:'Gemini connection timed out. Please try again.'});
