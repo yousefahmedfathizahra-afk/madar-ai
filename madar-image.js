@@ -30,6 +30,49 @@ const MODELS={
  fast:{model:'@cf/black-forest-labs/flux-1-schnell',provider:'cloudflare',steps:4},
  detailed:{model:'gemini-3.1-flash-lite-image',provider:'gemini',quality:'1K'}
 };
+// Ground place requests BEFORE passing them to the AI image provider.
+// A mosque/church/landmark named after a person must not turn into a portrait.
+function normalizeLandmark(value){
+ return String(value||'').normalize('NFKC').toLowerCase()
+  .replace(/[\u064b-\u065f\u0670]/g,'').replace(/ـ/g,'')
+  .replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
+  .replace(/\s+/g,' ').trim();
+}
+function prepareImagePrompt(description){
+ const original=String(description||'').trim();
+ const normalized=normalizeLandmark(original);
+ // The best-known example from MADAR visitors:
+ // "جامع عمرو ابن العاص" means the historic mosque in Old Cairo,
+ // NOT a portrait of the historical person Amr ibn al-As.
+ const amrMosque=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد)\s+عمرو\s+(?:بن|ابن)\s+العاص(?=$|[\s،.!؟:])/.test(normalized);
+ if(amrMosque){
+  return [
+   'IMAGE SUBJECT: Mosque of Amr ibn al-As (Amr Ibn Al-As Mosque, جامع عمرو بن العاص) in Old Cairo, Egypt.',
+   'Depict the REAL-WORLD HISTORIC MOSQUE AS AN ARCHITECTURAL BUILDING: its courtyard, colonnades, arcades, historic Islamic architecture and exterior or interior as requested.',
+   'The words "Amr ibn al-As" here are part of the MOSQUE NAME, not a request to depict Amr ibn al-As as a person. NO standalone person portrait, human headshot or warrior replacing the mosque.',
+   'Honor the visitor-specific view, lighting, style and composition rather than inventing other subjects.',
+   'VISITOR REQUEST: '+original.slice(0,900)
+  ].join('\n');
+ }
+ // Place names may contain historical personal names. Preserve the user's place
+ // as the principal visual subject; people may still appear when explicitly asked.
+ const landmark=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد|كنيسه|كاتدرائيه|قصر|قلعه|متحف|برج|معبد|ضريح|مقام|هرم|اهرام|مكتبه|جامعه|مدرسه)(?=$|[\s،.!؟:])/.exec(normalized);
+ if(landmark){
+  const placeAt=landmark.index;
+  const human=/(?:^|[\s،.!؟:])(?:شخص|رجل|شاب|ست|سيده|امراه|بنت|طفل|ناس|اشخاص|صوره شخصيه|portrait|person|man|woman|selfie)(?=$|[\s،.!؟:])/.exec(normalized);
+  if(!human||human.index>placeAt){
+   return [
+    'PRIMARY IMAGE SUBJECT: the specific place, building, monument, or architectural landmark named below, NOT a portrait of a person whose name appears in the place name.',
+    'Show the requested structure itself with appropriate architectural details and setting; follow the exact viewpoint, style, weather, colors and composition in the visitor request.',
+    'People may appear only when requested as part of the scene. Do not replace the named landmark with a historical figure.',
+    'VISITOR REQUEST: '+original.slice(0,900)
+   ].join('\n');
+  }
+ }
+ // Ordinary image requests must remain unchanged.
+ return original;
+}
+
 function note(message,bad=false){
  state.textContent=message||'';
  state.style.color=bad?'#f4a8b7':'var(--text)';
@@ -201,7 +244,7 @@ async function generate(event){
    if(!puter?.ai?.txt2img)throw Error('Image generator unavailable.');
    if(!signedIn())throw {code:'not_authenticated',message:'Puter sign-in expired'};
    note('🎨 MADAR is creating your image. This can take a little while...');
-   const produced=await puter.ai.txt2img(description,selection);
+   const produced=await puter.ai.txt2img(prepareImagePrompt(description),selection);
    const source=typeof produced?.src==='string'?produced.src:'';
    if(!source || !(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
      throw Error('Image provider did not return a usable image.');
@@ -226,7 +269,7 @@ async function generateFromProvider(description){
  const instance=await loadSdk();
  if(!signedIn())throw Error('Puter sign-in is required.');
  // Use the free-allowance fast model by default, without paid calls on MADAR.
- const result=await instance.ai.txt2img(description,MODELS.fast);
+ const result=await instance.ai.txt2img(prepareImagePrompt(description),MODELS.fast);
  const source=typeof result?.src==='string'?result.src:'';
  if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
    throw Error('Puter لم يرجع صورة صالحة. حاول تاني.');
@@ -262,5 +305,5 @@ for(const example of dialog.querySelectorAll('[data-image-idea]')){
  example.addEventListener('click',()=>{prompt.value=example.getAttribute('data-image-idea')||'';prompt.focus();});
 }
 updateConnection();
-window.MADAR_IMAGE_STUDIO={open,generateFromChat};
+window.MADAR_IMAGE_STUDIO={open,generateFromChat,prepareImagePrompt};
 })();
