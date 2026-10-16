@@ -13,6 +13,8 @@ const SYSTEM=[
  'html is BODY MARKUP only, without head, html, body, script or style wrappers. css is a complete stylesheet; js is complete executable browser JavaScript, no TypeScript.',
  'Build polished professional UI with gradients, responsive layouts, emoji and CSS shapes. Avoid placeholder non-working buttons. Everything requested must actually work.',
  'For games: implement gameplay, keyboard and touch controls, collision or rules, score, restart and win or game over, when appropriate.',
+ 'USER INSTRUCTIONS ARE THE SPECIFICATION: implement the exact requested game genre, gameplay, appearance, camera perspective, colors, characters and features. Do not substitute a different game, invent unrelated features, or replace explicit user details with your own preferences.',
+ 'If refining a previous project, change exactly what the latest user asks and preserve everything else that works. The existing generated project is the starting point, not a suggestion.',
  'For websites: implement functional menus, buttons and sections. For tools: implement actual logic and responsive interface.',
  'SELF CONTAINED: NO imports, external dependencies, network calls, external scripts/styles/images/fonts, embedded frames, cookies, localStorage, sessionStorage, document redirects, popup windows, camera/microphone, file access, payments or credentials.',
  'Use only inline SVG, CSS, emoji or canvas for art. No external resources or data collection.',
