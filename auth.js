@@ -120,7 +120,9 @@ window.MADAR_CLOUD={
    id:c.id,user_id:owner,title:String(c.title||'New chat').slice(0,70),
    messages:(c.messages||[]).slice(-100).map(m=>({
     role:m.role,content:String(m.content||'').slice(0,5000),
-    sources:Array.isArray(m.sources)?m.sources.slice(0,3):[]
+    sources:Array.isArray(m.sources)?m.sources.slice(0,3):[],
+    toolType:['image','builder'].includes(m.toolType)?m.toolType:undefined,
+    toolKey:typeof m.toolKey==='string'?m.toolKey.slice(0,110):undefined
    })),
    updated_at:new Date(Number(c.updatedAt)||Date.now()).toISOString()
   }));
