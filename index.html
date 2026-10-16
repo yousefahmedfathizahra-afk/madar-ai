@@ -176,6 +176,20 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-builder-graphics select{min-width:195px;max-width:100%}
 .madar-builder-graphics[hidden]{display:none}
 @media(max-width:600px){.madar-builder-graphics{grid-template-columns:1fr}.madar-builder-graphics select{width:100%}}
+
+/* MADAR Shadow Unit: trusted game loaded on demand into isolated frame */
+.madar-game-trigger{font-weight:850;color:#98ebfc;border-color:rgba(94,219,249,.48);background:linear-gradient(120deg,rgba(16,107,143,.30),rgba(116,72,178,.17))}
+.madar-game-dialog{padding:0;background:#080d16;color:#f5faff;border:1px solid #72d6ef69;border-radius:16px;width:min(1220px,calc(100vw - 18px));height:min(795px,calc(100dvh - 20px));max-width:none;max-height:none;overflow:hidden;box-shadow:0 35px 110px #000b}
+.madar-game-dialog::backdrop{background:rgba(0,0,0,.82);backdrop-filter:blur(6px)}
+.madar-game-heading{height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#0b1623;border-bottom:1px solid #82d4ec40}
+.madar-game-kicker{font-size:9px;color:#6eddf6;font-weight:800;letter-spacing:1.5px}
+.madar-game-heading h2{font-size:17px;margin:2px 0 0;letter-spacing:1.5px}
+.madar-game-actions{display:flex;gap:8px;align-items:center}
+.madar-game-actions button,.madar-game-actions a{background:#193041;border:1px solid #8cdaf451;border-radius:8px;color:#def8ff;text-decoration:none;font-size:12px;padding:9px 12px;font-weight:800}
+.madar-game-dialog iframe{display:block;border:0;background:#08111c;width:100%;height:calc(100% - 96px)}
+.madar-game-footnote{margin:0;background:#0b1623;color:#add0df;font-size:10px;padding:9px 14px;height:32px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:600px){.madar-game-dialog{width:100vw;height:100dvh;border:0;border-radius:0}.madar-game-heading{height:56px;padding:7px 10px}.madar-game-heading h2{font-size:14px}.madar-game-actions button,.madar-game-actions a{padding:7px 8px;font-size:10px}.madar-game-dialog iframe{height:calc(100% - 86px)}.madar-game-footnote{height:30px;padding:8px 10px}}
+
 </style>
   <title>MADAR | Make space for ideas</title>
 </head>
@@ -263,6 +277,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
             <button id="googleSearchBtn" type="button" class="tool" title="Open full web search in Google">↗ Web search</button>
             <button id="imageMakerBtn" type="button" class="tool" title="Create AI images">✦ Create image</button>
             <button id="madarBuilderBtn" type="button" class="tool madar-builder-trigger" title="MADAR AI builds a working game or website from your idea">🛠 Builder</button>
+            <button id="madarGameBtn" type="button" class="tool madar-game-trigger" title="Play MADAR Shadow Unit, a free 3D action game">🎮 Play 3D</button>
           </div>
           <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Select a photo">
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
@@ -273,6 +288,17 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       </div>
     </main>
   </div>
+  <dialog id="madarGameDialog" class="madar-game-dialog" aria-labelledby="madarGameTitle">
+    <div class="madar-game-heading">
+      <div><span class="madar-game-kicker">MADAR ORIGINAL · WEBGL 3D</span><h2 id="madarGameTitle">🎮 SHADOW UNIT</h2></div>
+      <div class="madar-game-actions">
+        <a id="madarGameNewTab" href="/game.html" target="_blank" rel="noopener noreferrer" title="Play fullscreen in a new browser tab">↗ Full screen</a>
+        <button id="madarGameClose" type="button" aria-label="Close the game">✕</button>
+      </div>
+    </div>
+    <iframe id="madarGameFrame" title="MADAR Shadow Unit interactive 3D game" sandbox="allow-scripts" referrerpolicy="no-referrer" allow="fullscreen; gamepad" loading="lazy"></iframe>
+    <p class="madar-game-footnote">حرك الشخصية بالأسهم أو WASD، اضغط لإطلاق النار، وR لتلقيم السلاح. على الموبايل استخدم عصا الحركة وزر FIRE. لعبة 3D مجانية داخل MADAR.</p>
+  </dialog>
   <dialog id="madarBuilderDialog" class="madar-builder-dialog" aria-labelledby="madarBuilderTitle">
     <div class="madar-builder-heading">
       <div>
@@ -696,6 +722,24 @@ $('dialogClose').addEventListener('click',()=>$('featureDialog').close());
 el.prompt.addEventListener('input',resizePrompt);
 el.prompt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMessage()}});
 for(const starter of document.querySelectorAll('.starter'))starter.addEventListener('click',()=>sendMessage(starter.dataset.prompt));
+
+const gameDialog=$('madarGameDialog'),gameFrame=$('madarGameFrame');
+function openMadarGame(){
+ if(gameDialog.open)return;
+ gameDialog.showModal();
+ // On-demand: game WebGL never runs while someone is using the ordinary chat.
+ gameFrame.src='/game.html';
+}
+function closeMadarGame(){
+ if(!gameDialog.open)return;
+ gameDialog.close();
+ gameFrame.removeAttribute('src');
+}
+$('madarGameBtn').addEventListener('click',openMadarGame);
+$('madarGameClose').addEventListener('click',closeMadarGame);
+gameDialog.addEventListener('cancel',event=>{event.preventDefault();closeMadarGame();});
+gameDialog.addEventListener('close',()=>gameFrame.removeAttribute('src'));
+
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});
 let storedTheme='dark';try{if(localStorage.getItem(THEME_KEY)==='light')storedTheme='light'}catch{}setTheme(storedTheme);render();healthCheck();
 window.MADAR_APP={
