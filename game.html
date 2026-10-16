@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#070b12">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; frame-src 'none'; media-src 'none'; object-src 'none'; worker-src 'none'; form-action 'none'; base-uri 'none'">
+<title>MADAR: SHADOW UNIT — Play</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080b15;color:#fff;font-family:system-ui,-apple-system,'Segoe UI',Arial,sans-serif;user-select:none;-webkit-user-select:none}
+button{font:inherit;touch-action:manipulation;cursor:pointer;color:inherit}button:focus-visible{outline:2px solid #50dfff;outline-offset:2px}
+#arena{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 48% 47%,transparent 35%,rgba(2,3,9,.58) 100%);z-index:2}
+#damage{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse,transparent 30%,rgba(255,15,50,.5));opacity:0;transition:opacity .2s}
+#hud{position:fixed;z-index:4;inset:0;pointer-events:none;direction:ltr}
+.hudtop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:clamp(10px,2vw,20px)}
+.brand{display:flex;gap:9px;align-items:center;white-space:nowrap;text-shadow:0 2px 9px #000}
+.brand-icon{display:grid;place-items:center;width:36px;height:36px;border:1px solid #67bbd477;border-radius:8px;background:#081621bf;color:#68e5f6;font-weight:900}
+.brand strong{font-size:clamp(10px,1.4vw,14px);letter-spacing:2px}.brand small{display:block;font-size:9px;color:#93bfc8;letter-spacing:2px}
+.hudstats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.panel{background:linear-gradient(135deg,rgba(9,24,34,.88),rgba(8,12,21,.83));backdrop-filter:blur(9px);border:1px solid #9fe7ff30;border-radius:7px;padding:7px 10px;min-width:72px;box-shadow:0 4px 22px #0004}
+.panel label{display:block;font-size:9px;color:#84b4bd;letter-spacing:1px}.panel strong{font-size:clamp(12px,1.8vw,19px);font-weight:900;font-variant-numeric:tabular-nums}
+#hpBar{height:5px;background:#385862;border-radius:6px;margin-top:5px;overflow:hidden}#hpFill{display:block;width:100%;height:100%;background:linear-gradient(90deg,#2cdaae,#a1ffd8);transition:width .2s}
+#ammo{color:#e9f7ff}#wave{color:#64daf4}
+#reticle{position:absolute;left:50%;top:49%;transform:translate(-50%,-50%);width:32px;height:32px;opacity:.86}
+#reticle:before,#reticle:after{content:'';position:absolute;background:#e7fcff;box-shadow:0 0 8px #6bd1ff}
+#reticle:before{width:2px;height:30px;left:15px;top:1px}#reticle:after{height:2px;width:30px;left:1px;top:15px}
+#reticle b{display:block;position:absolute;background:#0b1519;width:9px;height:9px;top:11px;left:11px;border:1.5px solid #ffef9d;border-radius:50%;z-index:1}
+#hitMarker{position:absolute;left:50%;top:49%;width:54px;height:54px;transform:translate(-50%,-50%);font-size:38px;text-align:center;line-height:54px;font-weight:900;color:#ffda8a;opacity:0}
+#direction{position:absolute;left:50%;top:83px;transform:translateX(-50%);text-shadow:0 2px 8px #000;font-size:10px;letter-spacing:4px;color:#9ad4e3}
+#mission{position:absolute;bottom:80px;left:18px;max-width:240px;padding:9px 12px;background:#07131bc7;border:1px solid #37cdeb44;border-left:3px solid #5fe7fe;border-radius:6px;font-size:11px;line-height:1.7;color:#d8f5ff}
+#mission strong{display:block;letter-spacing:1.5px;font-size:10px;color:#76eaff}
+#killNotice{position:absolute;top:31%;left:50%;transform:translateX(-50%);white-space:nowrap;color:#a9eeff;font-weight:800;font-size:18px;letter-spacing:2px;text-shadow:0 2px 12px #000;opacity:0;transition:opacity .25s}
+#tip{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);text-align:center;white-space:nowrap;color:#c3dee5;font-size:10px;letter-spacing:.4px;text-shadow:0 2px 8px black;opacity:.8}
+#pauseBtn{pointer-events:auto;position:absolute;left:14px;top:66px;border:1px solid #8bd9e46b;background:#05151dbd;padding:6px 10px;font-size:13px;border-radius:6px}
+#controls{position:absolute;inset:0;pointer-events:none;z-index:6;display:none}
+.touch-zone{position:absolute;bottom:24px;pointer-events:auto;touch-action:none}
+#stick{left:24px;width:126px;height:126px;border-radius:50%;background:#07121e77;border:2px solid #7cdaf57a;display:grid;place-items:center;box-shadow:inset 0 0 25px #83cfff1c}
+#knob{width:54px;height:54px;border-radius:50%;border:2px solid #9be9ff;background:#2e759a7a;box-shadow:0 0 18px #7bd4ff33}
+#shoot,#reload{border:2px solid #e0f7ff95;color:#fff;background:#8a394b99;border-radius:50%;font-weight:900;text-shadow:0 1px 7px #000;display:grid;place-items:center}
+#shoot{right:25px;width:105px;height:105px;bottom:36px;box-shadow:0 0 18px #e64c4c70;font-size:13px}
+#reload{right:139px;bottom:26px;width:55px;height:55px;border-color:#8adcfb88;background:#153448bc;font-size:10px}
+#aimZone{position:absolute;right:0;top:18%;width:52%;height:49%;pointer-events:auto;touch-action:none}
+#aimHint{position:absolute;top:60%;right:30px;font-size:11px;opacity:.5;pointer-events:none}
+#overlay{position:fixed;inset:0;z-index:12;background:linear-gradient(105deg,#02080ff0,#07141ddd 55%,#050810c9);display:flex;align-items:center;justify-content:center;padding:22px;direction:rtl}
+#overlay[hidden]{display:none}
+.card{max-width:510px;width:100%;padding:clamp(20px,5vw,38px);background:linear-gradient(150deg,#102430f2,#0b111bf4);border:1px solid #6fdefb55;border-radius:16px;box-shadow:0 26px 85px #000a, inset 0 0 45px #50c8fa07;position:relative;overflow:hidden}
+.card:before{content:'';position:absolute;top:0;right:0;width:180px;height:3px;background:linear-gradient(90deg,transparent,#77def3)}
+.tag{color:#76def3;font-weight:900;letter-spacing:4px;font-size:10px}
+h1{margin:14px 0 4px;font-size:clamp(30px,5vw,51px);letter-spacing:2px;line-height:1.05;font-weight:1000}
+h1 em{font-style:normal;color:#69d9ee}
+.subtitle{font-size:13px;color:#cfdee8;line-height:1.9;margin:12px 0 22px}
+.features{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.features span{border:1px solid #9bdcf731;background:#ffffff09;border-radius:6px;padding:7px 10px;color:#add2db;font-size:10px}
+#start{border:0;border-radius:8px;padding:14px 22px;background:linear-gradient(115deg,#66e4ec,#319ac9);font-size:15px;color:#062331;font-weight:900;min-width:170px}
+#start:hover{filter:brightness(1.1)}
+.hint{font-size:11px;color:#93acb7;line-height:1.8;margin-top:14px}
+#gameStatus{color:#fbdcb4;font-size:12px;min-height:20px;margin:10px 0}
+#fallback{position:fixed;inset:0;background:#0a1020;z-index:40;display:none;align-items:center;justify-content:center;padding:22px;text-align:center;font-size:15px;line-height:2}
+@media(pointer:coarse),(max-width:780px){#controls{display:block}#tip{display:none}#mission{bottom:173px;left:12px;max-width:210px}#direction{top:72px;font-size:9px}.hudtop{padding:10px}.brand small{display:none}.brand-icon{width:29px;height:29px}.panel{min-width:56px;padding:5px 6px}.panel label{font-size:8px}.hudstats{gap:4px}#pauseBtn{top:54px}#aimHint{display:none}}
+@media(max-height:440px){.card{padding:14px;max-width:650px}.subtitle{margin:5px 0}.features{margin-bottom:8px}.hudtop{padding:5px}.panel{padding:4px 5px}#mission{display:none}#stick{width:100px;height:100px;bottom:10px}#shoot{width:80px;height:80px;bottom:14px}#reload{right:117px;bottom:14px}}
+</style>
+</head>
+<body>
+<canvas id="arena" aria-label="Three dimensional MADAR Shadow Unit game"></canvas>
+<div id="vignette"></div><div id="damage"></div>
+<div id="hud">
+ <div class="hudtop">
+  <div class="brand"><span class="brand-icon">M</span><span><strong>MADAR / SHADOW UNIT</strong><small>TACTICAL OPERATION 01</small></span></div>
+  <div class="hudstats">
+   <div class="panel"><label>HEALTH</label><strong id="hp">100</strong><div id="hpBar"><span id="hpFill"></span></div></div>
+   <div class="panel"><label>AMMO</label><strong id="ammo">30 / 120</strong></div>
+   <div class="panel"><label>ELIMINATIONS</label><strong id="kills">0</strong></div>
+   <div class="panel"><label>WAVE</label><strong id="wave">1</strong></div>
+  </div>
+ </div>
+ <div id="direction">N • NE • E • SE • S • SW • W</div>
+ <div id="reticle"><b></b></div><div id="hitMarker">×</div>
+ <div id="killNotice"></div>
+ <div id="mission" dir="rtl"><strong>🎯 المهمة</strong><span id="objective">تحرك في الساحة، صوّب على الخصوم، وابْقَ على قيد الحياة</span></div>
+ <div id="tip">WASD للتحرك · اسحب الماوس للتصويب · اضغط للتصويب وإطلاق النار · R لإعادة التلقيم · ESC إيقاف</div>
+ <button id="pauseBtn" type="button" title="Pause game">Ⅱ</button>
+</div>
+<div id="controls">
+ <div id="aimZone"></div>
+ <div id="stick" class="touch-zone"><div id="knob"></div></div>
+ <button id="reload" class="touch-zone" type="button">↻<span style="position:absolute;bottom:4px;font-size:8px">RELOAD</span></button>
+ <button id="shoot" class="touch-zone" type="button">✦ FIRE</button>
+ <div id="aimHint">اسحب هنا للتصويب</div>
+</div>
+<div id="overlay">
+ <section class="card">
+  <div class="tag">MADAR AI ORIGINAL · WEBGL 3D</div>
+  <h1>SHADOW<br><em>UNIT</em></h1>
+  <p class="subtitle">مهمة تكتيكية في ميناء ليلي. العب بالشخصية، اختبئ خلف الحاويات، وصوّب على الأعداء. كل موجة أصعب من اللي قبلها!</p>
+  <div class="features"><span>🎮 لعب ثلاثي الأبعاد</span><span>📱 تحكم للموبايل</span><span>🎯 تصويب وموجات</span><span>⚡ بدون اشتراك</span></div>
+  <div id="gameStatus"></div>
+  <button id="start" type="button">▶ ابدأ المهمة</button>
+  <div class="hint">الكمبيوتر: WASD للحركة، اسحب الماوس لتوجيه الكاميرا، واضغط أو Space للضرب. الموبايل: عصا حركة شمال، اسحب يمين لتوجيه الكاميرا، وزر FIRE.</div>
+ </section>
+</div>
+<div id="fallback" dir="rtl">جهازك أو المتصفح مش بيدعم WebGL المطلوب للعبة دي. جرّب Chrome أو Edge على جهاز أحدث.</div>
+<script src="/madar-shooter.js"></script>
+</body>
+</html>
