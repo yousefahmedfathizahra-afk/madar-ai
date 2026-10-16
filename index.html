@@ -639,7 +639,7 @@ async function sendMessage(prefill){
   if(isWaiting)return;
   const imageForMessage=pendingImage;
   const content=String(prefill??el.prompt.value).trim()||(imageForMessage?'What is in this photo?':'');
-  const toolIntent=!imageForMessage?window.MADAR_CHAT_TOOLS?.detect(content):null;
+  const toolIntent=!imageForMessage?window.MADAR_CHAT_TOOLS?.detect(content,activeChat()?.messages||[]):null;
   if(!content)return;
   hideError();
   let chat=activeChat();
@@ -652,7 +652,7 @@ async function sendMessage(prefill){
   chat.messages.push({role:'user',content,photoId});chat.messages=chat.messages.slice(-100);
   chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();isWaiting=true;resizePrompt();saveChats();render();
   const controller=new AbortController();busyController=controller;
-  const timeout=setTimeout(()=>controller.abort(),toolIntent?.type==='image'?180000:toolIntent?38000:33000);
+  const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?38000:33000);
   try{
     if(location.protocol === 'file:') throw Error('MADAR needs its server for live AI chat. This HTML file alone is a design preview.');
     if(toolIntent){
