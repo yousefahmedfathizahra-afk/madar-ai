@@ -89,10 +89,8 @@ function refresh(){
 }
 function open(){
  if(!dialog.open)dialog.showModal();
- if(!current){
-  current=load();
-  if(current)refresh();
- }
+ if(!current)current=load();
+ if(current&&results.hidden)refresh();
  const chatDraft=get('prompt')?.value?.trim()||'';
  if(chatDraft&&!idea.value.trim())idea.value=chatDraft.slice(0,1200);
  idea.focus();
@@ -207,6 +205,6 @@ for(const sample of dialog.querySelectorAll('[data-builder-idea]')){
 // Project source stays only in browser local storage. No secrets, chats or account
 // tokens are transferred to the iframe or included in downloaded projects.
 const restored=load();
-if(restored){current=restored;refresh();report('Your last project was restored from this browser.');}
+if(restored){current=restored;report('Your last project is saved. Open Builder to preview it.');}
 window.MADAR_BUILDER={open};
 })();
