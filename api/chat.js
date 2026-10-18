@@ -147,7 +147,7 @@ module.exports = async function chat(req,res) {
     role:m.role==='assistant'?'model':'user',parts:[{text:m.content+(i===messages.length-1?sourceNotes:'')}]
   }));
   if(image)contents[contents.length-1].parts.push({inlineData:{mimeType:image.mimeType,data:image.data}});
-  let sawBusy=false,sawEmpty=false,sawBadRequest=false;
+  let sawBusy=false,sawEmpty=false,sawBadRequest=false,sawQuota=false;
   let emptyReason='';
   try {
     for (const model of preferredModels(messages[messages.length-1].content,mode)) {
@@ -186,8 +186,11 @@ module.exports = async function chat(req,res) {
       if(!response.ok) {
         const upstreamCode=String(answer?.error?.status||'');
         console.warn('MADAR Gemini API status:',response.status,upstreamCode,'model',model);
-        if(response.status===429||upstreamCode==='RESOURCE_EXHAUSTED')
-          return send(res,429,{error:'Gemini free quota reached for this Google project. Check usage in Google AI Studio.'});
+        if(response.status===429||upstreamCode==='RESOURCE_EXHAUSTED'){
+          // Each Gemini free-tier model can have different quota; try a fallback.
+          sawQuota=true;
+          break;
+        }
         if(response.status===401||response.status===403)
           return send(res,502,{error:'Gemini API key was rejected or Google restricted this project. Check Google AI Studio.'});
         if(response.status===400){
@@ -224,6 +227,7 @@ module.exports = async function chat(req,res) {
 
       }
     }
+    if(sawQuota)return send(res,429,{error:'Gemini free quota or per-model request limit was reached across the available models. Please try again later.'});
     if(sawEmpty)return send(res,502,{error:'Gemini did not return an answer after trying alternative models. Please send the message again shortly.',reason:emptyReason});
     if(sawBusy)return send(res,503,{error:'Gemini is temporarily busy across all tried free models. Please try again later.'});
     return send(res,502,{error:sawBadRequest
