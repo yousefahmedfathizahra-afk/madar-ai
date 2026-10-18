@@ -4,6 +4,17 @@
 // Start with the stable low-latency free model; fall back if a model is unavailable
 // or returns an empty response (e.g. thinking consumed the output token budget).
 const MODELS = ['gemini-2.5-flash-lite','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash','gemini-3.6-flash'];
+// Use a stronger free-eligible model for harder tasks, and the faster model
+// for simple conversation. No paid service or extra account settings required.
+function preferredModels(question,mode){
+ const text=String(question||'');
+ const challenging=['code','study','write'].includes(mode)
+  ||text.length>=270
+  ||/(?:برمج|كود|برنامج|شفرة|خطأ برمج|رياضيات|احسب|حل المعادل|خطة تفصيلي|حلل|قارن بالتفصيل|اشرح خطوة|بحث معمق|algorithm|debug|javascript|python|typescript|react|equation|proof|analy[sz]e|step by step|detailed plan)/i.test(text);
+ return challenging?['gemini-2.5-flash','gemini-2.5-flash-lite',
+  'gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.6-flash']:MODELS;
+}
+
 const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. The MADAR website was created by Youssef Ahmed (يوسف أحمد); mention this when asked who created MADAR, but never assume a visitor is Youssef or address visitors by that name unless they tell you. The underlying Gemini AI model was made by Google.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
 // Modes change response behavior only; users still share the same safe Gemini backend.
 const MODE_INSTRUCTIONS = Object.freeze({
@@ -139,7 +150,7 @@ module.exports = async function chat(req,res) {
   let sawBusy=false,sawEmpty=false,sawBadRequest=false;
   let emptyReason='';
   try {
-    for (const model of MODELS) {
+    for (const model of preferredModels(messages[messages.length-1].content,mode)) {
       for (let attempt=0;attempt<2;attempt++) {
       const endpoint='https://generativelanguage.googleapis.com/v1beta/models/'
         +model+':generateContent';
