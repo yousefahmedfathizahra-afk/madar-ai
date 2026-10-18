@@ -208,6 +208,20 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-chat-action-secondary{border:1px solid var(--line-strong);background:var(--control);color:var(--fg)}
 .madar-tool-note{font-size:11px;color:var(--muted);line-height:1.7;margin:0}
 @media(max-width:600px){.madar-chat-game-frame{height:360px}.madar-chat-project{padding:8px}}
+
+/* Chat productivity: search, edit, regenerate and cancel — all responsive */
+.madar-history-search{display:block;box-sizing:border-box;width:calc(100% - 14px);margin:0 7px 13px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:11px;background:var(--control);color:var(--fg);font-size:12px;outline:none}
+.madar-history-search:focus-visible{border-color:var(--purple);outline:1px solid var(--purple)}
+.madar-history-search::placeholder{color:var(--muted)}
+.madar-edit-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 10px;padding:9px 11px;background:var(--soft);border-radius:10px;color:var(--text);font-size:11px}
+.madar-edit-bar[hidden]{display:none}
+.madar-edit-bar button{border:0;background:transparent;color:var(--purple-light);font-weight:bold;font-size:11px}
+.madar-send-actions{display:flex;gap:8px;align-items:center}
+.madar-stop{background:rgba(236,92,118,.13);color:var(--fg);border:1px solid rgba(236,92,118,.35);padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700}
+.madar-stop[hidden]{display:none}
+.madar-stop:hover{background:rgba(236,92,118,.23)}
+.madar-message-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.madar-message-actions button{touch-action:manipulation}
 </style>
   <title>MADAR AI | دردشة ذكاء اصطناعي، صور وألعاب</title>
 </head>
@@ -222,6 +236,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       </div>
       <button id="newChat" class="new-chat"><span class="plus">＋</span><span>New chat</span></button>
       <div class="side-heading">Conversations <span id="chatCount">0</span></div>
+      <input id="madarHistorySearch" class="madar-history-search" type="search" placeholder="🔎 ابحث في المحادثات" maxlength="120" aria-label="Search saved conversations">
       <div id="history" class="history" role="list"></div>
       <div class="side-footer">
         <div class="privacy-icon">✧</div>
@@ -299,8 +314,9 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           </div>
           <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Select a photo">
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
-          <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="Message MADAR..." aria-label="Write your message"></textarea>
-          <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter for a new line</span><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div>
+          <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
+          <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اكتب لمدار اللي إنت عايزه..." aria-label="Write your message"></textarea>
+          <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
         </div>
         <p class="disclaimer">💬 اكتب مباشرة: «اعمل صورة قطة» أو «اعمل لعبة سباق» — مدار هينفّذ في الشات. <span>✧</span> Double-check important information.</p>
       </div>
@@ -473,12 +489,15 @@ const el = {
   statusText: $('statusText'), chatCount: $('chatCount'), prompt: $('prompt'), send: $('send'),
   inlineError: $('inlineError'), sidebar: $('sidebar'), overlay: $('overlay'),
   photoBtn:$('photoBtn'),photoInput:$('photoInput'),photoChip:$('photoChip'),photoThumb:$('photoThumb'),wikiToggle:$('wikiToggle'),
-  themeIcon: $('themeIcon'), chatContainer: $('chatContainer'),
+  themeIcon: $('themeIcon'), chatContainer: $('chatContainer'), stop: $('madarStop'), search: $('madarHistorySearch'), editBar: $('madarEditBar'),
 };
 let chats = loadChats();
 let currentId = chats[0]?.id ?? null;
 let isWaiting = false;
 let busyController = null;
+let activeToolType=null;
+let stoppedByUser=false;
+let pendingEditIndex=null;
 let authActiveUser=null;
 let pendingImage=null;
 let wikiResearch=false;
@@ -497,10 +516,15 @@ function createId(){return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-$
 function activeChat(){return chats.find(c=>c.id===currentId)}
 function showError(message){el.inlineError.textContent=message;el.inlineError.hidden=false}
 function hideError(){el.inlineError.hidden=true;el.inlineError.textContent=''}
-function newChat(){if(isWaiting)return; currentId=null; hideError(); el.prompt.value=''; clearPendingPhoto();resizePrompt(); render(); el.prompt.focus(); closeSidebar()}
-function selectChat(id){if(isWaiting)return;currentId=id; hideError();render();closeSidebar();el.prompt.focus()}
-function deleteChat(id){if(isWaiting)return;const chat=chats.find(c=>c.id===id);if(!chat)return;if(!confirm(`Delete the conversation “${chat.title}”?`))return;chats=chats.filter(c=>c.id!==id);if(authActiveUser)window.MADAR_CLOUD?.deleteChat(id);if(currentId===id)currentId=chats[0]?.id??null;saveChats();render()}
-function renderHistory(){el.history.replaceChildren();el.chatCount.textContent=String(chats.length);for(const chat of [...chats].sort((a,b)=>b.updatedAt-a.updatedAt)){
+function newChat(){if(isWaiting)return; cancelEdit(); currentId=null; hideError(); el.prompt.value=''; clearPendingPhoto();resizePrompt(); render(); el.prompt.focus(); closeSidebar()}
+function selectChat(id){if(isWaiting)return;cancelEdit();currentId=id; hideError();render();closeSidebar();el.prompt.focus()}
+function deleteChat(id){if(isWaiting)return;cancelEdit();const chat=chats.find(c=>c.id===id);if(!chat)return;if(!confirm(`Delete the conversation “${chat.title}”?`))return;chats=chats.filter(c=>c.id!==id);if(authActiveUser)window.MADAR_CLOUD?.deleteChat(id);if(currentId===id)currentId=chats[0]?.id??null;saveChats();render()}
+function renderHistory(){
+ el.history.replaceChildren();el.chatCount.textContent=String(chats.length);
+ const query=el.search.value.trim().toLocaleLowerCase();
+ for(const chat of [...chats].sort((a,b)=>b.updatedAt-a.updatedAt)){
+  if(query&&!String(chat.title||'').toLocaleLowerCase().includes(query)&&
+    !(chat.messages||[]).some(m=>String(m.content||'').toLocaleLowerCase().includes(query)))continue;
   const row=document.createElement('div');row.className=`chat-tab${chat.id===currentId?' active':''}`;row.setAttribute('role','listitem');
   const open=document.createElement('button');open.className='tab-title history-open';open.textContent=chat.title;open.title=chat.title;open.addEventListener('click',()=>selectChat(chat.id));
   const icon=document.createElement('span');icon.className='tab-icon';icon.textContent='☷';
@@ -560,7 +584,7 @@ function formatMadarAnswer(container, answer){
   }
 }
 
-function appendMessage(message, isPending=false){const row=document.createElement('div');row.className=`message ${message.role}`;
+function appendMessage(message, isPending=false, messageIndex=-1){const row=document.createElement('div');row.className=`message ${message.role}`;
   const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=message.role==='assistant'?'M':'●';
   const body=document.createElement('div');body.className='message-body';
   const heading=document.createElement('div');heading.className='message-head';heading.textContent=message.role==='user'?'You':'MADAR';
@@ -589,12 +613,54 @@ function appendMessage(message, isPending=false){const row=document.createElemen
     share.title='Share only this answer';share.addEventListener('click',()=>window.MADAR_FEATURES?.shareReply(message.content,share));
     buttons.append(copy,listen,share);body.append(buttons);
   }
+  if(message.role==='user'&&!isPending&&!message.photoId&&messageIndex>=0){
+    const actions=document.createElement('div');actions.className='madar-message-actions';
+    const edit=document.createElement('button');edit.className='message-action';edit.type='button';edit.textContent='✏️ تعديل';
+    edit.title='عدّل رسالتك وخلي مدار يجاوب من جديد';
+    edit.addEventListener('click',()=>startEdit(messageIndex));
+    actions.append(edit);body.append(actions);
+  }
+  if(message.role==='assistant'&&!isPending&&messageIndex>=0&&messageIndex===(activeChat()?.messages.length||0)-1){
+    const actions=document.createElement('div');actions.className='madar-message-actions';
+    const retry=document.createElement('button');retry.type='button';retry.className='message-action';
+    retry.textContent='↻ إعادة الرد';retry.title='جرّب توليد الرد مرة ثانية بنفس الطلب';
+    retry.addEventListener('click',regenerateLastReply);
+    actions.append(retry);body.append(actions);
+  }
   row.append(avatar,body);el.messages.append(row);
 }
-function render(){renderHistory();const chat=activeChat();const hasMessages=!!chat?.messages.length;el.welcome.hidden=hasMessages;el.messages.hidden=!hasMessages;el.messages.replaceChildren();if(hasMessages)for(const m of chat.messages)appendMessage(m);if(isWaiting)appendMessage({role:'assistant',content:''},true);updateSend();scrollDown()}
+function render(){renderHistory();const chat=activeChat();const hasMessages=!!chat?.messages.length;el.welcome.hidden=hasMessages;el.messages.hidden=!hasMessages;el.messages.replaceChildren();if(hasMessages)chat.messages.forEach((m,i)=>appendMessage(m,false,i));if(isWaiting)appendMessage({role:'assistant',content:''},true);updateSend();scrollDown()}
 function scrollDown(){requestAnimationFrame(()=>{el.chatContainer.scrollTop=el.chatContainer.scrollHeight})}
 function resizePrompt(){el.prompt.style.height='auto';el.prompt.style.height=Math.min(el.prompt.scrollHeight,140)+'px';updateSend()}
-function updateSend(){el.send.disabled=isWaiting||(!el.prompt.value.trim()&&!pendingImage);el.prompt.disabled=isWaiting;el.photoBtn.disabled=isWaiting;el.wikiToggle.disabled=isWaiting}
+function updateSend(){el.send.disabled=isWaiting||(!el.prompt.value.trim()&&!pendingImage);el.prompt.disabled=isWaiting;el.photoBtn.disabled=isWaiting;el.wikiToggle.disabled=isWaiting;el.stop.hidden=!isWaiting||activeToolType==='image'||activeToolType==='refine-image'}
+function cancelEdit(){
+ pendingEditIndex=null;el.editBar.hidden=true;
+}
+function startEdit(index){
+ if(isWaiting)return;
+ const chat=activeChat(),m=chat?.messages[index];
+ if(!m||m.role!=='user'||m.photoId)return showError('مش ممكن تعديل رسالة بصورة؛ ارفع الصورة تاني وابعت طلب جديد.');
+ pendingEditIndex=index;el.prompt.value=m.content;el.editBar.hidden=false;
+ hideError();resizePrompt();el.prompt.focus();el.prompt.setSelectionRange?.(el.prompt.value.length,el.prompt.value.length);
+}
+function regenerateLastReply(){
+ if(isWaiting)return;
+ const chat=activeChat();
+ if(!chat?.messages.length)return;
+ const end=chat.messages.length-1;
+ if(chat.messages[end].role!=='assistant')return;
+ let previous=end-1;
+ while(previous>=0&&chat.messages[previous].role!=='user')previous--;
+ if(previous<0)return;
+ const last=chat.messages[previous];
+ if(last.photoId)return showError('لإعادة محاولة سؤال فيه صورة، ارفع الصورة مرة تانية.');
+ cancelEdit();
+ sendMessage(last.content,previous,true);
+}
+function stopCurrentReply(){
+ if(!isWaiting||!busyController||activeToolType==='image'||activeToolType==='refine-image')return;
+ stoppedByUser=true;busyController.abort();
+}
 function openSidebar(){el.sidebar.classList.add('open');el.overlay.hidden=false}
 function closeSidebar(){el.sidebar.classList.remove('open');el.overlay.hidden=true}
 function setTheme(theme){document.documentElement.dataset.theme=theme;el.themeIcon.textContent=theme==='dark'?'☀':'☾';$('themeToggle').title=theme==='dark'?'Switch to light mode':'Switch to dark mode';try{localStorage.setItem(THEME_KEY,theme)}catch{}}
@@ -641,11 +707,10 @@ async function healthCheck(){
     return false;
   }finally{clearTimeout(timeout)}
 }
-async function sendMessage(prefill){
+async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false){
   if(isWaiting)return;
   const imageForMessage=pendingImage;
   const content=String(prefill??el.prompt.value).trim()||(imageForMessage?'What is in this photo?':'');
-  const toolIntent=!imageForMessage?window.MADAR_CHAT_TOOLS?.detect(content,activeChat()?.messages||[]):null;
   if(!content)return;
   hideError();
   let chat=activeChat();
@@ -653,10 +718,18 @@ async function sendMessage(prefill){
     chat={id:createId(),title:content.slice(0,32),messages:[],updatedAt:Date.now()};
     chats.unshift(chat);chats=chats.slice(0,MAX_CONVERSATIONS);currentId=chat.id;
   }
+  const editIndex=Number.isInteger(replaceAfterIndex)?replaceAfterIndex:pendingEditIndex;
+  const editing=Number.isInteger(editIndex)&&editIndex>=0&&editIndex<chat.messages.length;
+  if(editing&&chat.messages[editIndex].role!=='user')return showError('التعديل متاح لرسائل المستخدم فقط.');
+  if(editing&&chat.messages[editIndex].photoId)return showError('الرسالة دي فيها صورة، ارفعها من جديد.');
+  const oldBranch=editing?chat.messages.slice():null;
+  if(editing)chat.messages=chat.messages.slice(0,editIndex);
+  cancelEdit();
+  const toolIntent=!imageForMessage?window.MADAR_CHAT_TOOLS?.detect(content,chat.messages):null;
   const photoId=imageForMessage?createId():undefined;
   if(photoId)temporaryPhotos.set(photoId,imageForMessage.preview);
   chat.messages.push({role:'user',content,photoId});chat.messages=chat.messages.slice(-100);
-  chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();isWaiting=true;resizePrompt();saveChats();render();
+  chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();stoppedByUser=false;activeToolType=toolIntent?.type==='refine'?(toolIntent.kind==='image'?'refine-image':'builder'):(toolIntent?.type||'chat');isWaiting=true;resizePrompt();saveChats();render();
   const controller=new AbortController();busyController=controller;
   const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?38000:33000);
   try{
@@ -685,10 +758,15 @@ async function sendMessage(prefill){
     chat.messages.push({role:'assistant',content:data.reply,sources:verifiedSources});chat.updatedAt=Date.now();saveChats();
     window.MADAR_FEATURES?.onReply(data.reply);
   }catch(err){
-    showError(err?.name === 'AbortError'?'The request timed out. Try again shortly.':err?.message||'The AI server could not respond.');
-    await healthCheck();
+    if(restoreOnFailure&&oldBranch){chat.messages=oldBranch;chat.updatedAt=Date.now();saveChats();}
+    if(stoppedByUser){
+      hideError(); // An intentional cancel is not an AI connectivity error.
+    }else{
+      showError(err?.name === 'AbortError'?'الطلب أخد وقت أطول من المتوقع، جرّب تاني.':err?.message||'تعذر الحصول على رد من مدار.');
+      if(err?.name!=='AbortError')await healthCheck();
+    }
   }finally{
-    clearTimeout(timeout);busyController=null;isWaiting=false;render();scrollDown();el.prompt.focus();
+    clearTimeout(timeout);busyController=null;activeToolType=null;stoppedByUser=false;isWaiting=false;render();scrollDown();el.prompt.focus();
   }
 }
 
@@ -731,6 +809,9 @@ $('closeSidebar').addEventListener('click',closeSidebar);
 el.overlay.addEventListener('click',closeSidebar);
 $('themeToggle').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
 $('exportChats').addEventListener('click',exportChats);
+el.search.addEventListener('input',renderHistory);
+$('madarCancelEdit').addEventListener('click',()=>{cancelEdit();el.prompt.value='';resizePrompt();el.prompt.focus()});
+el.stop.addEventListener('click',stopCurrentReply);
 el.send.addEventListener('click',()=>sendMessage());
 el.photoBtn.addEventListener('click',()=>el.photoInput.click());
 el.photoInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));
@@ -773,14 +854,14 @@ let storedTheme='dark';try{if(localStorage.getItem(THEME_KEY)==='light')storedTh
 window.MADAR_APP={
  enterCloud(userId,cloudChats){
    if(!userId||authActiveUser===userId)return;
-   authActiveUser=userId;
+   cancelEdit();authActiveUser=userId;
    chats=escapeState(cloudChats);currentId=chats[0]?.id??null;
    $('sidePrivacyText').textContent='Your account chats are stored privately in the cloud.';
    hideError();render();
  },
  leaveCloud(){
    if(!authActiveUser)return;
-   authActiveUser=null;chats=loadChats();currentId=chats[0]?.id??null;
+   cancelEdit();authActiveUser=null;chats=loadChats();currentId=chats[0]?.id??null;
    $('sidePrivacyText').textContent='Chats are stored on this device only.';
    hideError();render();
  },
