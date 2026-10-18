@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://madar-ai-yousef.vercel.app/sitemap.xml
