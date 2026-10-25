@@ -1807,19 +1807,20 @@ const cloudHTML=`<h2>دخول Y Chat الحقيقي</h2><p>بريدك الإلك
 <label class="label" for="accountEmail">البريد الإلكتروني</label><input class="field" id="accountEmail" type="email" autocomplete="email" placeholder="name@example.com" dir="ltr" required>
 <label class="label" for="accountPassword">كلمة السر (6 حروف على الأقل)</label><input class="field" id="accountPassword" type="password" autocomplete="current-password" minlength="6" placeholder="••••••••" dir="ltr" required>
 <label class="label" for="accountName">اسمك اللي هيظهر لأصحابك (للحساب الجديد)</label><input class="field" id="accountName" maxlength="40" placeholder="اسمك">
+<label class="label" for="accountUsername">اسم المستخدم — علشان أصحابك يلاقوك (للحساب الجديد)</label><input class="field" id="accountUsername" maxlength="24" autocomplete="off" placeholder="مثلاً: يوسف_أحمد أو ahmed.20" dir="auto"><p class="fineprint">اسم مميز من 3 لـ24 حرف أو رقم، من غير مسافات. مش كود ولا رقم تليفون.</p>
 <button type="button" class="primary" id="cloudLogin">دخول</button><button type="button" class="secondary" id="cloudSignup">إنشاء حساب جديد</button>
 </div><p class="fineprint" id="cloudAuthStatus" role="status">بداية استخدام حقيقي؛ لازم تفتح بريدك لو طُلب تأكيد الحساب.</p>`;
 const newForm=document.getElementById('newform');
-newForm.innerHTML=`<label class="label" for="friendCode">كود صاحبك</label><input class="field" id="friendCode" maxlength="36" dir="ltr" autocomplete="off" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"><p class="muted">كل واحد يفتح «حسابي» وينسخ الكود الخاص بيه ويبعتُه لصاحبه. مش محتاج رقم تليفون أو SMS.</p><button class="primary" type="submit" id="addCloudFriend">إضافة وبدء المحادثة</button>`;
+newForm.innerHTML=`<label class="label" for="friendUsername">اسم مستخدم صاحبك</label><input class="field" id="friendUsername" maxlength="25" dir="auto" autocomplete="off" required placeholder="مثلاً: يوسف_أحمد"><p class="muted">اكتب اسم المستخدم بتاع صاحبك بالظبط، من غير أي كود أو SMS. تقدر تكتبه مع @ أو من غيرها.</p><button class="primary" type="submit" id="addCloudFriend">إضافة وبدء المحادثة</button>`;
 const profileHeader=document.querySelector('#profile .profileheader');
 const codeCard=document.createElement('div');
 codeCard.style.cssText='padding:16px;margin-top:16px;border:1px solid #2a354a;border-radius:14px;background:#141a24;';
-codeCard.innerHTML=`<strong style="display:block;margin-bottom:8px">كودك لإضافة الأصحاب</strong><div id="myFriendCode" style="direction:ltr;text-align:center;font:600 12px monospace;overflow-wrap:anywhere;color:#b6ccff;margin:10px 0">جاري الاتصال…</div><button class="secondary" id="copyFriendCode" type="button">نسخ الكود</button><p class="muted" style="margin-bottom:0">ابعت الكود لصاحبك عشان يضيفك. ما تبعتش كلمة السر.</p>`;
+codeCard.innerHTML=`<strong style="display:block;margin-bottom:8px">اسم المستخدم بتاعك</strong><div id="myUsername" dir="auto" style="text-align:center;font-weight:800;overflow-wrap:anywhere;color:#b6ccff;margin:10px 0">اختار اسم مستخدم</div><button class="secondary" id="changeUsername" type="button">اختيار / تغيير اسم المستخدم</button><p class="muted" style="margin-bottom:0">صاحبك يقدر يضيفك بالاسم ده، من غير كود.</p>`;
 profileHeader.insertAdjacentElement('afterend',codeCard);
 const deviceButton=document.querySelector('#profile button[onclick="show(\'devices\')"]');
 if(deviceButton)deviceButton.style.display='none';
 function msg(t){const status=document.getElementById('cloudAuthStatus');if(status) status.textContent=t;}
-function errorText(e){const x=String(e?.message||e||'خطأ غير معروف');if(/email not confirmed/i.test(x))return 'لازم تأكد البريد من الرسالة اللي وصلتك، وبعدين تدخل.';if(/invalid login credentials/i.test(x))return 'البريد أو كلمة السر مش صحيحين.';if(/anonymous/i.test(x))return 'التسجيل غير متاح حاليًا.';return x;}
+function errorText(e){const x=String(e?.message||e||'خطأ غير معروف');if(e?.code==='23505'||/duplicate key|unique constraint/i.test(x))return 'اسم المستخدم ده محجوز، اختار واحد مختلف.';if(/Username not found/i.test(x))return 'مش لاقي صاحبك بالاسم ده. اتأكد إنه اختار اسم مستخدم وكتبت الاسم صح.';if(/Invalid username/i.test(x))return 'الاسم لازم من 3 لـ24 حرف أو رقم، من غير مسافات.';if(/You cannot add yourself/i.test(x))return 'ما ينفعش تضيف نفسك.';if(/email not confirmed/i.test(x))return 'لازم تأكد البريد من الرسالة اللي وصلتك، وبعدين تدخل.';if(/invalid login credentials/i.test(x))return 'البريد أو كلمة السر مش صحيحين.';if(/anonymous/i.test(x))return 'التسجيل غير متاح حاليًا.';return x;}
 function showLogin(t){ box.innerHTML=cloudHTML;if(t)msg(t);document.getElementById('cloudLogin').onclick=()=>authAction('login');document.getElementById('cloudSignup').onclick=()=>authAction('signup'); document.getElementById('auth').classList.remove('hidden'); }
 // Keep auth form present regardless of old local-demo login state.
 showLogin();
@@ -1829,14 +1830,17 @@ async function authAction(mode){
  const email=document.getElementById('accountEmail').value.trim().toLowerCase();
  const password=document.getElementById('accountPassword').value;
  const displayName=document.getElementById('accountName').value.trim();
+ const desiredUsername=normalizeUsername(document.getElementById('accountUsername').value);
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg('اكتب بريد إلكتروني صحيح.');return;}
  if(password.length<6){msg('كلمة السر لازم 6 حروف على الأقل.');return;}
  if(mode==='signup'&&displayName.length<2){msg('اكتب اسمك الأول من حرفين على الأقل.');return;}
+ if(mode==='signup'&&!validUsername(desiredUsername)){msg('اختار اسم مستخدم من 3 لـ24 حرف أو رقم، من غير مسافات.');return;}
  setBusy(true);msg('جاري الاتصال…');
  try{
   if(mode==='signup'){
    localStorage.setItem('ychat_draft_name_v1',displayName);
-   const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:displayName}}});
+   localStorage.setItem('ychat_draft_username_v1',desiredUsername);
+   const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:displayName,ychat_username:desiredUsername}}});
    if(error)throw error;
    if(!data.session){msg('تم طلب إنشاء الحساب. افتح بريدك واضغط رابط التأكيد، وبعدها اضغط دخول.');return;}
    await begin(data.session.user);
@@ -1849,21 +1853,49 @@ async function authAction(mode){
  finally{setBusy(false);}
 }
 function cleanName(n){const v=String(n||'').trim().slice(0,40);return v.length>=2?v:'مستخدم Y Chat';}
+function normalizeUsername(value){return String(value||'').trim().replace(/^@/,'').normalize('NFC').toLowerCase();}
+function validUsername(value){return /^[\p{L}\p{N}_.]{3,24}$/u.test(value);}
+function updateUsernameUI(){
+ const v=selfProfile?.username;
+ document.getElementById('myUsername').textContent=v?'@'+v:'لسه ما اخترتش اسم مستخدم';
+ if(user){user.phone=v?'@'+v:'اختار اسم مستخدم من حسابي';safeWrite(PROFILE_KEY,user);updateProfileUI();}
+}
+async function saveUsername(raw){
+ if(!cloudUser||!sb)throw new Error('سجل دخول الأول');
+ const username=normalizeUsername(raw);
+ if(!validUsername(username))throw new Error('اسم المستخدم لازم من 3 لـ24 حرف أو رقم، من غير مسافات.');
+ const {data,error}=await sb.from('ychat_profiles').update({username}).eq('id',cloudUser.id).select('id,display_name,username').single();
+ if(error)throw error;
+ selfProfile={...selfProfile,...data};updateUsernameUI();return username;
+}
+async function askForUsername(suggestion){
+ const next=prompt('اختار اسم المستخدم اللي أصحابك هيدوروا عليك بيه (من غير كود):',suggestion||'');
+ if(next===null)return;
+ try{const u=await saveUsername(next);toast('اسم المستخدم بتاعك: @'+u);}
+ catch(e){toast(errorText(e));}
+}
 async function begin(authUser){
  if(!authUser)return;
  cloudUser=authUser;
- const {data:existing,error:getError}=await sb.from('ychat_profiles').select('id,display_name,friend_code').eq('id',authUser.id).maybeSingle();
+ const {data:existing,error:getError}=await sb.from('ychat_profiles').select('id,display_name,username').eq('id',authUser.id).maybeSingle();
  if(getError)throw getError;
  const name=cleanName(existing?.display_name||authUser.user_metadata?.display_name||localStorage.getItem('ychat_draft_name_v1')||authUser.email?.split('@')[0]);
- if(!existing){const {error:upError}=await sb.from('ychat_profiles').insert({id:authUser.id,display_name:name});if(upError)throw upError;}
- const {data:prof,error:pe}=await sb.from('ychat_profiles').select('id,display_name,friend_code').eq('id',authUser.id).single();
+ if(!existing){
+  const candidate=normalizeUsername(authUser.user_metadata?.ychat_username||localStorage.getItem('ychat_draft_username_v1'));
+  const created={id:authUser.id,display_name:name};if(validUsername(candidate))created.username=candidate;
+  let {error:upError}=await sb.from('ychat_profiles').insert(created);
+  if(upError?.code==='23505'&&created.username){delete created.username;({error:upError}=await sb.from('ychat_profiles').insert(created));}
+  if(upError)throw upError;
+ }
+ const {data:prof,error:pe}=await sb.from('ychat_profiles').select('id,display_name,username').eq('id',authUser.id).single();
  if(pe)throw pe;
  selfProfile=prof;
  user={name:prof.display_name,phone:'بريد إلكتروني موثّق عند التأكيد',avatar:''};
- safeWrite(PROFILE_KEY,user);setSignedIn();document.getElementById('myFriendCode').textContent=prof.friend_code;
- document.querySelector('#home .notice').textContent='الشات شغال بين أصحابك على أجهزة مختلفة. ضيف صاحبك باستخدام كوده، والرسائل بتوصل عبر الإنترنت.';
+ safeWrite(PROFILE_KEY,user);setSignedIn();updateUsernameUI();
+ document.querySelector('#home .notice').textContent='الشات شغال بين أصحابك على أجهزة مختلفة. ضيف صاحبك باسم المستخدم بتاعه، والرسائل بتوصل عبر الإنترنت.';
  await loadInbox();
  startUpdates();
+ if(!selfProfile.username)await askForUsername(normalizeUsername(authUser.user_metadata?.ychat_username||localStorage.getItem('ychat_draft_username_v1')));
 }
 async function start(){
  if(!window.supabase?.createClient){showLogin('خدمة الشات ما اتحمّلتش. افتح الموقع باتصال إنترنت وجرب تحديث الصفحة.');return;}
@@ -1904,7 +1936,7 @@ window.renderRows=function(){
   const wrap=document.createElement('div');wrap.className='rinfo';const title=document.createElement('strong');title.textContent=c.name;
   const subtitle=document.createElement('p');subtitle.textContent=c.last?.body||'ابدأ المحادثة';wrap.append(title,subtitle);button.append(icon,wrap);target.append(button);
  }
- if(!shown.length){const div=document.createElement('div');div.className='empty';const p=document.createElement('p');p.textContent=query?'مفيش صاحب بالاسم ده.':'لسه مفيش محادثات. اضغط إضافة صاحب واكتب كوده.';div.append(p);if(!query){const b=document.createElement('button');b.className='primary';b.textContent='＋ إضافة أول صاحب';b.onclick=()=>show('new');div.append(b);}target.append(div);}
+ if(!shown.length){const div=document.createElement('div');div.className='empty';const p=document.createElement('p');p.textContent=query?'مفيش صاحب بالاسم ده.':'لسه مفيش محادثات. اضغط إضافة صاحب واكتب اسم المستخدم بتاعه.';div.append(p);if(!query){const b=document.createElement('button');b.className='primary';b.textContent='＋ إضافة أول صاحب';b.onclick=()=>show('new');div.append(b);}target.append(div);}
 };
 window.openChat=async function(id){
  if(!cloudUser){toast('سجّل دخول الأول.');return;}
@@ -1932,11 +1964,11 @@ window.renderMessages=async function(){
 newForm.addEventListener('submit',async function(ev){
  ev.preventDefault();ev.stopImmediatePropagation();
  if(!cloudUser){toast('سجّل الأول.');return;}
- const textCode=document.getElementById('friendCode').value.trim();
- if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(textCode)){toast('الكود مش صحيح. انسخه كامل من حساب صاحبك.');return;}
+ const username=normalizeUsername(document.getElementById('friendUsername').value);
+ if(!validUsername(username)){toast('اسم المستخدم لازم من 3 لـ24 حرف أو رقم، من غير مسافات.');return;}
  const button=document.getElementById('addCloudFriend');button.disabled=true;
  try{
-  const {data,error}=await sb.rpc('ychat_add_friend',{_code:textCode});if(error)throw error;
+  const {data,error}=await sb.rpc('ychat_add_friend_by_username',{_username:username});if(error)throw error;
   newForm.reset();await loadInbox();const added=data?.[0];if(added?.friend_id){show('home');await window.openChat(added.friend_id);}else toast('تمت الإضافة.');
  }catch(e){toast(errorText(e));}finally{button.disabled=false;}
 },true);
@@ -1959,7 +1991,7 @@ function startUpdates(){
   .subscribe();
  refreshTimer=setInterval(()=>{if(!document.hidden){loadInbox();if(activeChatId&&document.getElementById('app').dataset.page==='chat')window.renderMessages();}},7000);
 }
-const copy=document.getElementById('copyFriendCode');copy.addEventListener('click',async()=>{if(!selfProfile)return;try{await navigator.clipboard.writeText(selfProfile.friend_code);toast('تم نسخ كودك ✓');}catch(e){prompt('انسخ الكود:',selfProfile.friend_code);}});
+document.getElementById('changeUsername').addEventListener('click',()=>askForUsername(selfProfile?.username));
 window.logOut=async function(){
  try{if(sb)await sb.auth.signOut();}catch(e){console.warn(e)}
  if(refreshTimer)clearInterval(refreshTimer);if(realtimeChannel)sb?.removeChannel(realtimeChannel);
