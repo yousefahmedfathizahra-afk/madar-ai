@@ -1815,11 +1815,11 @@ const authHTML=`<h2>Y Chat — دخول آمن</h2><p>علشان رسائلك ت
 const newForm=$id('newform');
 newForm.innerHTML=`<label class="label" for="friendName">اسم صاحبك</label><input class="field" id="friendName" maxlength="40" required placeholder="مثلاً: أحمد">
 <label class="label" for="friendPhone">رقم موبايل صاحبك</label><input class="field" id="friendPhone" type="tel" inputmode="tel" dir="ltr" maxlength="22" required placeholder="01012345678 أو +201012345678">
-<p class="muted">صاحبك لازم يكون مسجّل في Y Chat بنفس الرقم ويوافق على طلب الإضافة. بعدها تقدروا تتكلموا من موبايلين مختلفين. مش محتاجين كود ولا اسم مستخدم.</p><button class="primary" type="submit" id="invitePhoneButton">إرسال طلب إضافة</button>`;
+<p class="muted">لازم صاحبك يعمل حساب في Y Chat ويسجّل رقم موبايله في «حسابي». إنت هنا بتكتب اسم صاحبك ورقمه، مش رقمك إنت.</p><div class="muted" style="padding:10px 12px;border:1px solid #344258;border-radius:10px;margin:9px 0"><strong>رقمك إنت في Y Chat:</strong> <span id="myPhoneInAddForm" dir="ltr">جارٍ التحقق...</span><button class="secondary" type="button" id="saveMyPhoneFromAddForm" style="margin-top:9px">تسجيل / تعديل رقمي أنا</button></div><button class="primary" type="submit" id="invitePhoneButton">إرسال طلب إضافة لصاحبك</button>`;
 const profileHeader=document.querySelector('#profile .profileheader');
 const phoneCard=document.createElement('div');
 phoneCard.style.cssText='padding:15px;margin-top:16px;border:1px solid #2a354a;border-radius:14px;background:#141a24';
-phoneCard.innerHTML='<strong style="display:block;margin-bottom:8px">رقم موبايلك في Y Chat</strong><div id="myPhone" style="direction:ltr;text-align:center;font-weight:800;color:#b6ccff;margin:9px 0">غير مسجل</div><button class="secondary" type="button" id="changeMyPhone">إضافة / تغيير رقمي</button><p class="muted">صاحبك هيكتب رقمك علشان يضيفك. الرقم مش متحقق منه برسالة SMS.</p>';
+phoneCard.innerHTML='<strong style="display:block;margin-bottom:8px">رقم موبايلك في Y Chat</strong><div id="myPhone" style="direction:ltr;text-align:center;font-weight:800;color:#b6ccff;margin:9px 0">جارٍ التحقق...</div><button class="secondary" type="button" id="changeMyPhone">حفظ / تغيير رقمي</button><p class="muted">لازم يظهر رقمك هنا بعد ما تحفظه علشان صاحبك يقدر يضيفك. الرقم مش متحقق منه برسالة SMS.</p>';
 profileHeader.insertAdjacentElement('afterend',phoneCard);
 const deviceButton=document.querySelector('#profile button[onclick="show(\'devices\')"]');if(deviceButton)deviceButton.hidden=true;
 const requestsBox=document.createElement('div');requestsBox.id='phoneRequests';requestsBox.style.cssText='padding:4px 14px 12px';
@@ -1859,7 +1859,7 @@ async function authAction(mode){
  try{
   if(mode==='signup'){
    localStorage.setItem('ychat_signup_name',name);localStorage.setItem('ychat_signup_phone',pn);
-   const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{display_name:name}}});if(error)throw error;
+   const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{display_name:name,ychat_phone:pn}}});if(error)throw error;
    if(!data.session){message('اترسل لك إيميل تأكيد. افتحه وبعدها ادخل بحسابك.');return;}
    await begin(data.session.user);
   }else{
@@ -1869,10 +1869,11 @@ async function authAction(mode){
  finally{for(const id of ['loginCloud','signupCloud']){const el=$id(id);if(el)el.disabled=false;}}
 }
 function cleanName(v){const n=String(v||'').trim().slice(0,40);return n.length>=2?n:'مستخدم Y Chat';}
+function updatePhoneDisplays(){const value=phone||'غير مسجل في Y Chat';const account=$id('myPhone'),inForm=$id('myPhoneInAddForm');if(account)account.textContent=value;if(inForm)inForm.textContent=value;}
 async function savePhone(v){
  if(!sb||!me)throw Error('سجّل دخول الأول');const formatted=normalizePhone(v);if(!formatted)throw Error('رقم غير صحيح');
  const {error}=await sb.from('ychat_phone_directory').upsert({owner_id:me.id,phone_e164:formatted},{onConflict:'owner_id'});if(error)throw error;
- phone=formatted;$id('myPhone').textContent=phone;
+ phone=formatted;updatePhoneDisplays();
  if(user){user.phone=phone;safeWrite(PROFILE_KEY,user);updateProfileUI();}
  localStorage.removeItem('ychat_signup_phone');return formatted;
 }
@@ -1881,6 +1882,7 @@ async function askPhone(){
  try{await savePhone(n);toast('تم حفظ رقمك ✓');}catch(e){toast(errorText(e));}
 }
 $id('changeMyPhone').addEventListener('click',askPhone);
+$id('saveMyPhoneFromAddForm').addEventListener('click',askPhone);
 async function begin(authUser){
  if(!authUser)return;me=authUser;
  const {data:existing,error:ee}=await sb.from('ychat_profiles').select('id,display_name').eq('id',me.id).maybeSingle();if(ee)throw ee;
@@ -1888,10 +1890,11 @@ async function begin(authUser){
  const {data:meProfile,error:pe}=await sb.from('ychat_profiles').select('id,display_name').eq('id',me.id).single();if(pe)throw pe;profile=meProfile;
  const {data:myPhone,error:phoneError}=await sb.from('ychat_phone_directory').select('phone_e164').eq('owner_id',me.id).maybeSingle();if(phoneError)throw phoneError;
  phone=myPhone?.phone_e164||null;
- if(!phone&&localStorage.getItem('ychat_signup_phone')){
-  try{await savePhone(localStorage.getItem('ychat_signup_phone'));}catch(e){console.warn('Phone registration',e);toast(errorText(e));}
+ if(!phone){
+  const signupPhone=me.user_metadata?.ychat_phone||localStorage.getItem('ychat_signup_phone');
+  if(signupPhone){try{await savePhone(signupPhone);}catch(e){console.warn('Phone registration',e);toast('رقمك ما اتحفظش، افتح حسابي واحفظه: '+errorText(e));}}
  }
- user={name:profile.display_name,phone:phone||'سجّل رقمك في حسابي',avatar:''};safeWrite(PROFILE_KEY,user);setSignedIn();updateProfileUI();$id('myPhone').textContent=phone||'اضغط إضافة / تغيير رقمي';
+ user={name:profile.display_name,phone:phone||'سجّل رقمك في حسابي',avatar:''};safeWrite(PROFILE_KEY,user);setSignedIn();updateProfileUI();updatePhoneDisplays();
  await loadInbox();startUpdates();if(!phone)await askPhone();
 }
 async function start(){
@@ -1973,9 +1976,11 @@ newForm.addEventListener('submit',async ev=>{
  const name=$id('friendName').value.trim(),phoneNum=normalizePhone($id('friendPhone').value);
  if(name.length<2||name.length>40){toast('اكتب اسم صاحبك صح.');return;}
  if(!phoneNum){toast('اكتب رقم صاحَبك صح. مثال: 01012345678.');return;}
+ if(phone&&phoneNum===phone){toast('ده رقمك إنت! اكتب رقم صاحبك في الإضافة، مش رقمك.');return;}
+ if(!phone){toast('رقمك إنت لسه مش محفوظ. اضغط «تسجيل / تعديل رقمي أنا» الأول.');return;}
  const btn=$id('invitePhoneButton');btn.disabled=true;
  try{const {data,error}=await sb.rpc('ychat_request_friend_phone',{_phone:phoneNum,_nickname:name});if(error)throw error;
-  if(data==='not_registered')toast('الرقم ده لسه مش مسجل في Y Chat. خلي صاحبك يسجّل بنفس رقمه الأول.');
+  if(data==='not_registered')toast('رقم صاحبك مش مسجل في Y Chat. خليه يعمل حساب ثم يفتح «حسابي» ويحفظ الرقم من زر «حفظ / تغيير رقمي».');
   else if(data==='self')toast('ما ينفعش تضيف رقمك لنفسك.');
   else if(data==='declined')toast('صاحب الرقم رفض طلبك قبل كده.');
   else if(data==='accepted')toast('إنتوا أصحاب بالفعل. افتح محادثته.');
