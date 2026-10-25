@@ -359,7 +359,7 @@ body{background:#070708;color:#f5f5f6}
 <section class="page" id="home">
 <header class="top"><div><div class="brand">المحادثات</div><div class="subbrand">Y CHAT</div></div><button class="iconbtn" onclick="show('new')" aria-label="إضافة صاحب" title="إضافة صاحب">＋</button></header>
 <div class="intro"><h2 class="hidden">أهلاً <span id="homeName">بيك</span> 👋</h2><div class="muted">Y Chat</div></div>
-<div class="notice">دردشة حقيقية بين الأصحاب، بحساب آمن وكود إضافة خاص بكل شخص. من غير SMS.</div>
+<div class="notice">دردشة حقيقية بين الأصحاب. ضيف صاحبك باسم المستخدم من غير رموز تأكيد أو SMS.</div>
 <label class="search"><span>⌕</span><input id="search" placeholder="ابحث في المحادثات…" aria-label="البحث في المحادثات"></label>
 <button class="madar-card" onclick="show('ai')"><span class="orb">✦</span><span><strong>مدار AI</strong><small>مدار AI الأصلي</small></span><span class="arrow">›</span></button>
 <div class="sectionline"><h3>أصحابك</h3><span class="pill">إنت اللي بتضيفهم</span></div>
@@ -372,7 +372,7 @@ body{background:#070708;color:#f5f5f6}
   <div class="welcome-hero"><div class="welcome-logo">Y <span>Chat</span></div>
     <div class="welcome-symbol">💬</div>
     <h1>Y Chat للويب</h1>
-    <p>مافيش محادثات جاهزة. ضيف صاحبك بكوده وابعت له رسالة حقيقية.</p>
+    <p>مافيش محادثات جاهزة. اكتب اسم مستخدم صاحبك وابدأ الكلام معاه.</p>
     <div class="welcome-actions"><button onclick="show('ai')">✦ &nbsp; مدار AI</button><button onclick="show('new')">＋ &nbsp; إضافة صاحب</button></div>
     <small>🔒 الرسائل بتتخزن على السيرفر وبتظهر عند صاحبك. استخدم حسابك على نفس الجهاز أو سجّل دخول على جهاز جديد.</small>
   </div>
@@ -1807,15 +1807,15 @@ const cloudHTML=`<h2>دخول Y Chat الحقيقي</h2><p>بريدك الإلك
 <label class="label" for="accountEmail">البريد الإلكتروني</label><input class="field" id="accountEmail" type="email" autocomplete="email" placeholder="name@example.com" dir="ltr" required>
 <label class="label" for="accountPassword">كلمة السر (6 حروف على الأقل)</label><input class="field" id="accountPassword" type="password" autocomplete="current-password" minlength="6" placeholder="••••••••" dir="ltr" required>
 <label class="label" for="accountName">اسمك اللي هيظهر لأصحابك (للحساب الجديد)</label><input class="field" id="accountName" maxlength="40" placeholder="اسمك">
-<label class="label" for="accountUsername">اسم المستخدم — علشان أصحابك يلاقوك (للحساب الجديد)</label><input class="field" id="accountUsername" maxlength="24" autocomplete="off" placeholder="مثلاً: يوسف_أحمد أو ahmed.20" dir="auto"><p class="fineprint">اسم مميز من 3 لـ24 حرف أو رقم، من غير مسافات. مش كود ولا رقم تليفون.</p>
+<label class="label" for="accountUsername">اسم المستخدم — علشان أصحابك يلاقوك (للحساب الجديد)</label><input class="field" id="accountUsername" maxlength="24" autocomplete="off" placeholder="مثلاً: يوسف_أحمد أو ahmed.20" dir="auto"><p class="fineprint">اسم مميز من 3 لـ24 حرف أو رقم، من غير مسافات.</p>
 <button type="button" class="primary" id="cloudLogin">دخول</button><button type="button" class="secondary" id="cloudSignup">إنشاء حساب جديد</button>
 </div><p class="fineprint" id="cloudAuthStatus" role="status">بداية استخدام حقيقي؛ لازم تفتح بريدك لو طُلب تأكيد الحساب.</p>`;
 const newForm=document.getElementById('newform');
-newForm.innerHTML=`<label class="label" for="friendUsername">اسم مستخدم صاحبك</label><input class="field" id="friendUsername" maxlength="25" dir="auto" autocomplete="off" required placeholder="مثلاً: يوسف_أحمد"><p class="muted">اكتب اسم المستخدم بتاع صاحبك بالظبط، من غير أي كود أو SMS. تقدر تكتبه مع @ أو من غيرها.</p><button class="primary" type="submit" id="addCloudFriend">إضافة وبدء المحادثة</button>`;
+newForm.innerHTML=`<label class="label" for="friendUsername">اسم مستخدم صاحبك</label><input class="field" id="friendUsername" maxlength="25" dir="auto" autocomplete="off" required placeholder="مثلاً: يوسف_أحمد"><p class="muted">اكتب اسم المستخدم بتاع صاحبك بالظبط. تقدر تكتبه مع @ أو من غيرها.</p><button class="primary" type="submit" id="addCloudFriend">إضافة وبدء المحادثة</button>`;
 const profileHeader=document.querySelector('#profile .profileheader');
 const codeCard=document.createElement('div');
 codeCard.style.cssText='padding:16px;margin-top:16px;border:1px solid #2a354a;border-radius:14px;background:#141a24;';
-codeCard.innerHTML=`<strong style="display:block;margin-bottom:8px">اسم المستخدم بتاعك</strong><div id="myUsername" dir="auto" style="text-align:center;font-weight:800;overflow-wrap:anywhere;color:#b6ccff;margin:10px 0">اختار اسم مستخدم</div><button class="secondary" id="changeUsername" type="button">اختيار / تغيير اسم المستخدم</button><p class="muted" style="margin-bottom:0">صاحبك يقدر يضيفك بالاسم ده، من غير كود.</p>`;
+codeCard.innerHTML=`<strong style="display:block;margin-bottom:8px">اسم المستخدم بتاعك</strong><div id="myUsername" dir="auto" style="text-align:center;font-weight:800;overflow-wrap:anywhere;color:#b6ccff;margin:10px 0">اختار اسم مستخدم</div><button class="secondary" id="changeUsername" type="button">اختيار / تغيير اسم المستخدم</button><p class="muted" style="margin-bottom:0">صاحبك يقدر يضيفك باستخدام اسم المستخدم ده.</p>`;
 profileHeader.insertAdjacentElement('afterend',codeCard);
 const deviceButton=document.querySelector('#profile button[onclick="show(\'devices\')"]');
 if(deviceButton)deviceButton.style.display='none';
@@ -1869,7 +1869,7 @@ async function saveUsername(raw){
  selfProfile={...selfProfile,...data};updateUsernameUI();return username;
 }
 async function askForUsername(suggestion){
- const next=prompt('اختار اسم المستخدم اللي أصحابك هيدوروا عليك بيه (من غير كود):',suggestion||'');
+ const next=prompt('اختار اسم المستخدم اللي أصحابك هيدوروا عليك بيه:',suggestion||'');
  if(next===null)return;
  try{const u=await saveUsername(next);toast('اسم المستخدم بتاعك: @'+u);}
  catch(e){toast(errorText(e));}
