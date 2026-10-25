@@ -1802,16 +1802,23 @@ const projectUrl='https://qoxutoemtxpbspwfmcqi.supabase.co';
 const publicKey='sb_publishable_l3yaokj4wNQPj122i8y23g_cKDoC1ln';
 let sb=null, me=null, profile=null, phone=null, chatsReady=[], acceptedInvites=[], pendingInvites=[], channel=null, pollTimer=null, activeId=null, seq=0, fetching=false;
 const $id=id=>document.getElementById(id);
+let pendingEmail='', codeSentAt=0, emailBusy=false;
 const authBox=$id('authbox');
-const authHTML=`<h2>Y Chat — دخول آمن</h2><p>علشان رسائلك توصل لأصحابك فعلاً، اعمل حساب بالبريد وكلمة السر. من غير SMS.</p>
-<div style="display:grid;gap:10px;margin:14px 0">
+const authHTML=`<h2>Y Chat — الدخول بكود الإيميل ✉️</h2><p>اكتب إيميلك، وابعت كود التحقق، وبعدها اكتب الـ6 أرقام اللي وصلتك. من غير كلمة سر أو SMS.</p>
+<div id="emailStep" style="display:grid;gap:10px;margin:14px 0">
 <label class="label" for="accountEmail">بريدك الإلكتروني</label><input class="field" id="accountEmail" type="email" autocomplete="email" dir="ltr" placeholder="name@example.com">
-<label class="label" for="accountPassword">كلمة السر</label><input class="field" id="accountPassword" type="password" autocomplete="current-password" minlength="6" placeholder="6 أحرف على الأقل" dir="ltr">
-<label class="label" for="accountName">اسمك — عند إنشاء الحساب</label><input class="field" id="accountName" maxlength="40" placeholder="مثلاً: يوسف">
-<label class="label" for="accountPhone">رقم موبايلك — عند إنشاء الحساب</label><input class="field" id="accountPhone" type="tel" inputmode="tel" dir="ltr" maxlength="22" placeholder="01012345678 أو +201012345678">
-<p class="fineprint">الرقم هيساعد أصحابك يلاقوك، لكنه غير موثَّق بدون SMS. ما تحطش رقم حد غيرك. لازم توافق على طلب الصداقة قبل ما توصلك رسائله.</p>
-<button type="button" class="primary" id="loginCloud">دخول</button><button type="button" class="secondary" id="signupCloud">إنشاء حساب</button></div>
-<p class="fineprint" id="loginStatus" role="status">لو طلب تأكيد البريد، افتح رسالة التأكيد الأول.</p>`;
+<label class="label" for="accountName">اسمك (لو أول مرة تعمل حساب)</label><input class="field" id="accountName" maxlength="40" placeholder="مثلاً: يوسف">
+<label class="label" for="accountPhone">رقم موبايلك (لو أول مرة تعمل حساب)</label><input class="field" id="accountPhone" type="tel" inputmode="tel" dir="ltr" maxlength="22" placeholder="01012345678">
+<p class="fineprint">رقمك عشان أصحابك يضيفوك، مش هنرسل عليه SMS. ما تحطش رقم حد غيرك.</p>
+<button type="button" class="primary" id="sendEmailCode">إرسال الكود على الإيميل</button></div>
+<div id="otpStep" style="display:none;gap:10px;margin:14px 0">
+<p class="muted">بعتنا رسالة على <strong id="sentToEmail" dir="ltr"></strong>. اكتب كود التحقق المكوّن من 6 أرقام:</p>
+<label class="label" for="accountOtp">كود الإيميل</label><input class="field" id="accountOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" dir="ltr" style="text-align:center;font-size:25px;letter-spacing:7px" />
+<button type="button" class="primary" id="verifyEmailCode">تأكيد الكود والدخول</button>
+<button type="button" class="secondary" id="resendEmailCode">إعادة إرسال الكود</button>
+<button type="button" class="secondary" id="changeEmail">تغيير الإيميل</button>
+<p class="fineprint">الكود سري. ما تبعتوش لأي حد. افحص الرسائل غير المرغوب فيها لو مش لاقي الرسالة.</p></div>
+<p class="fineprint" id="loginStatus" role="status">الرسائل بتوصل على الإيميل، مش على رقم الموبايل.</p>`;
 const newForm=$id('newform');
 newForm.innerHTML=`<label class="label" for="friendName">اسم صاحبك</label><input class="field" id="friendName" maxlength="40" required placeholder="مثلاً: أحمد">
 <label class="label" for="friendPhone">رقم موبايل صاحبك</label><input class="field" id="friendPhone" type="tel" inputmode="tel" dir="ltr" maxlength="22" required placeholder="01012345678 أو +201012345678">
@@ -1828,8 +1835,8 @@ const notice=document.querySelector('#home .notice');if(notice)notice.textConten
 function message(t){const el=$id('loginStatus');if(el)el.textContent=t;}
 function errorText(e){const t=String(e?.message||e||'حدث خطأ');
  if(e?.code==='23505'||/duplicate key|unique constraint/i.test(t))return 'رقم الموبايل ده مربوط بحساب تاني. لا تستخدم غير رقمك.';
- if(/email not confirmed/i.test(t))return 'فعّل بريدك من رسالة التأكيد الأول.';
- if(/invalid login credentials/i.test(t))return 'البريد أو كلمة السر غير صحيحة.';
+ if(/email not confirmed/i.test(t))return 'افتح الإيميل وأكد الحساب.';
+ if(/invalid login credentials/i.test(t))return 'بيانات الدخول مش صحيحة. جرّب كود إيميل جديد.';
  if(/Daily invite limit/i.test(t))return 'وصلت للحد اليومي لطلبات الإضافة. جرّب بكرة.';
  if(/Invalid phone number/i.test(t))return 'اكتب الرقم صح، مثلاً 01012345678 أو +201012345678.';
  return t;
@@ -1844,29 +1851,56 @@ function normalizePhone(value){
  else if(/^[1-9][0-9]{7,14}$/.test(digits))out='+'+digits;
  return /^\+[1-9][0-9]{7,14}$/.test(out)?out:null;
 }
-function showLogin(t){authBox.innerHTML=authHTML;$id('auth').classList.remove('hidden');$id('loginCloud').onclick=()=>authAction('login');$id('signupCloud').onclick=()=>authAction('signup');if(t)message(t);}
+function messageStage(code){
+ $id('emailStep').style.display=code?'none':'grid';
+ $id('otpStep').style.display=code?'grid':'none';
+ if(code){$id('sentToEmail').textContent=pendingEmail;$id('accountOtp').focus();}
+}
+function showLogin(t){
+ authBox.innerHTML=authHTML;$id('auth').classList.remove('hidden');
+ $id('sendEmailCode').onclick=()=>requestEmailCode(false);
+ $id('verifyEmailCode').onclick=verifyEmailCode;
+ $id('resendEmailCode').onclick=()=>requestEmailCode(true);
+ $id('changeEmail').onclick=()=>{pendingEmail='';messageStage(false);message('اكتب الإيميل الصحيح وابعت كود جديد.');};
+ $id('accountEmail').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();requestEmailCode(false);}});
+ $id('accountOtp').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();verifyEmailCode();}});
+ if(pendingEmail)messageStage(true);if(t)message(t);
+}
 showLogin();
-async function authAction(mode){
- if(!sb){message('الاتصال بالسيرفر مش جاهز. جرّب تحدّث الصفحة.');return;}
- const email=$id('accountEmail').value.trim().toLowerCase(),pass=$id('accountPassword').value,name=$id('accountName').value.trim(),rawPhone=$id('accountPhone').value;
+async function requestEmailCode(resend){
+ if(!sb){message('اتأكد إن الإنترنت شغال وحدّث الصفحة.');return;}
+ if(emailBusy)return;
+ if(codeSentAt&&Date.now()-codeSentAt<60000){message('علشان حماية الإيميلات، استنى دقيقة قبل ما تبعت كود جديد.');return;}
+ const email=(resend?pendingEmail:$id('accountEmail').value).trim().toLowerCase();
  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){message('اكتب بريد إلكتروني صحيح.');return;}
- if(pass.length<6){message('كلمة السر لازم 6 أحرف على الأقل.');return;}
- if(mode==='signup'&&(name.length<2||name.length>40)){message('اكتب اسمك من حرفين لـ40 حرف.');return;}
- const pn=normalizePhone(rawPhone);
- if(mode==='signup'&&!pn){message('اكتب رقمك صح. مثال: 01012345678.');return;}
- for(const id of ['loginCloud','signupCloud'])$id(id).disabled=true;
- message('جاري الاتصال…');
+ const name=$id('accountName').value.trim(),rawPhone=$id('accountPhone').value.trim(),pn=normalizePhone(rawPhone);
+ if(name&&name.length<2){message('الاسم لازم حرفين على الأقل.');return;}
+ if(rawPhone&&!pn){message('رقم الموبايل مش صحيح، مثال: 01012345678.');return;}
+ const userData={};
+ if(name){userData.display_name=name;localStorage.setItem('ychat_signup_name',name);}
+ if(pn){userData.ychat_phone=pn;localStorage.setItem('ychat_signup_phone',pn);}
+ emailBusy=true;$id('sendEmailCode').disabled=true;$id('resendEmailCode').disabled=true;message('جاري إرسال رسالة الإيميل...');
  try{
-  if(mode==='signup'){
-   localStorage.setItem('ychat_signup_name',name);localStorage.setItem('ychat_signup_phone',pn);
-   const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{display_name:name,ychat_phone:pn}}});if(error)throw error;
-   if(!data.session){message('اترسل لك إيميل تأكيد. افتحه وبعدها ادخل بحسابك.');return;}
-   await begin(data.session.user);
-  }else{
-   const {data,error}=await sb.auth.signInWithPassword({email,password:pass});if(error)throw error;await begin(data.user);
-  }
+  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/',data:userData}});
+  if(error)throw error;
+  pendingEmail=email;codeSentAt=Date.now();messageStage(true);
+  message('لو وصلك كود 6 أرقام اكتبه هنا. لو وصلك رابط بدل الكود، افتح الرابط لإتمام الدخول.');
  }catch(e){message(errorText(e));}
- finally{for(const id of ['loginCloud','signupCloud']){const el=$id(id);if(el)el.disabled=false;}}
+ finally{emailBusy=false;$id('sendEmailCode').disabled=false;$id('resendEmailCode').disabled=false;}
+}
+async function verifyEmailCode(){
+ if(!sb||!pendingEmail){message('ابعت كود على إيميلك الأول.');return;}
+ const code=$id('accountOtp').value.trim().replace(/[\u0660-\u0669\u06f0-\u06f9]/g,c=>String((c.charCodeAt(0)>=0x6f0?c.charCodeAt(0)-0x6f0:c.charCodeAt(0)-0x660)));
+ if(!/^\d{6}$/.test(code)){message('اكتب كود الإيميل المكوّن من 6 أرقام.');return;}
+ if(emailBusy)return;emailBusy=true;$id('verifyEmailCode').disabled=true;message('جاري التأكد من الكود...');
+ try{
+  const {data,error}=await sb.auth.verifyOtp({email:pendingEmail,token:code,type:'email'});
+  if(error)throw error;
+  const identity=data?.user||(await sb.auth.getUser()).data?.user;
+  if(!identity)throw Error('تم التحقق لكن الجلسة مش جاهزة؛ حدث الصفحة.');
+  await begin(identity);pendingEmail='';
+ }catch(e){message(/expired|invalid|otp|token/i.test(String(e?.message||''))?'الكود غلط أو انتهت صلاحيته. تأكد من أحدث كود في الإيميل.':errorText(e));}
+ finally{emailBusy=false;const b=$id('verifyEmailCode');if(b)b.disabled=false;}
 }
 function cleanName(v){const n=String(v||'').trim().slice(0,40);return n.length>=2?n:'مستخدم Y Chat';}
 function updatePhoneDisplays(){const value=phone||'غير مسجل في Y Chat';const account=$id('myPhone'),inForm=$id('myPhoneInAddForm');if(account)account.textContent=value;if(inForm)inForm.textContent=value;}
@@ -1899,9 +1933,9 @@ async function begin(authUser){
 }
 async function start(){
  if(!window.supabase?.createClient){showLogin('خدمة الشات مش متاحة دلوقتي. تأكد من الإنترنت وحدّث الصفحة.');return;}
- sb=window.supabase.createClient(projectUrl,publicKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+ sb=window.supabase.createClient(projectUrl,publicKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  try{const {data}=await sb.auth.getUser();if(data?.user){await begin(data.user);return;}}catch(e){console.warn('Session',e);}
- showLogin('ادخل ببريدك وكلمة السر أو أنشئ حساب من غير SMS.');
+ showLogin('اكتب بريدك واضغط إرسال الكود. مش محتاج كلمة سر ولا SMS.');
 }
 function placePendingInvites(){
  requestsBox.replaceChildren();if(!me)return;
