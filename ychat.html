@@ -1,0 +1,1775 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#080809" />
+<title>Y Chat — مدار الأصلي</title>
+<style>
+:root{color-scheme:dark;--bg:#090c12;--surface:#111722;--surface2:#182131;--border:#273244;--text:#f2f6ff;--muted:#96a5be;--blue:#70a2ff;--accent:#3d7bff;--green:#7bd8b6}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{background:radial-gradient(ellipse at 20% 10%,#182844 0%,transparent 44%),#07090d;color:var(--text);font-family:Tahoma,Arial,sans-serif;font-size:14px}button,input,textarea,select{font:inherit}button{cursor:pointer;color:inherit;border:0}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #7caaff;outline-offset:3px}a{color:inherit}input,textarea,select{color:var(--text)}.hidden{display:none!important}.layout{display:grid;grid-template-columns:minmax(220px,1fr) minmax(330px,450px) minmax(50px,1fr);gap:30px;max-width:1350px;margin:auto;padding:26px;min-height:100dvh}.phone{grid-column:2;position:relative;background:var(--bg);border:1px solid #2b364c;border-radius:29px;min-height:min(850px,calc(100dvh - 52px));height:calc(100dvh - 52px);max-height:1000px;box-shadow:0 25px 85px #0008;overflow:hidden;display:flex;flex-direction:column}.side{grid-column:1;grid-row:1;align-self:center;justify-self:center;max-width:430px;padding:30px}.eyebrow{font-size:11px;letter-spacing:2px;color:#88acff;direction:ltr;text-align:right}.side h1{font-size:clamp(38px,5vw,67px);line-height:1.2;margin:23px 0;letter-spacing:-2px}.side h1 span{color:var(--blue)}.side p{font-size:15px;line-height:2.1;color:#9aa9c0}.side .mini{font-size:12px;color:#65758b;margin-top:27px}.page{min-height:0;flex:1;display:flex;flex-direction:column;overflow:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:23px 22px 13px;gap:10px}.brand{direction:ltr;text-align:left;font-size:27px;letter-spacing:-1.4px;font-weight:900}.brand span{color:var(--blue)}.subbrand{font-size:9px;letter-spacing:2px;color:#7d8ca5;direction:ltr}.iconbtn{border:1px solid #2b3546;background:#192233;border-radius:15px;min-width:43px;height:43px;display:grid;place-items:center;font-size:22px}.intro{padding:12px 22px 22px}.intro h2{font-size:25px;margin:0 0 8px}.muted{color:var(--muted);font-size:12px;line-height:1.9}.notice{margin:0 22px 18px;border:1px solid #293f62;background:#142039;border-radius:13px;padding:11px 13px;color:#adcafa;line-height:1.8;font-size:11px}.search{background:#171f2c;border:1px solid #283449;display:flex;align-items:center;gap:10px;border-radius:15px;padding:0 12px;margin:0 22px 21px;color:#96a5be}.search input{min-width:0;background:none;border:0;outline:none;width:100%;padding:13px 0;font-size:13px}.madar-card{display:flex;align-items:center;gap:12px;margin:0 22px 23px;background:linear-gradient(115deg,#1b304f,#18243c);border:1px solid #3b5b90;border-radius:20px;text-align:right;padding:15px;transition:transform .2s}.madar-card:hover{transform:translateY(-2px)}.orb{display:grid;place-items:center;width:51px;height:51px;flex:none;border-radius:16px;background:linear-gradient(145deg,#a4c8ff,#487aff);color:#0c2b60;font-size:29px;box-shadow:0 0 25px #497fff30}.madar-card strong{display:block;font-size:15px}.madar-card small{display:block;color:#b7c8e4;margin-top:7px;font-size:10px}.arrow{margin-right:auto;color:#b7d0ff;font-size:20px}.sectionline{display:flex;align-items:center;justify-content:space-between;margin:0 22px 12px}.sectionline h3{margin:0;font-size:14px}.pill{border-radius:20px;padding:6px 10px;background:#1d293b;color:#adc3e6;font-size:10px}.filters{display:flex;gap:8px;padding:0 22px 12px}.filter{padding:8px 15px;border-radius:20px;border:1px solid #304059;background:transparent;color:#a9bad3;font-size:11px}.filter.active{background:#e6eeff;color:#1c335f;border-color:#e6eeff}.rows{padding:0 10px 22px;overflow:auto}.chatrow{display:flex;gap:12px;align-items:center;width:100%;text-align:right;background:transparent;border-bottom:1px solid #1e2938;padding:15px 12px}.chatrow:hover{background:#151e2b;border-radius:15px}.avatar{width:49px;height:49px;border-radius:17px;flex:none;background:#294064;color:#b9d2ff;display:grid;place-items:center;font-size:19px;font-weight:bold;object-fit:cover;overflow:hidden}.rinfo{flex:1;min-width:0}.rinfo strong{font-size:14px}.rinfo p{color:#8e9eb7;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;margin:8px 0 0}.tiny{font-size:10px;color:#8494ae}.nav{background:#111824;border-top:1px solid #253248;display:flex;justify-content:space-around;padding:12px 8px max(14px,env(safe-area-inset-bottom));gap:6px}.nav button{min-width:65px;background:none;color:#8698b3;display:grid;gap:5px;justify-items:center;font-size:10px}.nav button.on{color:#8eb6ff}.nav .navico{font-size:20px;line-height:22px}.chathead{display:flex;align-items:center;gap:12px;padding:19px 15px;border-bottom:1px solid #263247;flex-shrink:0}.chathead h2{font-size:16px;margin:0 0 5px}.chatlog{padding:20px;flex:1;min-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:radial-gradient(ellipse at center,#111928,#0b0e16)}.bubble{max-width:85%;background:#2b58a8;border-radius:18px 18px 5px 18px;padding:12px 15px;font-size:13px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;align-self:flex-start}.bubble.other{align-self:flex-end;background:#222e3f;border-radius:18px 18px 18px 5px}.bubble small{font-size:9px;color:#b8ccee;display:block;margin-top:8px}.composer{display:flex;align-items:flex-end;gap:10px;padding:14px;border-top:1px solid #263349}.composer textarea{flex:1;min-width:0;max-height:125px;resize:none;border-radius:15px;border:1px solid #31435f;background:#1b2636;padding:12px 14px;outline:none;font-size:13px}.send{height:45px;width:45px;border-radius:13px;background:#78a5ff;color:#091e43;font-size:20px}.empty{text-align:center;color:#8799b6;padding:35px 14px;font-size:12px}.card{background:#172131;border:1px solid #2d3e59;margin:15px 20px 0;padding:20px;border-radius:20px}.card h2{font-size:19px;margin:0 0 12px}.field{display:block;width:100%;padding:13px 14px;border:1px solid #344964;border-radius:13px;background:#0e1520;margin:9px 0 18px;outline:none;font-size:14px}.label{display:block;color:#c5d4ec;font-size:12px;margin:13px 0 4px}.primary,.secondary{width:100%;border-radius:13px;font-weight:bold;padding:13px 14px;font-size:13px;text-align:center;display:block;text-decoration:none}.primary{background:#75a4ff;color:#10234a}.secondary{background:#23324a;border:1px solid #385071;color:#c7daff}.linkbutton{background:none;color:#9fc0ff;font-size:12px;text-decoration:underline;text-underline-offset:3px}.foot{text-align:center;font-size:10px;color:#8294ae;line-height:1.8;margin:17px 20px}.divider{height:1px;background:#2a3a52;margin:18px 0}.setting{display:flex;align-items:center;gap:12px;width:100%;padding:14px 0;background:transparent;text-align:right;border-bottom:1px solid #283b53}.setting span.ico{font-size:23px;width:34px;text-align:center}.setting strong{display:block;font-size:13px;margin-bottom:5px}.setting small{color:#91a5c3;font-size:11px}.setting .chev{margin-right:auto;color:#82a2ca;font-size:19px}.profileheader{display:flex;gap:14px;align-items:center}.profileavatar{width:68px;height:68px;border-radius:22px;font-size:26px;object-fit:cover;background:#284063;display:grid;place-items:center;overflow:hidden}.profileheader h2{margin:0 0 5px}.embedded-banner{background:#172943;border-bottom:1px solid #35557e;padding:11px 16px;display:flex;gap:9px;align-items:center;font-size:11px;color:#c5d9fa;line-height:1.7}.embedded-banner strong{font-size:12px}.embedded-banner button{margin-right:auto;white-space:nowrap;padding:8px 10px;border-radius:9px;background:#263e63;color:#d6e7ff}.iframewrap{position:relative;flex:1;min-height:280px;background:#fff;overflow:hidden}.iframewrap iframe{width:100%;height:100%;border:0;display:block;background:#fff}.iframe-help{padding:9px 13px;background:#111b2c;border-top:1px solid #2e4059;font-size:10px;color:#9cb5d6;line-height:1.8}.iframe-help a{color:#a9c7ff}.auth{position:absolute;inset:0;z-index:20;overflow:auto;background:radial-gradient(ellipse at 80% 3%,#1a3151,#0b0f18 54%);display:flex;flex-direction:column;padding:36px 24px 24px}.authlogo{text-align:center;margin:19px 0 23px}.authlogo .logoicon{width:67px;height:67px;margin:auto auto 13px;border-radius:23px;background:linear-gradient(140deg,#9cc3ff,#437ffc);color:#153b75;display:grid;place-items:center;font-size:35px;font-weight:900;box-shadow:0 15px 35px #3669dd35}.authlogo .brand{text-align:center;font-size:34px}.authlogo p{color:#8eabc9;line-height:1.8;font-size:12px}.authbox{border:1px solid #334664;background:#152135e8;border-radius:24px;padding:22px 18px;box-shadow:0 25px 60px #0003}.authbox h2{margin:0 0 9px;font-size:20px}.authbox p{font-size:12px;line-height:1.9;color:#9cacc5;margin:9px 0 16px}.tabs{display:flex;background:#10192a;padding:5px;border-radius:14px;gap:5px;margin:14px 0 21px}.tabs button{flex:1;border-radius:10px;padding:11px 5px;background:transparent;font-size:11px;color:#9fb2d0}.tabs button.selected{background:#2b4874;color:#e4efff}.phoneentry{display:flex;gap:9px;direction:ltr;margin-bottom:14px}.phoneentry select{width:95px;padding:12px 7px;background:#0b1525;border:1px solid #344764;border-radius:12px;outline:none;font-size:12px}.phoneentry input{flex:1;min-width:0;text-align:left;direction:ltr;margin:0}.fineprint{font-size:10px!important;line-height:1.8;color:#89a5c8!important}.stepback{background:transparent;color:#b4d0ff;font-size:12px;padding:6px 0;margin-bottom:12px}.otpcells{width:100%;font-size:27px;letter-spacing:11px;text-align:center;direction:ltr;padding:14px 6px}.authfooter{text-align:center;color:#8291ab;font-size:10px;line-height:1.9;margin-top:auto;padding-top:20px}.avatarpicker{height:92px;width:92px;overflow:hidden;margin:14px auto 21px;display:grid;place-items:center;background:#203653;border:2px dashed #739ef1;border-radius:30px;font-size:29px;cursor:pointer;position:relative}.avatarpicker img{width:100%;height:100%;object-fit:cover}.avatarpicker small{position:absolute;bottom:0;background:#182942dc;width:100%;text-align:center;font-size:10px;padding:5px}.avatarpicker input{position:absolute;inset:0;opacity:0;cursor:pointer}.qrsurface{padding:18px;border-radius:17px;background:#fff;width:min(100%,238px);height:238px;display:grid;place-items:center;margin:15px auto 11px}.qrsurface svg{width:100%;height:100%}.paircode{display:block;text-align:center;direction:ltr;letter-spacing:4px;color:#e4ecff;font-size:17px;font-weight:800}.qrsteps{margin:12px 0;padding-right:20px;color:#b1c5e4;font-size:12px;line-height:2.2}.hint{color:#d9c89d;font-size:10px;line-height:1.8;background:#352c1b;border:1px solid #594628;border-radius:11px;padding:10px 12px}.approvedbox{border:1px solid #396a62;background:#163732;padding:13px;border-radius:13px;margin:10px 0;color:#b6f0d8}.toast{position:absolute;bottom:95px;left:50%;transform:translateX(-50%);background:#e3edff;color:#172b51;padding:12px 15px;font-size:12px;border-radius:12px;max-width:88%;z-index:40;box-shadow:0 12px 30px #0005;text-align:center;white-space:pre-wrap}.autonote{font-size:11px;background:#112038;border:1px solid #304969;border-radius:12px;padding:9px 11px;color:#a7c8f6;line-height:1.8;margin-bottom:13px}.stack{display:grid;gap:10px}.smallbutton{background:#263c5b;color:#d2e4ff;border-radius:10px;padding:8px 11px;font-size:11px}.room-label{color:#92aacb;font-size:11px;padding:0 18px}.iconline{display:flex;gap:8px;align-items:center}.inputrow{display:flex;align-items:center;gap:8px}.scroll{overflow:auto}.modal{position:absolute;inset:0;background:#000c;z-index:21;display:flex;align-items:center;justify-content:center;padding:22px}.modal .authbox{width:100%;max-width:380px}.actions{display:flex;gap:9px;margin-top:17px}.actions>*{flex:1}.skeleton{display:flex;align-items:center;gap:10px;color:#bcd1f2;font-size:12px;padding:14px}.spin{width:18px;height:18px;border:2px solid #729ce744;border-top-color:#7caaff;border-radius:50%;animation:rot 1s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}
+@media(max-width:870px){.layout{display:block;margin:0;padding:0;min-height:100dvh}.side{display:none}.phone{border:0;border-radius:0;max-width:490px;margin:0 auto;height:100dvh;min-height:100dvh;max-height:none}.auth{padding-top:32px}}@media(max-width:420px){.auth{padding:20px 17px}.top{padding:18px 17px 12px}.card{margin-inline:15px}.embedded-banner{flex-wrap:wrap}}
+
+/* Y Chat: full-screen desktop & responsive mobile. No simulated phone frame. */
+html,body{width:100%;height:100%;overflow:hidden}
+.layout{display:block;min-height:100dvh;max-width:none;padding:0;margin:0;width:100%}
+.app{width:100%;height:100dvh;min-height:0;max-height:none;overflow:hidden;position:relative;display:grid;direction:rtl;grid-template-columns:72px clamp(305px,28vw,420px) minmax(0,1fr);grid-template-areas:"nav sidebar workspace";background:var(--bg);border:0;border-radius:0;box-shadow:none}
+.sidebar{grid-area:sidebar;min-width:0;min-height:0;background:#0d141e;border-left:1px solid #263247;display:flex;flex-direction:column}
+.sidebar #home,.sidebar #home.hidden{display:flex!important;min-height:0;flex:1;overflow:hidden}
+.sidebar .top{background:#111a26;border-bottom:1px solid #263247;padding:22px 23px}
+.sidebar .intro{padding:21px 22px 13px}.sidebar .intro h2{font-size:23px}
+.sidebar .notice{margin-bottom:14px}
+.sidebar .search{margin-bottom:15px}
+.sidebar .madar-card{margin-bottom:19px}
+.sidebar .rows{min-height:0;flex:1;overflow-y:auto;padding-bottom:26px}
+.sidebar .chatrow{transition:background .14s;border-radius:13px;border-bottom:1px solid #1b2838;padding:15px 12px}
+.sidebar .chatrow.active,.sidebar .chatrow:hover{background:#1a2b42}
+.workspace{grid-area:workspace;position:relative;min-height:0;min-width:0;display:flex;flex-direction:column;background:#0b101a}
+.workspace .page:not(.hidden){min-height:0;flex:1;display:flex;flex-direction:column}
+.workspace .page.hidden{display:none!important}
+.nav{grid-area:nav;background:#09111c;border-top:0;border-left:1px solid #263247;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:12px;padding:31px 5px 14px;z-index:2}
+.nav button{width:60px;min-width:0;padding:13px 4px;border-radius:15px;gap:8px;font-size:10px}.nav button.on{background:#1b2e49;color:#91b8ff}.nav button:hover{background:#19263b}
+.nav .navico{font-size:25px}.workspace .chathead,.workspace .top{background:#111b2a;padding:19px 28px}
+.workspace .chatlog{background:radial-gradient(circle at 55% 10%,#15243b 0%,#0b111a 62%);padding:25px clamp(22px,9%,115px)}
+.workspace .bubble{max-width:min(75%,650px);font-size:14px}
+.workspace .composer{padding:18px clamp(20px,8%,110px);background:#111b29}
+.welcome{display:none;flex:1;min-height:0;align-items:center;justify-content:center;text-align:center;padding:32px;background:radial-gradient(ellipse at 45% 40%,#132642,#0a1018 65%)}
+.app[data-page="home"] .welcome{display:flex}.app:not([data-page="home"]) .welcome{display:none}
+.welcome-hero{width:min(100%,680px)}.welcome-logo{font-size:23px;direction:ltr;font-weight:900;letter-spacing:-.8px}.welcome-logo span{color:#79a7ff}.welcome-symbol{width:95px;height:95px;border-radius:29px;margin:35px auto 26px;background:linear-gradient(135deg,#97c4ff,#4c81ee);color:#0d2c55;display:grid;place-items:center;font-size:51px;box-shadow:0 17px 53px #438fff2d}
+.welcome h1{font-size:clamp(24px,3.2vw,37px);margin:0 0 14px}.welcome p{font-size:15px;color:#a9b9d1;line-height:1.9}.welcome small{color:#8a9bb5;line-height:1.9;display:block;margin:40px auto 0;max-width:550px}
+.welcome-actions{display:flex;justify-content:center;gap:12px;margin-top:23px}.welcome-actions button{padding:13px 21px;border-radius:12px;background:#2b4871;font-weight:700}.welcome-actions button:first-child{background:#6e9fff;color:#061a39}
+.workspace .card{width:min(calc(100% - 56px),750px);margin:26px auto 0;padding:26px}
+.workspace .foot{width:min(calc(100% - 56px),750px);margin:19px auto}
+.back-btn{display:none}
+.auth{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:flex-start;flex-direction:column;overflow-y:auto;padding:28px 20px 40px;background:radial-gradient(circle at 32% 8%,#1a355b,#0a101b 68%)}
+.auth .authlogo{width:min(100%,520px);margin:8px auto 20px}.auth .authbox{width:min(100%,520px);padding:28px;border-radius:22px}
+.authlogo .logoicon{margin-bottom:12px}.auth .tabs button{font-size:12px}
+.modal{position:absolute}
+/* Native Madar interface: avoid iframe blocked by the remote site. */
+.madar-page{height:100%;overflow:hidden!important}.ai-head .ai-orb{width:48px;height:48px;border-radius:16px;box-shadow:none;font-size:26px}.ai-titles{flex:1;min-width:0}.ai-head h2{font-size:19px;margin:0 0 6px}.inapp-tag{font-size:10px;font-weight:500;color:#b2c8ed;background:#1b3454;padding:5px 8px;border-radius:20px;margin-right:8px}.madar-settings{background:#172438;border-bottom:1px solid #304c70;padding:19px clamp(18px,5%,60px)}.madar-settings .settings-title{font-weight:800;font-size:15px}.madar-settings p{font-size:12px;color:#a8bedc;line-height:1.9;margin:10px 0}.madar-settings label{display:block;font-size:12px;margin:12px 0 7px}.endpoint-row{display:flex;gap:9px;align-items:center}.endpoint-row input{flex:1;min-width:0;border:1px solid #3e587a;background:#0d1827;color:white;border-radius:11px;padding:13px}.endpoint-row button,.madar-system button{border:0;border-radius:11px;padding:12px 18px;background:#77a6ff;color:#0b2247;font-weight:700}.madar-settings .settings-caption{font-size:10px}
+.madar-activity{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:26px clamp(18px,8%,100px);background:radial-gradient(circle at 60% 0,#15263d,#0a1019 66%)}
+.madar-intro{text-align:center;margin:5px auto 5px;max-width:510px}.madar-intro .welcome-symbol{width:69px;height:69px;border-radius:22px;font-size:36px;margin:2px auto 17px}.madar-intro h2{font-size:25px;margin:0 0 9px}.madar-intro p{color:#9bb2d0;font-size:13px;line-height:1.8}
+.madar-system{background:#192a42;border:1px solid #335379;border-radius:17px;padding:20px;max-width:580px;width:100%;margin:8px auto 0}.madar-system p{font-size:12px;line-height:1.9;color:#bbcee5}.madar-system button{font-size:12px;padding:11px 14px}
+.madar-msg{max-width:85%;width:fit-content;min-width:105px;padding:14px 18px;border-radius:17px;font-size:14px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere}.madar-msg.me{align-self:flex-start;background:#30599d;border-bottom-right-radius:5px}.madar-msg.bot{align-self:flex-end;background:#1c2b40;border-bottom-left-radius:5px;border:1px solid #304664}.madar-msg.error{background:#402e31;border-color:#784750;color:#ffd6d6}
+.madar-bottom{border-top:1px solid #2a3d56;padding:17px clamp(18px,8%,100px) 13px;background:#111b29}.madar-compose{display:flex;gap:11px;align-items:center;border:1px solid #334863;border-radius:17px;background:#1b2a3e;padding:7px}.madar-compose textarea{flex:1;min-width:0;background:transparent;border:0;outline:none;resize:none;min-height:40px;max-height:130px;color:#fff;padding:12px;font-size:14px}.madar-compose button{width:47px;height:45px;border-radius:12px;color:#0b244a;background:#7bafff;font-size:23px}.madar-compose button:disabled{opacity:.35}.madar-hint{text-align:center;color:#7389a6;font-size:10px;margin-top:9px}
+@media(max-width:850px){
+ html,body{height:100%;overflow:hidden}.layout{display:block;width:100%;padding:0}
+ .app{display:flex;flex-direction:column;width:100%;max-width:none;min-height:0;height:100dvh;border:0;border-radius:0}
+ .sidebar{display:none;min-height:0;flex:1;border:0}.app[data-page="home"] .sidebar{display:flex}
+ .workspace{display:none;min-height:0;flex:1}.app:not([data-page="home"]) .workspace{display:flex}
+ .sidebar #home,.sidebar #home.hidden{display:flex!important}
+ .welcome,.app[data-page="home"] .welcome{display:none!important}
+ .nav{width:100%;order:2;z-index:3;flex-direction:row;justify-content:space-around;align-items:center;gap:6px;padding:9px 10px max(10px,env(safe-area-inset-bottom));border-left:0;border-top:1px solid #243448;background:#101823}
+ .nav button{padding:7px 11px;width:auto;min-width:67px;font-size:10px;gap:5px}
+ .nav .navico{font-size:22px}.sidebar .top{padding:19px 19px 14px}
+ .workspace .chathead,.workspace .top{padding:17px 15px}.workspace .chatlog{padding:20px}
+ .workspace .bubble{max-width:86%}.workspace .composer{padding:13px}
+ .workspace .card{width:auto;margin:17px 15px 0;padding:20px}.workspace .foot{width:auto;margin:17px 20px}
+ .back-btn{display:grid}
+ .madar-activity{padding:16px 13px}.madar-bottom{padding:11px 12px 10px}.madar-settings{padding:15px}.madar-msg{max-width:90%}
+ .inapp-tag{display:inline-block;margin-top:4px}.ai-head h2{font-size:16px}.ai-head .ai-orb{width:42px;height:42px}.ai-head .iconbtn{min-width:38px;height:39px}
+ .madar-intro .welcome-symbol{margin-top:0}.madar-intro h2{font-size:22px}
+ .auth{padding:24px 16px 30px}.auth .authbox{padding:19px}
+}
+@media(max-width:390px){.endpoint-row{flex-direction:column}.endpoint-row input,.endpoint-row button{width:100%}.sidebar .intro{padding:16px 17px 12px}.sidebar .notice{margin-inline:15px}.sidebar .search,.sidebar .madar-card{margin-inline:15px}}
+
+/* Y Chat | WhatsApp-Web-inspired desktop appearance: original brand, no affiliation */
+:root{--bg:#0b141a;--surface:#111b21;--surface2:#202c33;--border:#26343c;--text:#e9edef;--muted:#8696a0;--blue:#00a884;--accent:#00a884;--green:#00a884;color-scheme:dark}
+body{background:#0b141a;color:#e9edef;font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif}
+.app{grid-template-columns:64px clamp(330px,32vw,475px) minmax(0,1fr);background:#111b21}
+.nav{background:#202c33;border-left:1px solid #283940;padding-top:22px;gap:18px}
+.nav button{color:#aebac1;border-radius:12px;width:55px;padding:9px 1px;min-height:58px;font-weight:400;font-size:10px}
+.nav button.on{background:#374248;color:#d9fdd3}
+.nav button:hover{background:#2c3940}
+.nav .navico{display:flex;align-items:center;justify-content:center;height:28px}
+.ui-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sidebar{background:#111b21;border-left:1px solid #2a3942}
+.sidebar .top{height:94px;padding:24px 26px 18px;background:#111b21;border-bottom:0}
+.sidebar .brand{font-size:23px;color:#e9edef;letter-spacing:0;direction:rtl;white-space:nowrap;text-align:right}
+.sidebar .subbrand{font-size:10px;letter-spacing:1.8px;color:#00a884;margin-top:3px;text-align:right}
+.sidebar .intro{display:none}
+.sidebar .notice{border:0;background:#202c33;color:#abc3c5;border-radius:8px;margin:0 17px 12px;padding:7px 11px;font-size:10px}
+.sidebar .search{background:#202c33;border:0;border-bottom:1px solid #273943;border-radius:8px;min-height:39px;margin:0 17px 10px;padding:0 13px;color:#9cacb4}
+.sidebar .search input{padding:11px 0;font-size:13px;color:#dce4e8}
+.sidebar .search:focus-within{box-shadow:inset 0 0 0 1px #00a884}
+.iconbtn{border:0;background:transparent;color:#aebac1;width:39px;height:39px;min-width:39px;border-radius:50%;font-size:27px}
+.iconbtn:hover{background:#2a3942;color:#e9edef}
+.sidebar .madar-card{margin:3px 10px 9px;border:0;border-radius:10px;background:#17352f;padding:12px 11px;gap:13px;text-align:right;transition:none}
+.sidebar .madar-card:hover{background:#1f463c;transform:none}
+.orb{background:#00a884;color:#052b23;border-radius:50%;box-shadow:none;font-size:23px}
+.sidebar .orb{height:48px;width:48px;flex:none}
+.sidebar .madar-card strong{font-size:14px;color:#e9edef}
+.sidebar .madar-card small{font-size:11px;color:#a7c9c2}
+.sidebar .arrow{color:#9fcbc0}
+.sidebar .sectionline{display:none}
+.sidebar .filters{padding:4px 19px 12px;gap:8px}
+.sidebar .filter{border:0;border-radius:20px;padding:8px 13px;font-size:12px;background:#202c33;color:#aebac1}
+.sidebar .filter.active{background:#103629;color:#d7fdd3}
+.sidebar .rows{padding:0 0 20px;scrollbar-color:#394851 transparent}
+.sidebar .chatrow{border-radius:0;border-bottom:1px solid #202c33;margin:0;padding:13px 16px 13px 12px;min-height:75px;gap:14px}
+.sidebar .chatrow:hover,.sidebar .chatrow.active{background:#202c33;border-radius:0}
+.sidebar .chatrow .avatar{height:51px;width:51px;border-radius:50%;font-size:22px}
+.sidebar .chatrow .rinfo strong{font-size:15px;font-weight:550}
+.sidebar .chatrow .rinfo p{margin:6px 0 0;color:#8696a0;font-size:12px}
+.sidebar .chatrow .tiny{font-size:10px;color:#8696a0}
+.workspace{background:#0b141a}
+.workspace .chathead,.workspace .top{background:#202c33;border:0;border-bottom:1px solid #273940;padding:15px 22px;min-height:70px}
+.workspace .chathead h2{font-size:15px;font-weight:600}
+.workspace .chathead .avatar{width:42px;height:42px;border-radius:50%}
+.workspace .chathead .tiny{font-size:11px}
+.workspace .chatlog{background-color:#0b141a;background-image:radial-gradient(circle at 24px 24px,#263b3724 2px,transparent 3px),radial-gradient(circle at 75px 90px,#36443b24 1.5px,transparent 3px);background-size:128px 128px;padding:24px clamp(16px,7%,92px)}
+.workspace .bubble{background:#005c4b;border-radius:9px 9px 3px 9px;padding:8px 11px;font-size:14px;box-shadow:0 2px 3px #0001;max-width:min(69%,650px)}
+.workspace .bubble.other{background:#202c33;border-radius:9px 9px 9px 3px}
+.workspace .bubble small{font-size:9px;color:#b8d5ce;margin-top:4px;text-align:left}
+.workspace .composer{border:0;background:#202c33;padding:12px clamp(18px,5%,65px);gap:12px}
+.workspace .composer textarea{background:#2a3942;border:0;color:#e9edef;border-radius:9px;min-height:41px;padding:11px 16px}
+.workspace .composer textarea::placeholder{color:#8596a1}
+.workspace .send{border-radius:50%;background:#00a884;color:#061f18;width:44px;height:44px;font-size:21px}
+.workspace .send:disabled{opacity:.5}
+.room-label{font-size:10px;color:#a5b4bb;background:#142128;padding:6px!important;margin-top:0!important}
+.welcome{background:#222e35;box-shadow:inset 0 -6px 0 #00a884}
+.welcome-hero{max-width:570px}
+.welcome-logo{font-size:26px;letter-spacing:-.4px;font-weight:600;color:#d7e0e5}
+.welcome-logo span{color:#00a884}
+.welcome-symbol{background:#153e34;color:#00a884;box-shadow:none;border-radius:50%;font-size:42px}
+.welcome h1{font-size:32px;font-weight:370;color:#e9edef;margin-bottom:16px}
+.welcome p{font-size:14px;color:#aebac1}
+.welcome small{color:#8696a0;font-size:11px}
+.welcome-actions button{background:#2d3d45;font-size:12px}
+.welcome-actions button:first-child{background:#00a884;color:#052c22}
+.workspace .card{background:#111b21;border:1px solid #2a3942;border-radius:14px;box-shadow:none}
+.card h2{color:#e9edef}
+.field{background:#202c33;border:1px solid #3e4e55;border-radius:9px}
+.primary{background:#00a884;color:#09261d;border-radius:10px}
+.secondary{background:#202c33;color:#d9e4e7;border:1px solid #45525a;border-radius:10px}
+.setting{border-bottom:1px solid #25343a}
+.pill{background:#173b31;color:#a7ded2}
+.auth{background:#0b141a;padding-top:38px}
+.auth .authbox{background:#f8faf9;color:#18262c;border:0;border-radius:6px;padding:32px;box-shadow:0 14px 60px #0005}
+.auth .authlogo{margin:0 auto 25px}
+.authlogo .logoicon{border-radius:50%;background:#00a884;color:#052f24;box-shadow:none}
+.authlogo .brand{color:#e9edef}
+.authlogo .brand span{color:#00a884}
+.authlogo p{color:#aebac1}
+.authbox h2,.authbox strong{color:#18262c}
+.authbox p,.authbox .label,.authbox label{color:#475960}
+.authbox .tabs{background:#e6eeec}
+.authbox .tabs button{color:#45585e}
+.authbox .tabs button.selected{background:#d1eadf;color:#006f53}
+.authbox .field,.authbox input,.authbox select{color:#152b2e;background:#f8faf9;border-color:#c5d1ce}
+.authbox .fineprint,.authbox .hint{color:#687e81!important}
+.authbox .stepback{color:#006f53}
+.authbox .avatarpicker{background:#d6f2e7;border-color:#00a884}
+.authbox .autonote{color:#35564d}
+.authbox .paircode{color:#1d5447}
+.authbox .qrsteps{color:#56666c}
+.authfooter{color:#8498a0}
+.modal .authbox{background:#f8faf9;color:#193033}
+.workspace .madar-page{background:#111b21}
+.ai-head .ai-orb{border-radius:50%;color:#052d22;background:#00a884}
+.ai-head .inapp-tag{background:#144437;color:#8bddc6}
+.madar-activity{background:#0b141a;padding:34px clamp(20px,7%,100px)}
+.madar-intro{margin:24px auto 13px}
+.madar-intro .welcome-symbol{border-radius:50%}
+.madar-intro h2{font-size:27px;color:#e9edef}
+.madar-intro p{color:#9fb4bc;max-width:570px}
+.madar-system{max-width:610px;background:#202c33;border:1px solid #31454a;border-radius:14px;text-align:right;padding:25px;margin:12px auto}
+.madar-system p{font-size:12px;line-height:2;color:#b9c9cf;margin:18px 0}
+.madar-original-brand{display:flex;align-items:center;gap:13px}
+.madar-original-brand .orb{width:47px;height:47px;border-radius:50%}
+.madar-original-brand strong{font-size:17px}
+.madar-system .madar-launch{display:flex;justify-content:center;align-items:center;gap:12px;text-decoration:none;background:#00a884;color:#05291d;border-radius:11px;padding:15px 20px;font-size:14px;font-weight:800;margin:12px 0}
+.madar-system .madar-launch span{margin-right:auto;font-size:20px}
+.madar-system .madar-connect{width:100%;border:1px solid #45615c;background:#253b3b;color:#d4efe5;border-radius:10px;padding:11px;font-weight:500}
+.madar-settings{background:#1e3031;border-bottom:1px solid #375650}
+.endpoint-row button,.madar-system button{background:#00a884;color:#042d22}
+.madar-bottom{background:#202c33}
+.madar-compose{background:#2a3942;border:0}
+.madar-compose button{background:#00a884;color:#052c22}
+.madar-msg.me{background:#005c4b}
+.madar-msg.bot{background:#202c33}
+.toast{background:#d9fdd3;color:#183d32}
+@media(max-width:850px){
+ .app{display:flex;flex-direction:column}
+ .sidebar .top{padding:15px 20px;height:75px}
+ .sidebar .brand{font-size:23px}
+ .nav{background:#202c33;padding:5px 5px max(7px,env(safe-area-inset-bottom));border-top:1px solid #34434b}
+ .nav button{min-height:49px;min-width:74px;font-size:10px}
+ .nav .navico{height:23px}
+ .ui-icon{width:22px;height:22px}
+ .sidebar .chatrow{min-height:74px}
+ .workspace .chathead{padding:11px 15px;min-height:64px}
+ .welcome{display:none}
+ .madar-activity{padding:22px 15px}
+ .madar-intro{margin:8px auto}
+ .madar-intro h2{font-size:23px}
+ .madar-system{padding:17px}
+ .auth .authbox{padding:23px 18px;border-radius:10px}
+}
+
+/* Y Chat — monochrome black edition. WhatsApp-style layout, Y Chat branding. */
+:root{
+  color-scheme:dark;
+  --bg:#080809;
+  --surface:#101012;
+  --surface2:#1c1c1f;
+  --border:#28282d;
+  --text:#f5f5f6;
+  --muted:#a0a0a7;
+  --blue:#e5e5e9;
+  --accent:#e5e5e9;
+  --green:#d5d5da;
+}
+html,body{background:#070708;color:#f5f5f6}
+body{background:#070708;color:#f5f5f6}
+.app{background:#101012}
+.nav{background:#080809;border-color:#252528}
+.nav button{color:#a2a2a9}
+.nav button.on{background:#28282b;color:#fff}
+.nav button:hover{background:#202024;color:#fff}
+.sidebar{background:#101012;border-color:#29292c}
+.sidebar .top{background:#101012}
+.sidebar .brand{color:#f7f7f8}
+.sidebar .subbrand{color:#b7b7bc}
+.sidebar .notice{background:#1a1a1d;color:#b5b5bb}
+.sidebar .search{background:#202023;border-color:#333338;color:#a2a2a7}
+.sidebar .search input{color:#f6f6f7}
+.sidebar .search:focus-within{box-shadow:inset 0 0 0 1px #85858c}
+.iconbtn{color:#e2e2e6}
+.iconbtn:hover{background:#242428;color:#fff}
+.sidebar .madar-card{background:#1e1e21;border:1px solid #343438}
+.sidebar .madar-card:hover{background:#27272b}
+.sidebar .madar-card strong{color:#f5f5f6}
+.sidebar .madar-card small,.sidebar .arrow{color:#b9b9bf}
+.orb,.authlogo .logoicon,.ai-head .ai-orb{background:linear-gradient(135deg,#e8e8ec,#97979f);color:#151518}
+.sidebar .filter{background:#222225;color:#bcbcc1}
+.sidebar .filter.active{background:#3b3b40;color:#fff}
+.sidebar .rows{scrollbar-color:#404045 transparent}
+.sidebar .chatrow{border-color:#252528}
+.sidebar .chatrow:hover,.sidebar .chatrow.active{background:#242428}
+.sidebar .chatrow .rinfo p,.sidebar .chatrow .tiny{color:#a0a0a6}
+.sidebar .chatrow .avatar{filter:grayscale(1);background:#333338!important;color:#eeeef1!important}
+.workspace{background:#09090a}
+.workspace .chathead,.workspace .top{background:#171719;border-color:#29292d}
+.workspace .chatlog{background-color:#0b0b0c;background-image:radial-gradient(circle at 24px 24px,#ffffff0b 1.5px,transparent 2.5px),radial-gradient(circle at 72px 90px,#ffffff08 1.5px,transparent 2.5px)}
+.workspace .bubble{background:#38383c;color:#fff;box-shadow:0 1px 4px #0007}
+.workspace .bubble.other{background:#202024}
+.workspace .bubble small{color:#c6c6cc}
+.workspace .composer{background:#171719;border-color:#2a2a2e}
+.workspace .composer textarea{background:#29292d;color:#fff}
+.workspace .composer textarea::placeholder{color:#a6a6ab}
+.workspace .send{background:#dcdce1;color:#111113}
+.room-label{background:#161618;color:#aaaab1}
+.welcome{background:#111113;box-shadow:inset 0 -4px 0 #343438}
+.welcome-logo{color:#eeeef1}
+.welcome-logo span{color:#d3d3d8}
+.welcome-symbol{background:#29292d;color:#e1e1e5;box-shadow:none}
+.welcome h1{color:#f2f2f5}
+.welcome p{color:#b1b1b8}
+.welcome small{color:#a2a2a9}
+.welcome-actions button{background:#2c2c30;color:#eeeef1}
+.welcome-actions button:first-child{background:#d5d5db;color:#131315}
+.workspace .card,.card{background:#18181b;border-color:#303034;color:#f5f5f6}
+.card h2{color:#f5f5f7}
+.field{background:#242428;color:#f5f5f7;border-color:#3b3b40}
+.field::placeholder{color:#a4a4ab}
+.label,.setting strong{color:#f1f1f4}
+.muted,.tiny,.setting small{color:#aaaab0}
+.primary{background:#e0e0e4;color:#131316}
+.secondary{background:#2c2c30;color:#f0f0f2;border-color:#49494e}
+.linkbutton{color:#e5e5e9}
+.setting{border-color:#333338}
+.pill{background:#29292d;color:#dedee3}
+.divider{background:#353539}
+.auth{background:radial-gradient(circle at 45% 12%,#222226,#09090b 68%)}
+.auth .authlogo{color:#f1f1f3}
+.authlogo .logoicon{color:#111113}
+.authlogo .brand,.authlogo .brand span{color:#f7f7f8}
+.authlogo p{color:#b3b3ba}
+.auth .authbox,.modal .authbox{background:#171719;color:#f4f4f6;border:1px solid #39393e;box-shadow:0 14px 55px #0009}
+.authbox h2,.authbox strong{color:#fff}
+.authbox p,.authbox .label,.authbox label{color:#c2c2c8}
+.authbox .tabs{background:#27272b}
+.authbox .tabs button{color:#aaaab1}
+.authbox .tabs button.selected{background:#414146;color:#fff}
+.authbox .field,.authbox input,.authbox select{color:#f5f5f7;background:#232327;border-color:#4a4a50}
+.authbox .fineprint,.authbox .hint{color:#a3a3aa!important}
+.authbox .stepback{color:#dedee2}
+.authbox .avatarpicker{background:#29292e;border-color:#64646b}
+.authbox .autonote{background:#242428;color:#dddde1;border-color:#434348}
+.authbox .paircode{color:#ececf0}
+.authbox .qrsteps{color:#c1c1c6}
+.authfooter{color:#96969d}
+.auth .phoneentry select{background:#232327}
+.workspace .madar-page{background:#0c0c0d}
+.ai-head .inapp-tag{background:#313136;color:#e4e4e8}
+.madar-activity{background:#0b0b0d}
+.madar-intro h2{color:#eeeef1}
+.madar-intro p{color:#b4b4ba}
+.madar-system{background:#19191c;border:1px solid #3d3d42}
+.madar-system p{color:#bfbfc5}
+.madar-system .madar-launch{background:#d7d7dd;color:#111113}
+.madar-system .madar-connect{background:#2b2b30;border-color:#4c4c53;color:#ececf0}
+.madar-settings{background:#1c1c20;border-color:#3b3b40}
+.madar-settings p{color:#bdbdc3}
+.endpoint-row input{background:#202024;border-color:#4b4b50}
+.endpoint-row button,.madar-system button{background:#d8d8dc;color:#101012}
+.madar-bottom{background:#171719;border-color:#36363a}
+.madar-compose{background:#26262a;border-color:#414146}
+.madar-compose button{background:#dbdbe0;color:#101012}
+.madar-msg.me{background:#38383d}
+.madar-msg.bot{background:#202024;border-color:#44444a}
+.toast{background:#dcdce1;color:#16161a}
+@media(max-width:850px){
+  .nav{background:#09090a;border-color:#303034}
+  .sidebar .top{background:#101012}
+  .workspace .chathead{background:#171719}
+  .auth .authbox{background:#171719}
+}
+
+
+/* Genuine Madar website inside a desktop Electron WebContents (NOT an iframe). */
+.madar-native{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;background:#0b0b0d;overflow:hidden}
+.madar-native webview{position:relative;display:flex;width:100%;height:100%;flex:1;background:#0b0b0d}
+.madar-loading{position:absolute;inset:0;z-index:1;display:grid;place-items:center;text-align:center;padding:20px;color:#e6e6eb;background:#101012;font-size:15px}
+.madar-loading.hidden{display:none!important}
+.madar-native:not(.hidden) ~ .madar-activity,.madar-native:not(.hidden) ~ .madar-bottom,.madar-native:not(.hidden) ~ .madar-settings{display:none!important}
+.madar-page:has(.madar-native:not(.hidden)) .madar-settings,.madar-page:has(.madar-native:not(.hidden)) .madar-bottom{display:none!important}
+.madar-page .ai-settings-button{display:inline-grid}
+.madar-page:has(.madar-native:not(.hidden)) .ai-settings-button{display:none}
+
+
+/* Original Madar embeds only when Y Chat is served from the same origin as Madar. */
+.madar-site-container{position:relative;flex:1;min-height:0;background:#0e0e13;display:flex;flex-direction:column;overflow:hidden}
+.madar-site-container iframe{width:100%;height:100%;flex:1;display:block;border:0;background:#0f0f18}
+.madar-site-container iframe[hidden]{display:none!important}
+.madar-open-help{max-width:620px;margin:auto;padding:25px;text-align:center;line-height:2}
+.madar-open-help[hidden]{display:none!important}
+.madar-open-help h2{font-size:21px}
+.madar-open-help p{color:#a4a4b3;font-size:14px}
+.madar-open-help a{display:inline-block;padding:10px 18px;border-radius:11px;background:#23222e;color:#e3deff;text-decoration:none}
+
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><symbol id="yc-chat" viewBox="0 0 24 24"><path d="M20.6 11.8a8.6 8.6 0 0 1-8.8 8.6 9.4 9.4 0 0 1-4.3-1l-4.1 1.1 1.2-4a8.6 8.6 0 1 1 16-4.7Z"/></symbol><symbol id="yc-spark" viewBox="0 0 24 24"><path d="m12 2 1.8 7.2L21 11l-7.2 1.8L12 20l-1.8-7.2L3 11l7.2-1.8L12 2Z"/><path d="m19 17 .6 2.4L22 20l-2.4.6L19 23l-.6-2.4L16 20l2.4-.6L19 17Z"/></symbol><symbol id="yc-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3-6 8-6s8 2 8 6"/></symbol></svg>
+<div class="layout">
+<main class="app" id="app" data-page="home">
+<div class="sidebar">
+<section class="page" id="home">
+<header class="top"><div><div class="brand">المحادثات</div><div class="subbrand">Y CHAT</div></div><button class="iconbtn" onclick="show('new')" aria-label="محادثة جديدة" title="محادثة جديدة">＋</button></header>
+<div class="intro"><h2 class="hidden">أهلاً <span id="homeName">بيك</span> 👋</h2><div class="muted">Y Chat</div></div>
+<div class="notice">تجربة فقط: تقدر تكتب وتجرب الرسائل؛ إرسالها لأشخاص تانيين محتاج سيرفر.</div>
+<label class="search"><span>⌕</span><input id="search" placeholder="ابحث في المحادثات…" aria-label="البحث في المحادثات"></label>
+<button class="madar-card" onclick="show('ai')"><span class="orb">✦</span><span><strong>مدار AI</strong><small>مدار AI الأصلي</small></span><span class="arrow">›</span></button>
+<div class="sectionline"><h3>الدردشات</h3><span class="pill">معاينة محلية</span></div>
+<div class="filters"><button id="all" class="filter active" onclick="filterChats(false)">الكل</button><button id="groups" class="filter" onclick="filterChats(true)">الجروبات</button></div>
+<div id="rows" class="rows"></div>
+</section>
+</div>
+<div class="workspace">
+<section class="welcome" id="welcome" aria-label="الرئيسية">
+  <div class="welcome-hero"><div class="welcome-logo">Y <span>Chat</span></div>
+    <div class="welcome-symbol">💬</div>
+    <h1>Y Chat للويب</h1>
+    <p>ابعت رسايلك وابدأ محادثاتك من شاشة واحدة. اختار دردشة من القائمة.</p>
+    <div class="welcome-actions"><button onclick="show('ai')">✦ &nbsp; مدار AI</button><button onclick="show('new')">＋ &nbsp; محادثة جديدة</button></div>
+    <small>🔒 المعاينة دي مش متصلة بأشخاص حقيقيين بعد. التسجيل وربط الأجهزة تجريبي.</small>
+  </div>
+</section>
+<section id="chat" class="page hidden"><header class="chathead"><button class="iconbtn back-btn" onclick="show('home')" aria-label="رجوع">→</button><div id="chatavatar" class="avatar"></div><div><h2 id="chatname"></h2><span class="tiny">محادثة محلية تجريبية</span></div></header><div class="room-label" style="text-align:center;margin-top:13px">🔒 الرسائل هنا محفوظة محليًا — مش بتتوصل لأشخاص تانيين</div><div class="chatlog" id="chatlog" role="log" aria-live="polite"></div><form class="composer" id="composer"><textarea id="message" rows="1" maxlength="2000" placeholder="اكتب رسالة…" aria-label="الرسالة"></textarea><button class="send" id="send" type="submit" disabled aria-label="إرسال رسالة محلية">↑</button></form></section>
+<section id="ai" class="page hidden madar-page" aria-label="مدار AI الأصلي">
+  <header class="chathead ai-head">
+    <button class="iconbtn back-btn" type="button" onclick="show('home')" aria-label="رجوع للمحادثات">→</button>
+    <div class="orb ai-orb">✦</div>
+    <div class="ai-titles"><h2>مدار AI <span class="inapp-tag">الأصلي</span></h2>
+      <span class="tiny" id="madarStatus">مدار الأصلي داخل Y Chat</span></div>
+    <button class="iconbtn" type="button" onclick="reloadMadar()" aria-label="تحديث مدار" title="تحديث مدار">↻</button>
+  </header>
+  <div class="madar-site-container" id="madarView">
+    <div class="madar-open-help" id="madarOpenHelp" hidden>
+      <div class="welcome-symbol">✦</div><h2>مدار الأصلي جاهز للدمج</h2>
+      <p>علشان مدار يفتح هنا من غير حظر، ارفع ملف Y Chat باسم <b dir="ltr">ychat.html</b> داخل مشروع مدار نفسه على GitHub ثم افتح Y Chat من دومين مدار: <b dir="ltr">/ychat.html</b>.</p>
+      <p>فتح ملف HTML من الكمبيوتر مباشرة مش هيقدر يشغّل iframe محمي من دومين مختلف.</p>
+      <a href="https://madar-ai-yousef.vercel.app/" target="_blank" rel="noopener noreferrer">اختبر موقع مدار الأصلي</a>
+    </div>
+    <iframe id="madarFrame" title="موقع مدار AI الأصلي داخل Y Chat" allow="clipboard-read; clipboard-write; microphone" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+</section>
+<section id="profile" class="page hidden"><header class="top"><h2 style="margin:0">حسابي</h2><button class="iconbtn" onclick="show('home')" aria-label="رجوع">→</button></header><div class="card"><div class="profileheader"><div id="profileAvatar" class="profileavatar"></div><div><h2 id="profileName">حساب Y Chat</h2><div id="profilePhone" class="muted" dir="ltr"></div></div></div><div class="divider"></div><button class="setting" onclick="openEditProfile()"><span class="ico">✎</span><span><strong>تعديل الملف الشخصي</strong><small>الاسم والصورة الشخصية</small></span><span class="chev">‹</span></button><button class="setting" onclick="show('devices')"><span class="ico">▣</span><span><strong>الأجهزة المرتبطة</strong><small>QR لربط جهاز جديد — نموذج تجريبي</small></span><span class="chev">‹</span></button><button class="setting" onclick="logOut()"><span class="ico">⇥</span><span><strong>تسجيل الخروج</strong><small>الخروج من جلسة المعاينة دي</small></span><span class="chev">‹</span></button></div><p class="foot">الرقم غير موثّق. الاسم والصورة والرسائل محفوظين على الجهاز فقط. مش حساب حقيقي لسه.</p></section>
+<section id="devices" class="page hidden"><header class="chathead"><button class="iconbtn" onclick="show('profile')">→</button><h2>الأجهزة المرتبطة</h2></header><div class="card"><h2>الجهاز الحالي</h2><div class="iconline"><span style="font-size:27px">📱</span><div><strong>المتصفح الحالي</strong><div class="muted">جلسة المعاينة الحالية</div></div><span class="pill" style="margin-right:auto">نشط</span></div><div class="divider"></div><h2>تسجيل دخول على جهاز تاني</h2><p class="muted">زي واتساب: على الجهاز الجديد اختار «تسجيل الدخول باستخدام QR»، ومن جهازك الأساسي امسح الكود الظاهر على الجهاز الجديد.</p><button class="primary" onclick="openScanner()">▦ مسح QR من الجهاز الجديد</button><div style="height:9px"></div><button class="secondary" onclick="openDemoApproval()">⌨ ربط باستخدام رمز الجهاز</button></div><p class="foot">ربط الأجهزة الحقيقية ومزامنة المحادثات بين تليفون وكمبيوتر مش شغالين من ملف HTML وحده. لازم قاعدة بيانات وخدمة جلسات.</p></section>
+<section id="new" class="page hidden"><header class="chathead"><button class="iconbtn" onclick="show('home')">→</button><h2>محادثة جديدة</h2></header><form class="card" id="newform"><label class="label" for="newname">اسم المحادثة</label><input class="field" id="newname" maxlength="40" required placeholder="مثلاً: أصحاب الشغل"><label class="muted"><input type="checkbox" id="isgroup"> جروب تجريبي</label><p class="muted">هتتضاف للمعاينة، من غير دعوات أو إرسال حقيقي.</p><button class="primary" type="submit">إنشاء المحادثة</button></form></section>
+</div>
+<nav class="nav" aria-label="التنقل"><button id="nav-home" class="on" data-page="home" onclick="show('home')"><span class="navico"><svg class="ui-icon"><use href="#yc-chat"></use></svg></span>المحادثات</button><button id="nav-ai" data-page="ai" onclick="show('ai')"><span class="navico"><svg class="ui-icon"><use href="#yc-spark"></use></svg></span>مدار</button><button id="nav-profile" data-page="profile" onclick="show('profile')"><span class="navico"><svg class="ui-icon"><use href="#yc-user"></use></svg></span>حسابي</button></nav>
+<div class="auth" id="auth">
+<div class="authlogo"><div class="logoicon">Y</div><div class="brand">Y <span>Chat</span></div><p>قريبين مهما كانت المسافة</p></div>
+<div class="authbox" id="authbox"><h2>أهلاً بيك في Y Chat</h2><p>ابدأ برقمك مباشرة، أو افتح وضع QR التجريبي.</p><div class="tabs"><button type="button" class="selected" id="tabphone" onclick="setAuthTab('phone')">📱 رقم التليفون</button><button type="button" id="tabqr" onclick="setAuthTab('qr')">▦ QR على جهاز تاني</button></div>
+<div id="authPhone"><label class="label" for="phoneNumber">رقم تليفونك</label><div class="phoneentry"><select id="country" aria-label="مفتاح الدولة"><option value="+20">🇪🇬 +20</option><option value="+966">🇸🇦 +966</option><option value="+971">🇦🇪 +971</option><option value="+965">🇰🇼 +965</option><option value="+962">🇯🇴 +962</option><option value="+1">+1</option></select><input class="field" id="phoneNumber" type="tel" autocomplete="tel-national" placeholder="01xxxxxxxxx" dir="ltr" inputmode="tel" maxlength="17"></div><button class="primary" onclick="continueWithoutSms()">متابعة</button><p class="fineprint">دخول تجريبي محلي، الرقم مش بيتحقق منه ومش حساب حقيقي.</p></div>
+<div id="authProfile" class="hidden"><h2>كمّل ملفك الشخصي</h2><p>اختار اسمك وصورتك عشان يظهروا في Y Chat.</p><label class="avatarpicker" aria-label="اختيار صورة شخصية"><span id="picturePlaceholder">📷</span><img class="hidden" id="photoPreview" alt="صورة الملف الشخصي"><small>أضف صورة</small><input id="avatarUpload" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onchange="previewPhoto(event)"></label><label class="label" for="signupName">اسمك</label><input class="field" id="signupName" maxlength="35" placeholder="اكتب اسمك هنا" autocomplete="nickname"><button class="primary" onclick="finishProfile()">ابدأ استخدام Y Chat</button></div>
+<div id="authQR" class="hidden"><p>افتح تطبيق Y Chat على الجهاز الأساسي، وادخل «الأجهزة المرتبطة». دي معاينة لطريقة ربط الأجهزة.</p><div class="qrsurface" id="loginQR" role="img" aria-label="رمز QR تجريبي للربط"></div><span class="paircode" id="pairCode">••••••</span><ol class="qrsteps"><li>افتح Y Chat على تليفونك.</li><li>ادخل «حسابي» ثم «الأجهزة المرتبطة».</li><li>امسح الكود للموافقة على الجهاز الجديد (بعد تفعيل الخادم).</li></ol><button class="secondary" onclick="newPairRequest()">↻ تغيير QR</button><div style="height:8px"></div><button class="smallbutton" style="width:100%" onclick="copyPairToken()">نسخ رمز الربط الكامل للتجربة</button><p class="hint">الكود حقيقي وقابل للمسح، لكن الربط بين جهازين مختلفين مش مفعّل لحد ما نوصل قاعدة بيانات وخادم آمن. ممكن تجربة الموافقة محليًا في تبويبين على نفس المتصفح.</p></div>
+</div><div class="authfooter">معاينة Y Chat — الدخول والرسائل للتجربة على جهازك فقط، من غير تحقق من الرقم.</div>
+</div>
+<div class="modal hidden" id="scanModal" role="dialog" aria-modal="true" aria-labelledby="scanModalTitle"><div class="authbox"><h2 id="scanModalTitle">مسح QR من الجهاز الجديد</h2><p>وجّه كاميرا الجهاز على رمز QR الظاهر في شاشة الدخول على الجهاز التاني. لازم إذن الكاميرا ومتصفح بيدعم قراءة QR.</p><video id="scanVideo" class="hidden" autoplay muted playsinline style="width:100%;height:220px;object-fit:cover;border-radius:15px;background:#0d1726"></video><p id="scanStatus" class="muted">بنجهّز الكاميرا…</p><label class="label" for="manualToken">أو اكتب رمز الربط الكامل</label><input class="field" id="manualToken" dir="ltr" maxlength="24" placeholder="24-character pairing code"><div class="actions"><button class="secondary" onclick="closeScanner()">إلغاء</button><button class="primary" onclick="manualApprove()">متابعة</button></div></div></div>
+<div class="modal hidden" id="pairModal" role="dialog" aria-modal="true" aria-labelledby="pairModalTitle"><div class="authbox"><h2 id="pairModalTitle">الموافقة على جهاز</h2><p id="pairModalDesc">هل توافق على ربط الجهاز الجديد؟</p><div class="actions"><button class="secondary" onclick="closePairModal()">إلغاء</button><button class="primary" onclick="approvePair()">موافقة</button></div></div></div>
+<div id="toast" class="toast hidden" role="status"></div>
+</main></div>
+<script>
+/* Kazuhiko Arase QRCode library, MIT; bundled from qrcode-terminal vendor. */
+(function(){
+const modules={
+'QR8bitByte':function(module,exports,require){
+var QRMode = require('./QRMode');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+},
+'QRBitBuffer':function(module,exports,require){
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+},
+'QRErrorCorrectLevel':function(module,exports,require){
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+},
+'QRMaskPattern':function(module,exports,require){
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+},
+'QRMath':function(module,exports,require){
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+},
+'QRMode':function(module,exports,require){
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+},
+'QRPolynomial':function(module,exports,require){
+var QRMath = require('./QRMath');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+},
+'QRRSBlock':function(module,exports,require){
+var QRErrorCorrectLevel = require('./QRErrorCorrectLevel');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+},
+'QRUtil':function(module,exports,require){
+var QRMode = require('./QRMode');
+var QRPolynomial = require('./QRPolynomial');
+var QRMath = require('./QRMath');
+var QRMaskPattern = require('./QRMaskPattern');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+},
+'index':function(module,exports,require){
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of 
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = require('./QR8bitByte');
+var QRUtil = require('./QRUtil');
+var QRPolynomial = require('./QRPolynomial');
+var QRRSBlock = require('./QRRSBlock');
+var QRBitBuffer = require('./QRBitBuffer');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+},
+};const cache={};function load(s){const id=s.slice(2);if(cache[id])return cache[id].exports;const module={exports:{}};cache[id]=module;modules[id](module,module.exports,load);return module.exports;}
+window.YQRCode=load("./index");
+})();
+</script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const seed=[
+{id:'ideas',name:'أفكاري',initial:'ي',color:'#263959',ink:'#a4c4ff',group:false,messages:[{text:'دي مساحة تجربة الرسائل. اكتب أي رسالة وهتفضل محفوظة هنا على نفس الجهاز.',mine:false}]},
+{id:'friends',name:'لَمّة الصحاب',initial:'ل',color:'#372b48',ink:'#c6a5ef',group:true,messages:[{text:'ده مثال لشكل الجروبات في التطبيق.',mine:false}]},
+{id:'design',name:'فريق التصميم',initial:'ت',color:'#263c37',ink:'#a1d5bb',group:true,messages:[{text:'تصميم Y Chat الأسود جاهز.',mine:false}]},
+{id:'notes',name:'ملاحظاتي',initial:'م',color:'#403529',ink:'#e8c49a',group:false,messages:[]}
+];
+const CHAT_KEY='ychat-demo-v1', PROFILE_KEY='ychat-user-v2', SESSION_KEY='ychat-signed-in-v2';
+let chats=seed, active=null, groupOnly=false, toastTimer=null, user=null, phoneCandidate='', pictureData='', signupMode=false, madarLoaded=false, currentPairToken='', approvalToken='', pairTimer=null, authTab='phone';
+try{const data=JSON.parse(localStorage.getItem(CHAT_KEY));if(Array.isArray(data)&&data.every(c=>typeof c.id==='string'&&typeof c.name==='string'&&Array.isArray(c.messages)&&c.messages.every(m=>typeof m.text==='string')))chats=data;}catch{}
+try{const data=JSON.parse(localStorage.getItem(PROFILE_KEY));if(data&&typeof data.name==='string'&&typeof data.phone==='string')user=data;}catch{}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),3600)}
+function persist(){try{localStorage.setItem(CHAT_KEY,JSON.stringify(chats))}catch{toast('مش قادر أحفظ المحادثة في المتصفح ده.')}}
+function safeWrite(key,val){try{localStorage.setItem(key,JSON.stringify(val));return true}catch{toast('تعذّر حفظ بيانات المعاينة على الجهاز.');return false}}
+function shownAuth(){return !$('auth').classList.contains('hidden')}
+function authOK(){return sessionStorage.getItem(SESSION_KEY)==='yes'&&!!user}
+function setSignedIn(){if(!user)return;sessionStorage.setItem(SESSION_KEY,'yes');$('auth').classList.add('hidden');updateProfileUI();show('home');checkPairHash()}
+function show(id){
+  if(!$(id))return;
+  $('app').dataset.page=id;
+  document.querySelectorAll('section.page').forEach(s=>s.classList.toggle('hidden',s.id!==id));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.page===id||(id==='chat'&&b.dataset.page==='home')||(id==='devices'&&b.dataset.page==='profile')));
+  if(id==='home'||id==='chat')renderRows();
+  if(id==='ai'){refreshMadarConnection();launchEmbeddedMadar();}
+  if(id==='profile')updateProfileUI();
+}
+
+// madarLoaded is already declared in the main state;
+function refreshMadarConnection(){
+  const hosted = /^https?:$/.test(location.protocol);
+  const text = hosted ? 'مدار الأصلي — داخل Y Chat' : 'لازم تفتح Y Chat من نفس دومين مدار';
+  $('madarStatus').textContent = text;
+}
+function launchEmbeddedMadar(){
+  const hosted = /^https?:$/.test(location.protocol);
+  $('madarOpenHelp').hidden=hosted;
+  $('madarFrame').hidden=!hosted;
+  if(!hosted || madarLoaded) return;
+  // Both files must be deployed on Madar's own origin. Its CSP explicitly permits frame-ancestors 'self'.
+  madarLoaded=true;
+  $('madarFrame').src=new URL('/',location.href).href;
+}
+function reloadMadar(){
+  const frame=$('madarFrame');
+  if(frame.hidden){toast('لازم تفتح Y Chat من نفس دومين مدار.');return;}
+  frame.src=new URL('/',location.href).href;
+}
+
+function filterChats(v){groupOnly=v;$('all').classList.toggle('active',!v);$('groups').classList.toggle('active',v);renderRows()}
+function renderRows(){let target=$('rows');target.replaceChildren();let q=$('search').value.trim().toLowerCase();const list=chats.filter(c=>(!groupOnly||c.group)&&c.name.toLowerCase().includes(q));for(let c of list){let b=document.createElement('button');b.className='chatrow'+(active?.id===c.id&&$('app').dataset.page==='chat'?' active':'');b.onclick=()=>openChat(c.id);let a=document.createElement('div');a.className='avatar';a.style.background=c.color||'#263959';a.style.color=c.ink||'#a4c4ff';a.textContent=c.initial||c.name[0];let info=document.createElement('div');info.className='rinfo';let name=document.createElement('strong');name.textContent=c.name;let sub=document.createElement('p');sub.textContent=c.messages.length?c.messages[c.messages.length-1].text:'اكتب أول رسالة';info.append(name,sub);let tag=document.createElement('span');tag.className='tiny';tag.textContent=c.group?'جروب':'تجريبي';b.append(a,info,tag);target.append(b)}if(!list.length){let p=document.createElement('p');p.className='empty';p.textContent='مفيش محادثات مطابقة.';target.append(p)}}
+function openChat(id){active=chats.find(c=>c.id===id);if(!active)return;$('chatname').textContent=active.name;$('chatavatar').textContent=active.initial||active.name[0];$('chatavatar').style.background=active.color||'#263959';$('chatavatar').style.color=active.ink||'#a4c4ff';$('message').value='';$('send').disabled=true;show('chat');renderMessages()}
+function renderMessages(){let log=$('chatlog');log.replaceChildren();if(!active.messages.length){let p=document.createElement('p');p.className='empty';p.textContent='كل حكاية بتبدأ برسالة. اكتب أول رسالة.';log.append(p)}for(let m of active.messages){let b=document.createElement('div');b.className='bubble'+(m.mine?'':' other');b.textContent=m.text;let s=document.createElement('small');s.textContent=m.mine?'محفوظة على الجهاز • لم تُرسل':'رسالة توضيحية';b.append(s);log.append(b)}log.scrollTop=log.scrollHeight}
+$('search').addEventListener('input',renderRows);
+$('message').addEventListener('input',()=>{$('send').disabled=!$('message').value.trim()});
+$('message').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();if($('message').value.trim())$('composer').requestSubmit()}});
+$('composer').addEventListener('submit',e=>{e.preventDefault();let t=$('message').value.trim();if(!t||!active)return;active.messages.push({text:t,mine:true});persist();$('message').value='';$('send').disabled=true;renderMessages()});
+$('newform').addEventListener('submit',e=>{e.preventDefault();let name=$('newname').value.trim();if(!name)return;let c={id:'c'+Date.now()+Math.random().toString(36).slice(2),name,initial:Array.from(name)[0],color:'#263959',ink:'#a4c4ff',group:$('isgroup').checked,messages:[]};chats.unshift(c);persist();$('newform').reset();openChat(c.id)});
+function setAuthTab(t){authTab=t;$('tabphone').classList.toggle('selected',t==='phone');$('tabqr').classList.toggle('selected',t==='qr');$('authQR').classList.toggle('hidden',t!=='qr');for(let id of ['authPhone','authProfile'])if(t==='qr')$(id).classList.add('hidden');if(t==='phone')setPhoneStage('number');if(t==='qr')newPairRequest()}
+function setPhoneStage(step){$('authPhone').classList.toggle('hidden',step!=='number');$('authProfile').classList.toggle('hidden',step!=='profile');$('authQR').classList.add('hidden');if(step==='profile'){$('signupName').value=signupMode&&user?user.name:'';setPhotoPreview(signupMode&&user?user.avatar:'');}}
+function continueWithoutSms(){
+  const n=$('phoneNumber').value.replace(/[^0-9]/g,'');
+  if(n.length<8||n.length>15){toast('اكتب رقم تليفون من 8 لـ 15 رقم.');return}
+  phoneCandidate=$('country').value+' '+n;
+  signupMode=false;
+  if(user&&user.phone===phoneCandidate){setSignedIn();toast('أهلاً برجوعك يا '+user.name+' — تسجيل تجريبي غير موثّق');return}
+  pictureData='';setPhoneStage('profile');
+}
+function setPhotoPreview(src){pictureData=src||'';if(src){$('photoPreview').src=src;$('photoPreview').classList.remove('hidden');$('picturePlaceholder').classList.add('hidden')}else{$('photoPreview').classList.add('hidden');$('photoPreview').removeAttribute('src');$('picturePlaceholder').classList.remove('hidden')}}
+function previewPhoto(evt){const file=evt.target.files?.[0];if(!file)return;if(!file.type.startsWith('image/')||file.size>5*1024*1024){toast('اختار صورة JPG أو PNG أو WebP حجمها أقل من 5 ميجا.');evt.target.value='';return}const reader=new FileReader();reader.onload=()=>{let img=new Image();img.onload=()=>{let canvas=document.createElement('canvas');canvas.width=canvas.height=220;let ctx=canvas.getContext('2d');let s=Math.min(img.width,img.height);ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,220,220);setPhotoPreview(canvas.toDataURL('image/jpeg',0.75))};img.onerror=()=>toast('الصورة دي مش مدعومة.');img.src=reader.result};reader.readAsDataURL(file)}
+function finishProfile(){let name=$('signupName').value.trim();if(name.length<2){toast('اكتب اسم من حرفين على الأقل.');return}user={name,phone:signupMode&&user?user.phone:phoneCandidate,avatar:pictureData||''};if(!safeWrite(PROFILE_KEY,user))return;setSignedIn();toast(signupMode?'اتحفظت التعديلات ✓':'أهلاً بيك في Y Chat');signupMode=false}
+function updateProfileUI(){if(!user)return;$('homeName').textContent=user.name;$('profileName').textContent=user.name;$('profilePhone').textContent=user.phone;const el=$('profileAvatar');el.replaceChildren();if(user.avatar){const img=document.createElement('img');img.src=user.avatar;img.alt='الصورة الشخصية';img.style.cssText='width:100%;height:100%;object-fit:cover';el.append(img)}else el.textContent=user.name[0]||'Y'}
+function openEditProfile(){signupMode=true;pictureData=user?.avatar||'';$('auth').classList.remove('hidden');$('authbox').querySelector('h2').textContent='تعديل الملف الشخصي';$('authbox').querySelector('p').textContent='غيّر اسمك وصورتك من هنا.';$('authbox').querySelector('.tabs').classList.add('hidden');$('signupName').value=user.name;setPhoneStage('profile');setPhotoPreview(user.avatar)}
+function logOut(){sessionStorage.removeItem(SESSION_KEY);$('auth').classList.remove('hidden');$('authbox').querySelector('h2').textContent='أهلاً بيك في Y Chat';$('authbox').querySelector('p').textContent='ابدأ برقمك مباشرة، أو افتح وضع QR التجريبي.';$('authbox').querySelector('.tabs').classList.remove('hidden');signupMode=false;setAuthTab('phone');show('home');toast('خرجت من جلسة المعاينة.')}
+function randomToken(){const buf=new Uint8Array(12);if(window.crypto?.getRandomValues)crypto.getRandomValues(buf);else for(let i=0;i<buf.length;i++)buf[i]=Math.floor(Math.random()*256);return Array.from(buf,b=>b.toString(16).padStart(2,'0')).join('')}
+function pairLink(t){if(location.protocol==='https:'||location.protocol==='http:'){let url=new URL(location.href);url.hash='approve='+encodeURIComponent(t);return url.toString()}return 'YCHAT-DEMO-PAIR:'+t}
+function newPairRequest(){currentPairToken=randomToken();safeWrite('ychat-pair-'+currentPairToken,{status:'pending',createdAt:Date.now()});$('pairCode').textContent=currentPairToken.slice(0,8).toUpperCase();drawQR('loginQR',pairLink(currentPairToken));if(pairTimer)clearInterval(pairTimer);pairTimer=setInterval(checkPairRequest,1300)}
+function checkPairRequest(){if(!currentPairToken)return;let p=null;try{p=JSON.parse(localStorage.getItem('ychat-pair-'+currentPairToken))}catch{}if(p?.status==='approved'&&p.profile?.name){user=p.profile;safeWrite(PROFILE_KEY,user);sessionStorage.setItem(SESSION_KEY,'yes');$('auth').classList.add('hidden');updateProfileUI();show('home');clearInterval(pairTimer);pairTimer=null;toast('تم الربط محليًا بين تبويبين في نفس المتصفح ✓')}else if(p&&Date.now()-p.createdAt>120000){clearInterval(pairTimer);pairTimer=null;toast('انتهت صلاحية QR التجريبي. اضغط تغيير QR.')}}
+window.addEventListener('storage',ev=>{if(ev.key==='ychat-pair-'+currentPairToken)checkPairRequest()});
+function checkPairHash(){const match=location.hash.match(/^#approve=([a-f0-9]{24})$/i);if(!match||!authOK())return;approvalToken=match[1];$('pairModalDesc').textContent='تأكيد ربط جهاز تجريبي. الربط ده يشتغل بين تبويبين من نفس الموقع والمتصفح فقط، مش على جهازين منفصلين.';$('pairModal').classList.remove('hidden')}
+function closePairModal(){$('pairModal').classList.add('hidden');history.replaceState(null,'',location.pathname+location.search);approvalToken=''}
+function approvePair(){if(!authOK()||!approvalToken)return;let key='ychat-pair-'+approvalToken,p=null;try{p=JSON.parse(localStorage.getItem(key))}catch{}if(!p||p.status!=='pending'||Date.now()-p.createdAt>120000){toast('الرمز ده مش موجود أو انتهت صلاحيته.');closePairModal();return}safeWrite(key,{status:'approved',createdAt:p.createdAt,profile:{name:user.name,phone:user.phone,avatar:user.avatar||''}});closePairModal();toast('وافقت على ربط الجهاز في معاينة المتصفح ✓')}
+function copyPairToken(){if(!currentPairToken)return;const token=currentPairToken;if(navigator.clipboard?.writeText){navigator.clipboard.writeText(token).then(()=>toast('تم نسخ رمز الربط')).catch(()=>prompt('انسخ رمز الربط:',token))}else prompt('انسخ رمز الربط:',token)}
+let cameraStream=null, scanTimer=null, scanningBusy=false;
+async function openScanner(){if(!authOK()){toast('سجّل الدخول الأول.');return}$('scanModal').classList.remove('hidden');$('scanVideo').classList.add('hidden');$('scanStatus').textContent='بنجهّز الكاميرا…';$('manualToken').value='';if(!navigator.mediaDevices?.getUserMedia||!window.BarcodeDetector){$('scanStatus').textContent='المتصفح ده مش بيدعم مسح QR مباشرةً. انسخ رمز الربط من الجهاز الجديد واكتبه تحت.';return}try{const detector=new BarcodeDetector({formats:['qr_code']});cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});if($('scanModal').classList.contains('hidden')){cameraStream.getTracks().forEach(t=>t.stop());return}const video=$('scanVideo');video.srcObject=cameraStream;video.classList.remove('hidden');await video.play();$('scanStatus').textContent='وجّه الكاميرا نحو رمز QR';scanTimer=setInterval(async()=>{if(scanningBusy)return;scanningBusy=true;try{const codes=await detector.detect(video);for(const c of codes){let match=c.rawValue.match(/(?:#approve=|YCHAT-DEMO-PAIR:)([a-f0-9]{24})/i);if(match){closeScanner();requestPairApproval(match[1]);break}}}catch{}finally{scanningBusy=false}},650)}catch(e){$('scanStatus').textContent='الكاميرا مش متاحة أو الإذن مرفوض. ممكن تستخدم رمز الربط المكتوب.'}}
+function closeScanner(){if(scanTimer){clearInterval(scanTimer);scanTimer=null}if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}$('scanVideo').srcObject=null;$('scanModal').classList.add('hidden')}
+function requestPairApproval(token){if(!/^[a-f0-9]{24}$/i.test(token)){toast('رمز الربط غير صحيح.');return}approvalToken=token;$('pairModalDesc').textContent='هل توافق على ربط الجهاز الجديد تجريبيًا؟ الربط بين تبويبين في نفس المتصفح فقط حاليًا.';$('pairModal').classList.remove('hidden')}
+function manualApprove(){const token=$('manualToken').value.trim();if(!token){toast('اكتب رمز الربط الأول.');return}closeScanner();requestPairApproval(token)}
+function openDemoApproval(){openScanner()}
+// QR generation: valid, scannable SVG; uses bundled open-source QR implementation.
+function drawQR(id,txt){const holder=$(id);holder.replaceChildren();try{const qr=new window.YQRCode(0,1);qr.addData(txt);qr.make();const size=qr.getModuleCount(), quiet=4, total=size+quiet*2;const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox',`0 0 ${total} ${total}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','QR Code');svg.setAttribute('shape-rendering','crispEdges');const bg=document.createElementNS(svg.namespaceURI,'rect');bg.setAttribute('width',total);bg.setAttribute('height',total);bg.setAttribute('fill','#ffffff');svg.append(bg);let path='';for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(qr.isDark(y,x))path+=`M${x+quiet} ${y+quiet}h1v1h-1z`;let dark=document.createElementNS(svg.namespaceURI,'path');dark.setAttribute('d',path);dark.setAttribute('fill','#15294c');svg.append(dark);holder.append(svg)}catch(err){holder.textContent='تعذّر إنشاء QR';console.error(err)}}
+function startApp(){refreshMadarConnection();renderRows();updateProfileUI();if(authOK()){$('auth').classList.add('hidden');checkPairHash()}else{$('auth').classList.remove('hidden');setAuthTab('phone')}if('serviceWorker' in navigator){/* A server-side app can register a service worker later. */}}
+startApp();
+</script>
+</body>
+</html>
