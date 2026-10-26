@@ -21,7 +21,10 @@ function detect(input,history=[]){
  const how=/^(?:(?:يا مدار|مدار|لو سمحت|بص|انا|ممكن|هو|هي|ايه|يعني)\s+){0,4}(?:ازاي|كيف|اشرح(?:لي)?|علمني|طريقه|خطوات|ليه|ايه|why|what|how|teach|explain)\s+/;
  const studying=/(?:عايز|عاوز|اريد|i want|i need)\s+(?:اعرف|اتعلم|افهم|شرح|طريقه|معلومات|to learn|to know|to understand)\s+/;
  const negation=/(?:مش عايز|مش عاوز|لا اريد|متعملش|ما تعملش|don't (?:make|create)|do not (?:make|create))/;
- if(how.test(text)||studying.test(text)||negation.test(text))return null;
+ // Capability questions must go to the assistant, not accidentally trigger a tool.
+ if(how.test(text)||studying.test(text)||negation.test(text)
+   ||/^(?:انت|انتم|هل|يا مدار|مدار|بتعرف|تقدر|can you|do you|are you)\s+.{0,100}(?:بتعرف|تعرف|تقدر|بتقدر|تستطيع|can you|do you)/i.test(text)
+   ||/^(?:بتعرف|تقدر)\s+/i.test(text))return null;
  const wants=/(?:^|[\s،.!؟:])(?:اعمل(?:لي|نا|ي)?|اصنع(?:لي)?|انشئ|سوي|صمم(?:لي)?|ارسم(?:لي|ي)?|هات|طلع(?:لي)?|ابني(?:لي)?|عايز(?:ه|ها|ك|ره)?|عاوز(?:ه|ها|ك)?|محتاج(?:ه)?|نفسي\s+في|ياريت|اتمني|اريد|ابغي|ودي\s+ب|ممكن|ينفع|خلينا\s+نعمل|i want|i need|i(?:'d| would) like|i wish|can you|could you|please|make|create|build|generate|design|draw)/;
  const action=wants.exec(text);
  // "ارسملي منظر طبيعي" is clearly a picture request without the noun "صورة".
@@ -29,7 +32,7 @@ function detect(input,history=[]){
  if(draw&&!/(?:لعبه|موقع|تطبيق|game|website|app)(?=$|[\s،.!؟:])/.test(draw[1]))
   return{type:'image',prompt:draw[1].trim().slice(0,900)};
  const types=[
-  {type:'image',re:/(?:^|[\s،:])(?:صوره|صور|رسمه|لوحه|image|picture|photo|drawing|artwork)(?=$|[\s،.!؟:])/g},
+  {type:'image',re:/(?:^|[\s،:])(?:صوره|صور|رسمه|لوحه|لوجو|لوغو|شعار|بوستر|ملصق|بانر|غلاف|image|picture|photo|drawing|artwork|logo|poster|banner|thumbnail|cover art)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'game',re:/(?:^|[\s،:])(?:لعبه|العاب|game|video game|3d game)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'website',re:/(?:^|[\s،:])(?:موقع|صفحه ويب|ويب سايت|ويبسايت|website|web ?site|webpage|landing page)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'tool',re:/(?:^|[\s،:])(?:تطبيق|ابلكيشن|اداه|app|application|tool)(?=$|[\s،.!؟:])/g}
