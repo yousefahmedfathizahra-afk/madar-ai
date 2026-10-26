@@ -222,6 +222,14 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-stop:hover{background:rgba(236,92,118,.23)}
 .madar-message-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .madar-message-actions button{touch-action:manipulation}
+/* Minimal chat-first composer: retain all original buttons in DOM for feature handlers.
+   Tool access is routed through natural language commands instead of crowded toolbars. */
+.madar-extras,.tools-row,.madar-study-actions{display:none!important}
+.composer{padding:13px 16px 10px;border-radius:17px}
+.composer textarea{min-height:43px;padding:5px 3px;font-size:14px}
+.composer-hint{font-size:10px}
+.compose-wrap{padding-bottom:14px}
+@media(max-width:550px){.composer{padding:11px 13px 9px}.composer textarea{font-size:14px;min-height:40px}}
 </style>
   <title>MADAR AI | دردشة ذكاء اصطناعي، صور وألعاب</title>
 </head>
@@ -315,10 +323,10 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Select a photo">
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
           <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
-          <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اكتب لمدار اللي إنت عايزه..." aria-label="Write your message"></textarea>
+          <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار عن أي حاجة، أو اطلب صورة أو لعبة أو موقع..." aria-label="Write your message"></textarea>
           <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
         </div>
-        <p class="disclaimer">💬 اكتب مباشرة: «اعمل صورة قطة» أو «اعمل لعبة سباق» — مدار هينفّذ في الشات. <span>✧</span> Double-check important information.</p>
+        <p class="disclaimer">اسأل أو اكتب طلبك مباشرة: «اعمل صورة»، «ابني موقع»، «امتحني»، «ارفع صورة». <span>✧</span> راجع المعلومات المهمة.</p>
       </div>
     </main>
   </div>
@@ -707,12 +715,48 @@ async function healthCheck(){
     return false;
   }finally{clearTimeout(timeout)}
 }
+function chatCommandText(text){
+  return String(text||'').normalize('NFKC').toLowerCase()
+    .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
+    .replace(/[؟?!،.,:;]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function isWikipediaResearchRequest(text){
+  return /^(?:ابحث|دور|هات(?:لي)?|جيب(?:لي)?)\s+(?:في|على|من)?\s*(?:ال)?ويكيبيديا\s+(?:عن|حول|بخصوص)?\s*\S+|^(?:search|research)\s+(?:on|in)?\s*wikipedia\s+(?:for|about)\s+\S+/i.test(chatCommandText(text));
+}
+function handleMinimalChatCommand(text){
+  const q=chatCommandText(text);
+  // These explicit UI commands run directly on the user's Send/Enter interaction.
+  // No fake assistant response or unneeded AI API request.
+  if(/^(?:(?:عايز|عاوز|محتاج)\s+)?(?:ارفع|ارفاق|رفع|اضيف|اختار|ابعت)\s+(?:لي\s+)?(?:صوره|صورتي|صوره\s+من\s+الجهاز|ملف\s+صوره)|^(?:upload|attach)\s+(?:a\s+)?(?:photo|image|picture)$/.test(q)){
+    el.photoInput.click();return true;
+  }
+  if(/^(?:(?:شغل|ابدأ|افتح|استخدم)\s+)?(?:المايك|المايكروفون|الميكروفون|تسجيل\s+صوت|التحدث\s+بالصوت|الميك)|^(?:start|turn on)\s+(?:the\s+)?(?:microphone|mic|voice input)$/.test(q)){
+    window.MADAR_FEATURES?.toggleMic?.();return true;
+  }
+  if(/^(?:شغل|افتح|العب|ابدأ)\s+(?:لعبه\s+)?(?:شادو\s+يونت|shadow\s+unit|لعبه\s+3d|لعبه\s+ثلاثيه\s+الابعاد)$/.test(q)){
+    openMadarGame();return true;
+  }
+  if(/^(?:شغل|فعل|افتح)\s+(?:قراءة\s+الردود|الصوت|الرد\s+الصوتي)$/.test(q)){
+    window.MADAR_FEATURES?.setVoiceEnabled?.(true);return true;
+  }
+  if(/^(?:اقفل|وقف|اطفي|الغى)\s+(?:قراءة\s+الردود|الصوت|الرد\s+الصوتي)$/.test(q)){
+    window.MADAR_FEATURES?.setVoiceEnabled?.(false);return true;
+  }
+  const google=/^(?:ابحث|دور)\s+(?:في|على)\s+(?:جوجل|google)\s+(?:عن|على)?\s+(.+)$/i.exec(q);
+  if(google){
+    window.open('https://www.google.com/search?q='+encodeURIComponent(google[1]),'_blank','noopener,noreferrer');return true;
+  }
+  return false;
+}
 async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false){
   if(isWaiting)return;
   const imageForMessage=pendingImage;
   const content=String(prefill??el.prompt.value).trim()||(imageForMessage?'What is in this photo?':'');
   if(!content)return;
   hideError();
+  if(!imageForMessage&&!Number.isInteger(replaceAfterIndex)&&!Number.isInteger(pendingEditIndex)&&handleMinimalChatCommand(content)){
+    el.prompt.value='';resizePrompt();return;
+  }
   let chat=activeChat();
   if(!chat){
     chat={id:createId(),title:content.slice(0,32),messages:[],updatedAt:Date.now()};
@@ -744,7 +788,7 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
     }
     let response;
     try{
-      response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chat.messages.slice(-18).map(m=>({role:m.role,content:m.content})),image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch,mode:window.MADAR_FEATURES?.getMode()||'chat'}),signal:controller.signal});
+      response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chat.messages.slice(-18).map(m=>({role:m.role,content:m.content})),image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch||isWikipediaResearchRequest(content),mode:window.MADAR_FEATURES?.getModeFor?.(content,chat.messages)||'chat'}),signal:controller.signal});
     }catch(err){
       if(err?.name === 'AbortError') throw err;
       throw Error('Cannot reach /api/chat. Deploy the full MADAR server on HTTPS, not only the HTML file.');
