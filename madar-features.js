@@ -142,21 +142,35 @@ function onReply(text){
 }
 $('madarMode').addEventListener('change',e=>setMode(e.target.value));
 $('madarMicBtn').addEventListener('click',toggleMic);
-$('madarSpeakToggle').addEventListener('click',()=>{
- if(!speechSupported){notify('Voice output is not supported by your browser.');return;}
- speakingEnabled=!speakingEnabled;
+function setVoiceEnabled(enabled){
+ if(!speechSupported){notify('المتصفح ده مش بيدعم قراءة الردود بصوت. جرّب Chrome أو Edge.');return;}
+ speakingEnabled=Boolean(enabled);
  const button=$('madarSpeakToggle');
  button.setAttribute('aria-pressed',String(speakingEnabled));
  button.classList.toggle('active',speakingEnabled);
  button.textContent=speakingEnabled?'🔊 Voice on':'🔈 Voice off';
  if(!speakingEnabled)stopSpeech();
-});
+}
+$('madarSpeakToggle').addEventListener('click',()=>setVoiceEnabled(!speakingEnabled));
+function getModeFor(text,history=[]){
+ // All modes remain available without an extra row of mode-selection controls.
+ const q=String(text||'').normalize('NFKC').toLowerCase()
+   .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
+ if(/(?:^|\s)(?:ترجم|ترجمه|translate|translation)(?:\s|$)/i.test(q))return 'translate';
+ if(/(?:امتحني|اختبرني|اعمل\s+اختبار|اعمل\s+امتحان|اسالني\s+اسئله|صحح\s+اجابتي|واجب\s+مدرسي|quiz\s+me|study\s+mode)/i.test(q))return 'study';
+ if(/(?:اكتب\s+كود|اعمل\s+كود|شرح\s+كود|بايثون|جافاسكريبت|برمج|debug|python|javascript|typescript|coding|programming)/i.test(q))return 'code';
+ if(/(?:اكتب\s+(?:رساله|بوست|مقال|قصه|ايميل)|صيغ\s+(?:رساله|خطاب)|write\s+(?:an?\s+)?(?:email|letter|story|essay|post))/i.test(q))return 'write';
+ // A study quiz should remain in tutoring mode over short answer turns.
+ const previous=Array.isArray(history)?history.slice(-6):[];
+ if(previous.some(m=>m?.role==='assistant'&&/(?:سؤال\s*(?:رقم|[١٢٣٤٥1-5])|question\s*[1-5]\s*(?:of\s*5)?)/i.test(String(m.content||'')))
+    &&q.length<160)return 'study';
+ return 'chat';
+}
 $('madarExplain').addEventListener('click',()=>studyAction('explain'));
 $('madarQuiz').addEventListener('click',()=>studyAction('quiz'));
 $('madarCheck').addEventListener('click',()=>studyAction('check'));
 $('shareChatBtn').addEventListener('click',shareChat);
-let savedMode='chat';
-try{savedMode=localStorage.getItem('madar_selected_mode')||'chat';}catch{}
-setMode(savedMode);
-window.MADAR_FEATURES={getMode:()=>mode,onReply,speak,shareReply,shareChat,stopSpeech};
+// The mode row is hidden, so don't trap visitors in a previously selected mode.
+setMode('chat');
+window.MADAR_FEATURES={getMode:()=>mode,getModeFor,setMode,onReply,speak,shareReply,shareChat,stopSpeech,toggleMic,setVoiceEnabled};
 })();
