@@ -55,9 +55,9 @@ function prepareImagePrompt(description){
   ].join('\n');
  }
  const namedPlaces=[
-  {match:/(?:جامع|مسجد)\\s+(?:محمد|محمّد)\\s+علي(?:\\s+(?:باشا|في\\s+القلعه))?/,place:'Muhammad Ali Pasha Mosque at the Cairo Citadel: the monumental domed Ottoman-style mosque, NOT the human ruler Muhammad Ali Pasha.'},
-  {match:/(?:جامع|مسجد)\\s+السلطان\\s+حسن/,place:'Sultan Hassan Mosque-Madrasa in Cairo: an enormous Mamluk stone religious complex, NOT a portrait of Sultan Hassan.'},
-  {match:/(?:قلعه|قلعة)\\s+(?:صلاح\\s+الدين|الناصر\\s+صلاح)/,place:'The historic Citadel of Salah al-Din in Cairo: stone fortress and ramparts, NOT a human portrait of Saladin.'}
+  {match:/(?:جامع|مسجد)\s+(?:محمد|محمّد)\s+علي(?:\s+(?:باشا|في\s+القلعه))?/,place:'Muhammad Ali Pasha Mosque at the Cairo Citadel: the monumental domed Ottoman-style mosque, NOT the human ruler Muhammad Ali Pasha.'},
+  {match:/(?:جامع|مسجد)\s+السلطان\s+حسن/,place:'Sultan Hassan Mosque-Madrasa in Cairo: an enormous Mamluk stone religious complex, NOT a portrait of Sultan Hassan.'},
+  {match:/(?:قلعه|قلعة)\s+(?:صلاح\s+الدين|الناصر\s+صلاح)/,place:'The historic Citadel of Salah al-Din in Cairo: stone fortress and ramparts, NOT a human portrait of Saladin.'}
  ];
  for(const place of namedPlaces){
   if(place.match.test(normalized))
@@ -66,7 +66,7 @@ function prepareImagePrompt(description){
      'Architectural landmark scene, with recognizable building architecture as the focus. Avoid replacing its namesake with a portrait.',
      'Respect additional objects, scenery, style and viewpoint explicitly requested by the visitor.',
      'VISITOR REQUEST: '+original.slice(0,900)
-   ].join('\\n');
+   ].join('\n');
  }
  // Place names may contain historical personal names. Preserve the user's place
  // as the principal visual subject; people may still appear when explicitly asked.
@@ -95,7 +95,7 @@ function prepareImagePrompt(description){
   '- Honor the requested colors, composition, location, viewpoint and visual style; do not swap the requested subject for a lookalike or add prominent unrelated subjects.',
   '- Do not invent written labels or captions that were not requested.',
   'VISITOR REQUEST: '+original.slice(0,900)
- ].join('\\n');
+ ].join('\n');
 }
 
 function note(message,bad=false){
