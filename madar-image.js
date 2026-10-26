@@ -54,6 +54,20 @@ function prepareImagePrompt(description){
    'VISITOR REQUEST: '+original.slice(0,900)
   ].join('\n');
  }
+ const namedPlaces=[
+  {match:/(?:جامع|مسجد)\\s+(?:محمد|محمّد)\\s+علي(?:\\s+(?:باشا|في\\s+القلعه))?/,place:'Muhammad Ali Pasha Mosque at the Cairo Citadel: the monumental domed Ottoman-style mosque, NOT the human ruler Muhammad Ali Pasha.'},
+  {match:/(?:جامع|مسجد)\\s+السلطان\\s+حسن/,place:'Sultan Hassan Mosque-Madrasa in Cairo: an enormous Mamluk stone religious complex, NOT a portrait of Sultan Hassan.'},
+  {match:/(?:قلعه|قلعة)\\s+(?:صلاح\\s+الدين|الناصر\\s+صلاح)/,place:'The historic Citadel of Salah al-Din in Cairo: stone fortress and ramparts, NOT a human portrait of Saladin.'}
+ ];
+ for(const place of namedPlaces){
+  if(place.match.test(normalized))
+   return [
+     'PRIMARY SUBJECT: '+place.place,
+     'Architectural landmark scene, with recognizable building architecture as the focus. Avoid replacing its namesake with a portrait.',
+     'Respect additional objects, scenery, style and viewpoint explicitly requested by the visitor.',
+     'VISITOR REQUEST: '+original.slice(0,900)
+   ].join('\\n');
+ }
  // Place names may contain historical personal names. Preserve the user's place
  // as the principal visual subject; people may still appear when explicitly asked.
  const landmark=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد|كنيسه|كاتدرائيه|قصر|قلعه|متحف|برج|معبد|ضريح|مقام|هرم|اهرام|مكتبه|جامعه|مدرسه)(?=$|[\s،.!؟:])/.exec(normalized);
@@ -69,8 +83,19 @@ function prepareImagePrompt(description){
    ].join('\n');
   }
  }
- // Ordinary image requests must remain unchanged.
- return original;
+ // For other scenes, preserve exactly what the user asked for: subject, type,
+ // number, relative positions and requested style. Don't merge a person, animal,
+ // monument or sports object with another named thing in the same request.
+ // The generator is a drawing engine, not a real photo retrieval service.
+ return [
+  'GENERATE AN IMAGE of the visitor request below. Respect the actual requested subject types:',
+  '- Distinguish buildings and landmarks from people whose names appear in their titles.',
+  '- Distinguish animals from people, sports equipment from athletes, and real objects from logos or text.',
+  '- If several objects or characters are requested, include each separately with the requested counts, positions and relationships.',
+  '- Honor the requested colors, composition, location, viewpoint and visual style; do not swap the requested subject for a lookalike or add prominent unrelated subjects.',
+  '- Do not invent written labels or captions that were not requested.',
+  'VISITOR REQUEST: '+original.slice(0,900)
+ ].join('\\n');
 }
 
 function note(message,bad=false){
