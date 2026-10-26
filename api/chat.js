@@ -14,6 +14,17 @@ function preferredModels(question,mode){
 }
 
 const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. The MADAR website was created by Youssef Ahmed (يوسف أحمد); mention this when asked who created MADAR, but never assume a visitor is Youssef or address visitors by that name unless they tell you. The underlying Gemini AI model was made by Google.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly. Avoid accidentally inserting Korean, Chinese, or other unrelated-language words in Arabic or English sentences. Keep common technical names in their original spelling only when useful.\n- Answer genuinely different questions on science, history, maths, coding, literature, language, technology and daily life based on the user's request, not on canned examples. Follow requested length and format, and account for prior conversation context.\n- For mathematics, verify calculations and state key steps when nontrivial. For factual claims, separate established facts from uncertainty and avoid presenting guesses as facts.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
+// Facts about the actual MADAR product, so the model won't invent missing limitations.
+const SITE_CAPABILITIES = [
+ 'MADAR WEBSITE CAPABILITIES (important, verified from app code):',
+ 'MADAR is more than a text-only assistant. It answers questions about school, sport, programming, everyday life, writing and general knowledge using Gemini, within model reliability limits.',
+ 'MADAR CAN GENERATE AI IMAGES. Users type a creation request, e.g. «اعمل صورة قطة في الفضاء» / "create a picture of a cat in space", and the website routes that to its integrated Puter image generator and displays the resulting image in chat. Image generation requires the visitor to connect their own Puter account once; availability and image credits depend on that external provider. Never say "I can only respond with text" or "I cannot create images" as a blanket statement.',
+ 'MADAR CAN BUILD SIMPLE PLAYABLE GAMES, SMALL WEBSITES AND INTERACTIVE TOOLS via the MADAR Builder when the visitor writes e.g. «اعمل لعبة سباق» or «ابني موقع لمحل». The website can also launch its existing Shadow Unit 3D game on request.',
+ 'MADAR CAN EXPLAIN UPLOADED PHOTOS. If the visitor wants to attach a picture, tell them to type «ارفع صورة» and choose it from their device. MADAR supports browser-based voice input and voice reading when the browser supports speech APIs; visitors can type «شغل المايك» or «شغل الصوت».',
+ 'MADAR CAN HELP TUTOR, QUIZ, WRITE CODE, TRANSLATE, AND DRAFT CONTENT directly from a normal conversation, with automatic mode inference and without extra visible buttons.',
+ 'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab; MADAR does not have unrestricted built-in live web browsing. Do not pretend to know unverified live sports results, weather, prices or breaking news.',
+ 'Important: tools are triggered by the WEBSITE before or alongside text chat, NOT by the Gemini text model. Answer capability questions positively with honest setup requirements and actionable instructions. Never claim a generated picture, live lookup, or deployed site was completed when the tool did not actually run.'
+].join('\\n');
 // Modes change response behavior only; users still share the same safe Gemini backend.
 const MODE_INSTRUCTIONS = Object.freeze({
  chat: '',
@@ -104,6 +115,28 @@ function liveDateSystemInstruction(info) {
     +'For time-sensitive external news or facts you cannot verify, acknowledge the limitation rather than invent updates.';
 }
 
+function directCapabilityAnswer(question){
+ const q=String(question||'').normalize('NFKC').toLowerCase()
+   .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
+   .replace(/[؟?!،.,:;]+/g,' ').replace(/\s+/g,' ').trim();
+ if(!q||q.length>140)return null;
+ const asksAbility=/(?:بتعرف|تعرف|تقدر|ممكن|ينفع|بتقدر|تستطيع|can you|do you|are you able)/i.test(q);
+ if(!asksAbility)return null;
+ const wantsImages=/(?:صور|صوره|رسم|صميم|بوستر|لوجو|شعار|image|picture|photo|draw|poster|logo)/i.test(q);
+ if(wantsImages){
+  return /[\u0600-\u06ff]/.test(q)
+    ? 'أيوه، **مدار يقدر يعمل صور بالذكاء الاصطناعي** 🎨. اكتب مثلًا «اعمل صورة قطة في الفضاء» وهبدأ إنشاء الصورة في الشات. أول مرة ممكن تحتاج تضغط Connect Puter وتدخل لحسابك عشان خدمة الصور تشتغل؛ الخدمة حسب رصيد وتوافر Puter.'
+    : 'Yes! **MADAR can create AI images.** Try “Create an image of a cat in space.” You may need to connect a Puter account the first time; image generation depends on the provider being available and your image credits.';
+ }
+ const wantsBuilder=/(?:لعبه|العاب|موقع|تطبيق|game|website|web ?site|app)/i.test(q);
+ if(wantsBuilder){
+  return /[\u0600-\u06ff]/.test(q)
+    ? 'أيوه! **مدار يقدر يبني لعبة أو موقع أو تطبيق ويب بسيط** من طلبك. اكتب مثلًا «اعمل لعبة سباق عربيات» أو «ابني موقع لمطعم» وهجرب أنفذه في الشات.'
+    : 'Yes. MADAR can build small playable games, websites and browser tools. Try “Build a simple racing game” or “Create a restaurant website.”';
+ }
+ return null;
+}
+
 // Certain closed-set factual questions can be answered reliably without wasting API calls.
 // This also guards against partial lists when a lightweight model is under a token limit.
 const ARAB_LEAGUE_COUNTRIES = [
@@ -183,6 +216,9 @@ module.exports = async function chat(req,res) {
   }
   const currentDate=liveDateInfo();
   const currentQuestion=messages[messages.length-1].content;
+  const capabilityAnswer=mode==='chat' && !image && data.webSearch!==true
+    ? directCapabilityAnswer(currentQuestion) : null;
+  if(capabilityAnswer)return send(res,200,{reply:capabilityAnswer,sources:[]});
   const directDateAnswer=mode==='chat' && !image && data.webSearch!==true
     ? directCurrentDateAnswer(currentQuestion,currentDate) : null;
   if(directDateAnswer)return send(res,200,{reply:directDateAnswer,sources:[]});
@@ -226,7 +262,7 @@ module.exports = async function chat(req,res) {
           method:'POST',signal:controller.signal,
           headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
           body:JSON.stringify({
-            systemInstruction:{parts:[{text:SYSTEM+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')}]},
+            systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')}]},
             contents,
             generationConfig:{
               maxOutputTokens:3072,
