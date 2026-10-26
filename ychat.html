@@ -1835,6 +1835,8 @@ const notice=document.querySelector('#home .notice');if(notice)notice.textConten
 function message(t){const el=$id('loginStatus');if(el)el.textContent=t;}
 function errorText(e){const t=String(e?.message||e||'حدث خطأ');
  if(e?.code==='23505'||/duplicate key|unique constraint/i.test(t))return 'رقم الموبايل ده مربوط بحساب تاني. لا تستخدم غير رقمك.';
+ if(/email rate limit|over_email_send_rate_limit|rate limit exceeded|too many email requests/i.test(t))return 'خدمة إرسال الإيميلات وصلت للحد المسموح حاليًا. بلاش تكرر إرسال الكود. لازم مسؤول المشروع يفعّل SMTP مستقل علشان الأكواد توصل لكل المستخدمين.';
+ if(/email address not authorized|email not authorized|only send messages to/i.test(t))return 'البريد ده مش ضمن الإيميلات المسموح لخدمة Supabase الافتراضية تراسلها. محتاجين تفعيل خدمة SMTP مستقلة.';
  if(/email not confirmed/i.test(t))return 'افتح الإيميل وأكد الحساب.';
  if(/invalid login credentials/i.test(t))return 'بيانات الدخول مش صحيحة. جرّب كود إيميل جديد.';
  if(/Daily invite limit/i.test(t))return 'وصلت للحد اليومي لطلبات الإضافة. جرّب بكرة.';
@@ -1881,7 +1883,7 @@ async function requestEmailCode(resend){
  if(pn){userData.ychat_phone=pn;localStorage.setItem('ychat_signup_phone',pn);}
  emailBusy=true;$id('sendEmailCode').disabled=true;$id('resendEmailCode').disabled=true;message('جاري إرسال رسالة الإيميل...');
  try{
-  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+'/',data:userData}});
+  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname,data:userData}});
   if(error)throw error;
   pendingEmail=email;codeSentAt=Date.now();messageStage(true);
   message('لو وصلك كود 6 أرقام اكتبه هنا. لو وصلك رابط بدل الكود، افتح الرابط لإتمام الدخول.');
