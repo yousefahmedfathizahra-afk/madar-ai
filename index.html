@@ -823,22 +823,58 @@ function updatePhotoChip(){
 function clearPendingPhoto(){pendingImage=null;el.photoInput.value='';updatePhotoChip();}
 async function attachPhoto(file){
  if(!file)return;
- if(!['image/jpeg','image/png','image/webp'].includes(file.type))return showError('Choose a JPEG, PNG, or WebP photo.');
- if(file.size>12*1024*1024)return showError('This photo is too large. Choose a photo under 12 MB.');
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type))
+   return showError('اختار صورة بصيغة JPEG أو PNG أو WebP.');
+ if(file.size>12*1024*1024)
+   return showError('الصورة أكبر من 12 ميجابايت. اختار نسخة أصغر.');
  hideError();
  const objectURL=URL.createObjectURL(file);
- try {
-  const image=new Image();
-  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src=objectURL;});
-  const size=Math.min(1,1150/Math.max(image.naturalWidth,image.naturalHeight));
-  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*size));canvas.height=Math.max(1,Math.round(image.naturalHeight*size));
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
-  const preview=canvas.toDataURL('image/jpeg',0.72),data=preview.split(',')[1];
-  if(data.length>2000000)return showError('This image is still too large. Try a smaller photo.');
-  pendingImage={mimeType:'image/jpeg',data,preview};
-  updatePhotoChip();el.prompt.focus();
- }catch{showError('Could not read the selected photo. Please try another image.');}
- finally{URL.revokeObjectURL(objectURL);el.photoInput.value='';}
+ try{
+  const source=new Image();
+  await new Promise((resolve,reject)=>{source.onload=resolve;source.onerror=reject;source.src=objectURL;});
+  const originalWidth=source.naturalWidth,originalHeight=source.naturalHeight;
+  if(!originalWidth||!originalHeight)throw Error('Invalid image size');
+  // Preserve important writing and small objects. The old 1150px / JPEG-72
+  // conversion blurred screenshots and textbook pages before Gemini saw them.
+  const budget=1950000;
+  let scale=Math.min(1,1800/Math.max(originalWidth,originalHeight));
+  let finalPreview=null,finalData=null,finalMime=null;
+  for(let attempt=0;attempt<7;attempt++){
+   const canvas=document.createElement('canvas');
+   canvas.width=Math.max(1,Math.round(originalWidth*scale));
+   canvas.height=Math.max(1,Math.round(originalHeight*scale));
+   const ctx=canvas.getContext('2d');
+   if(!ctx)throw Error('Cannot prepare image canvas');
+   ctx.imageSmoothingEnabled=true;
+   ctx.imageSmoothingQuality='high';
+   ctx.fillStyle='#fff';
+   ctx.fillRect(0,0,canvas.width,canvas.height);
+   ctx.drawImage(source,0,0,canvas.width,canvas.height);
+   // Prefer lossless PNG for screenshots/text when practical, otherwise a
+   // high-quality JPEG; image bytes stay below the existing API limit.
+   const candidateFormats=file.type==='image/png' && attempt<2
+     ?[['image/png'],['image/jpeg',0.89]]
+     :[['image/jpeg',attempt<3?0.89:0.82]];
+   for(const [mime,quality] of candidateFormats){
+    const dataURL=canvas.toDataURL(mime,quality);
+    const encoded=dataURL.split(',')[1]||'';
+    if(encoded.length>0&&encoded.length<=budget){
+      finalData=encoded;finalMime=mime;finalPreview=dataURL;break;
+    }
+   }
+   if(finalData)break;
+   scale*=0.79;
+  }
+  if(!finalData)throw Error('Image remains too large');
+  pendingImage={mimeType:finalMime,data:finalData,preview:finalPreview};
+  updatePhotoChip();
+  el.prompt.focus();
+ }catch(e){
+  showError('مش قادر أقرأ الصورة كويس. جرّب صورة أو لقطة شاشة أوضح أو أصغر.');
+ }finally{
+  URL.revokeObjectURL(objectURL);
+  el.photoInput.value='';
+ }
 }
 function showFeature(title,message,link){
  $('dialogTitle').textContent=title;$('dialogMessage').textContent=message;
