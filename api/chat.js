@@ -5,6 +5,18 @@
 // or returns an empty response (e.g. thinking consumed the output token budget).
 // Prefer a newer, more capable free-tier model; preserve fallbacks if a quota is reached.
 const MODELS = ['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3.6-flash'];
+const VISION_MODELS = ['gemini-3.1-flash-lite','gemini-3.5-flash-lite','gemini-3.6-flash','gemini-2.5-flash'];
+const VISION_RULES = [
+ 'IMAGE ANALYSIS: A photo or screenshot is attached to the current user message. It is actual visual evidence; analyze it directly and carefully before answering.',
+ 'First distinguish the main visible subject and category (building, monument, person, animal, object, drawing, screenshot, text, chart, map, etc.), then answer the specific question. Do NOT infer subject identity from a person name contained within a building or location name.',
+ 'If asked to identify a named building or landmark, mention the exact name only when the visible signage, distinguishing architecture, or other image evidence warrants it. Otherwise describe visible features and state you cannot confirm the exact identity from the image alone.',
+ 'Do not mistake a named mosque, church, museum, school, fortress or sports arena for a portrait of its namesake. Likewise do not identify an unrelated generic building as a specific famous landmark just because the question mentions it.',
+ 'If multiple objects are present, distinguish them by position, color, shape, and number when visible. Never pretend something is in the picture if it is not.',
+ 'For diagrams, exercises and screenshots read visible text precisely. Distinguish visible text from inferred text, check calculations, and say when lettering or details are unclear; do not invent missing words, captions, or numbers.',
+ 'For real people in a photograph, describe visible appearance and actions without claiming a particular real-world identity based on face recognition.',
+ 'When the image is too small, blurry or ambiguous, say what can be observed and briefly ask for a clearer image or a close crop, rather than confidently hallucinating.'
+].join('\\n');
+
 function preferredModels(question,mode){
  const text=String(question||'');
  const challenging=['code','study','write'].includes(mode)
@@ -212,6 +224,8 @@ module.exports = async function chat(req,res) {
       ||typeof obj.data!=='string'||obj.data.length<24||obj.data.length>2100000
       ||obj.data.length%4!==0||!/^[A-Za-z0-9+/]+={0,2}$/.test(obj.data))
       return send(res,400,{error:'Invalid image. Upload a JPEG, PNG or WebP image under 1.5 MB.'});
+    // Image requests should never silently drop or reinterpret an invalid attachment.
+    // The image remains scoped to this single request, without storage or logging.
     image=obj;
   }
   const currentDate=liveDateInfo();
@@ -252,7 +266,7 @@ module.exports = async function chat(req,res) {
   let sawBusy=false,sawEmpty=false,sawBadRequest=false,sawQuota=false;
   let emptyReason='';
   try {
-    for (const model of preferredModels(messages[messages.length-1].content,mode)) {
+    for (const model of (image ? VISION_MODELS : preferredModels(messages[messages.length-1].content,mode))) {
       for (let attempt=0;attempt<2;attempt++) {
       const endpoint='https://generativelanguage.googleapis.com/v1beta/models/'
         +model+':generateContent';
@@ -262,7 +276,7 @@ module.exports = async function chat(req,res) {
           method:'POST',signal:controller.signal,
           headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
           body:JSON.stringify({
-            systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')}]},
+            systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')+(image?'\n\n'+VISION_RULES:'')}]},
             contents,
             generationConfig:{
               maxOutputTokens:3072,
