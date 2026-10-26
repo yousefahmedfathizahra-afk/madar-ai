@@ -47,6 +47,41 @@ async function researchWikipedia(question){
 }
 
 
+// Use the server clock on every request; never freeze a calendar year into the model prompt.
+function liveDateInfo(now = new Date()) {
+  const zone = 'Africa/Cairo';
+  const year = new Intl.DateTimeFormat('en-US',{year:'numeric',timeZone:zone}).format(now);
+  const arabicDate = new Intl.DateTimeFormat('ar-EG',{dateStyle:'full',timeZone:zone}).format(now);
+  const englishDate = new Intl.DateTimeFormat('en-GB',{
+    weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:zone
+  }).format(now);
+  return { year, arabicDate, englishDate, utc:now.toISOString() };
+}
+function directCurrentDateAnswer(question, info) {
+  let q = String(question||'').normalize('NFKC').toLowerCase()
+    .replace(/[\u064b-\u065f\u0670]/g,'')
+    .replace(/[؟?!،.,:;]+/g,' ').replace(/\s+/g,' ').trim();
+  if (!q || q.length > 100) return null;
+  const asksYear = /(?:سنه|سنة|عام)\s*(?:كام|كم|ايه|اي|حاليا|دلوقتي|الان|اليوم)|(?:احنا|نحن|حنا)\s+(?:في|فى)\s+(?:سنه|سنة|عام)|(?:في|فى)\s+(?:اي|ايه)\s+(?:سنه|سنة|عام)|(?:what year is it|what is the (?:current )?year|which year is it|current year)/i.test(q);
+  const asksDate = /(?:تاريخ\s+(?:النهارده|النهاردة|اليوم)|(?:النهارده|النهاردة|اليوم)\s+(?:كام|كم)|(?:احنا|نحن)\s+يوم\s+ايه|(?:what(?:'s| is) (?:today'?s|the) date|what day is it today|today'?s date))/i.test(q);
+  if(asksYear) return /[\u0600-\u06ff]/.test(q)
+    ? 'إحنا دلوقتي في سنة **'+info.year+'**.'
+    : 'The current year is **'+info.year+'**.';
+  if(asksDate) return /[\u0600-\u06ff]/.test(q)
+    ? 'النهارده **'+info.arabicDate+'** (بتوقيت القاهرة).'
+    : 'Today in Cairo, Egypt is **'+info.englishDate+'**.';
+  return null;
+}
+function liveDateSystemInstruction(info) {
+  return '\n\nCURRENT DATE — FROM THE LIVE SERVER CLOCK, NOT TRAINING DATA: '
+    +'The year RIGHT NOW is '+info.year+'. The date in Cairo (Africa/Cairo) is '
+    +info.englishDate+'; current UTC timestamp: '+info.utc+'. '
+    +'For questions about the current year, current date, today, yesterday, tomorrow, or relative dates, '
+    +'base your answer on this live date, NEVER on stale training-era dates (such as 2024). '
+    +'If the user is in another time zone, use their specified time zone or clarify it when material. '
+    +'For time-sensitive external news or facts you cannot verify, acknowledge the limitation rather than invent updates.';
+}
+
 // Certain closed-set factual questions can be answered reliably without wasting API calls.
 // This also guards against partial lists when a lightweight model is under a token limit.
 const ARAB_LEAGUE_COUNTRIES = [
@@ -124,8 +159,13 @@ module.exports = async function chat(req,res) {
       return send(res,400,{error:'Invalid image. Upload a JPEG, PNG or WebP image under 1.5 MB.'});
     image=obj;
   }
+  const currentDate=liveDateInfo();
+  const currentQuestion=messages[messages.length-1].content;
+  const directDateAnswer=mode==='chat' && !image && data.webSearch!==true
+    ? directCurrentDateAnswer(currentQuestion,currentDate) : null;
+  if(directDateAnswer)return send(res,200,{reply:directDateAnswer,sources:[]});
   const directAnswer=mode==='chat' && !image && data.webSearch!==true
-    ? directArabCountriesAnswer(messages[messages.length-1].content) : null;
+    ? directArabCountriesAnswer(currentQuestion) : null;
   if(directAnswer)return send(res,200,{reply:directAnswer,sources:[]});
   let sources=[],sourceNotes='';
   if(data.webSearch===true){
@@ -160,7 +200,7 @@ module.exports = async function chat(req,res) {
           method:'POST',signal:controller.signal,
           headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
           body:JSON.stringify({
-            systemInstruction:{parts:[{text:SYSTEM+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')}]},
+            systemInstruction:{parts:[{text:SYSTEM+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')}]},
             contents,
             generationConfig:{
               maxOutputTokens:3072,
