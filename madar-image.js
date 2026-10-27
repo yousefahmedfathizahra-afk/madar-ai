@@ -332,7 +332,7 @@ async function connectedCanva(){
 }
 async function canvaImage(description){
  const request=await fetch('/api/canva/image',{method:'POST',credentials:'same-origin',
-  headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prepareImagePrompt(description)})});
+  headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:(()=>{const grounded=prepareImagePrompt(description);return grounded.length<=900?grounded:String(description).slice(0,900);})()})});
  let job=await request.json().catch(()=>({}));
  if(!request.ok)throw Error(job.error||'Canva did not accept the image request.');
  for(let attempts=0;attempts<34;attempts++){
