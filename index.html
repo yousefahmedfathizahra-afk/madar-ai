@@ -242,6 +242,43 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-builder-export button{flex:1;min-width:185px}
 #madarBuilderPreview:fullscreen{width:100%;height:100%;border:0;background:#fff}
 @media(max-width:600px){.madar-builder-export button{min-width:100%}}
+
+/* MADAR Creative Studio */
+.studio-launch{border:1px solid #a68af766;background:linear-gradient(120deg,#7652ca,#4b318e);color:white;border-radius:11px;padding:10px 13px;font-weight:800;white-space:nowrap;box-shadow:0 4px 18px #724fd633;cursor:pointer}
+.studio-launch:hover{filter:brightness(1.15)}
+.studio-welcome-note{font-size:11px;color:var(--purple-light);line-height:1.9;margin:8px auto 0;max-width:600px}
+.madar-studio-dialog{border:1px solid #b9a1ee55;border-radius:19px;color:var(--fg);background:var(--panel);padding:0;width:min(950px,96vw);max-height:91dvh;box-shadow:0 28px 100px #070411be}
+.madar-studio-dialog::backdrop{background:#050310c9;backdrop-filter:blur(5px)}
+.studio-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:21px 24px 16px;background:linear-gradient(135deg,#4d368d,#241d41);color:white}
+.studio-head h2{font-size:23px;margin:3px 0}.studio-head p{font-size:12px;color:#e1d7f7;margin:4px 0}
+.studio-kicker{font-size:10px;letter-spacing:1.9px;color:#cbb7ff}
+.studio-close{background:#ffffff18;border:1px solid #ffffff33;border-radius:10px;font-size:25px;color:#fff;padding:2px 12px;cursor:pointer}
+.studio-tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 18px;border-bottom:1px solid var(--line-strong);scrollbar-width:thin}
+.studio-tabs button{white-space:nowrap;border:1px solid var(--line-strong);background:var(--control);color:var(--text);border-radius:10px;padding:10px 13px;font-size:12px;cursor:pointer}
+.studio-tabs button.active,.studio-tabs button[aria-selected=true]{background:#7254c9;color:#fff;border-color:#a78afe}
+.studio-scroll{max-height:61vh;overflow-y:auto;padding:6px 24px 18px}
+.studio-panel h3{font-size:20px;margin:18px 0 8px;color:var(--fg)}
+.studio-panel p{line-height:1.95;color:var(--text);font-size:12.5px}
+.studio-panel label{display:block;color:var(--fg);font-size:12px;font-weight:750;margin:14px 0 7px}
+.studio-panel textarea{display:block;width:100%;font:inherit;font-size:13px;padding:13px;border:1px solid var(--line-strong);border-radius:11px;color:var(--fg);background:var(--bg);resize:vertical;line-height:1.65;min-height:70px}
+.studio-example-row,.studio-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.studio-example-row button,.studio-buttons button,.studio-result button{border:1px solid var(--line-strong);border-radius:9px;background:var(--control);color:var(--fg);padding:10px 13px;cursor:pointer;font-size:12px}
+.studio-primary,.studio-buttons .studio-primary{display:inline-block;border:0;border-radius:10px;background:#7956d5;color:#fff;font-weight:800;padding:12px 17px;cursor:pointer;font-size:13px;margin:7px 0}
+.studio-primary:hover,.studio-buttons button:hover{filter:brightness(1.14)}.studio-primary:disabled{opacity:.55}
+.studio-result{background:var(--bg);border:1px solid var(--line-strong);border-radius:13px;padding:16px 18px;margin:18px 0}
+.studio-result-title{margin:0;font-size:20px}.studio-result-subtitle{color:var(--purple-light)!important}
+.studio-result h4{font-size:13px;color:var(--fg);margin:17px 0 5px}
+.studio-result li{margin:6px 0;color:var(--text);font-size:12px}
+.studio-result .studio-copy-text{white-space:pre-wrap;background:var(--control);border-radius:8px;padding:11px;font-size:13px}
+.studio-note{font-size:11px!important;color:var(--muted)!important}
+.studio-swatches{display:flex;gap:9px;margin:10px 0}.studio-swatches span{width:43px;height:33px;border-radius:7px;border:1px solid #ffffff55}
+.studio-code-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.studio-code-grid textarea{font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;direction:ltr;text-align:left;min-height:158px}
+.studio-foot{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line-strong);padding:12px 22px;color:var(--purple-light);font-size:12px}
+.studio-foot small{color:var(--muted);font-size:10px;line-height:1.7}
+.studio-error{color:#ff9da9}.studio-panel[hidden]{display:none!important}
+@media(max-width:750px){.studio-code-grid{grid-template-columns:1fr}.studio-head{padding:18px}.studio-scroll{padding:6px 15px 16px}.studio-tabs{padding:9px}.studio-tabs button{font-size:11px}.studio-launch{font-size:11px;padding:8px}.topbar{padding:0 13px}.studio-head h2{font-size:20px}}
+@media(max-width:400px){.top-subtitle,.top-divider{display:none}.studio-launch{padding:8px 7px}.topbar-right,.topbar-left{gap:6px}}
 </style>
   <title>مدار AI | إنشاء مواقع ومتاجر ومنصات بالذكاء الاصطناعي</title>
 </head>
@@ -276,6 +313,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
         </div>
         <div class="topbar-left">
           <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusText">Checking connection...</span></div>
+          <button id="madarStudioOpen" type="button" class="studio-launch" title="صانع المشاريع والمدرس والألعاب والتصميم وإصلاح الأكواد">✦ مدار ستوديو</button>
           <button id="accountBtn" class="account-btn" title="Account sign-in requires secure setup">Sign in</button>
           <button id="themeToggle" class="icon-btn theme-toggle" title="Switch theme" aria-label="Switch theme"><span id="themeIcon">☀</span></button>
         </div>
@@ -286,6 +324,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <div class="planet" aria-hidden="true"><div class="planet-halo"></div><div class="planet-ring one"></div><div class="planet-ring two"></div><div class="planet-core">M</div><div class="satellite"></div></div>
           <h1>Welcome to <span>MADAR</span><span class="title-star">✳</span></h1>
           <p class="welcome-description">اسأل مدار، أو اكتب وصف موقع أو متجر أو منصة تعليمية — هتقدر تعاين وتحمّل الكود من الشات.</p>
+          <p class="studio-welcome-note">جديد: صانع المشاريع · المدرس الذكي · صانع الألعاب · استوديو التصميم · مصلّح الأكواد — من زر «مدار ستوديو» أعلى الصفحة.</p>
           <div class="starter-label">Get started <span>↙</span></div>
           <div class="starters">
             <button class="starter" data-prompt="Help me make a simple, realistic study plan for this week."><span class="starter-symbol violet">✎</span><span><strong>Plan your day</strong><small>A plan to help you begin</small></span><span class="starter-arrow">↗</span></button>
@@ -342,6 +381,63 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       </div>
     </main>
   </div>
+    <dialog id="madarStudioDialog" class="madar-studio-dialog" aria-labelledby="madarStudioTitle" lang="ar" dir="rtl">
+    <header class="studio-head">
+      <div><span class="studio-kicker">MADAR CREATIVE STUDIO</span><h2 id="madarStudioTitle">✦ مدار ستوديو</h2><p>خمسة أدوات تساعدك من الفكرة للتجربة — مش محتاج تكتب كود.</p></div>
+      <button type="button" id="madarStudioClose" class="studio-close" aria-label="إغلاق استوديو مدار">×</button>
+    </header>
+    <div class="studio-tabs" role="tablist" aria-label="أدوات استوديو مدار">
+      <button type="button" role="tab" data-studio-tab="project" aria-selected="true" class="active">🚀 صانع المشاريع</button>
+      <button type="button" role="tab" data-studio-tab="study" aria-selected="false">📚 المدرس الذكي</button>
+      <button type="button" role="tab" data-studio-tab="game" aria-selected="false">🎮 صانع الألعاب</button>
+      <button type="button" role="tab" data-studio-tab="design" aria-selected="false">🎨 استوديو التصميم</button>
+      <button type="button" role="tab" data-studio-tab="repair" aria-selected="false">💻 مصلّح الأكواد</button>
+    </div>
+    <div class="studio-scroll">
+      <section data-studio-panel="project" class="studio-panel">
+        <h3>من مجرد فكرة لمشروع متكامل</h3><p>قول لمدار ناوي تعمل إيه، وهو يحضر لك اسم المشروع وخطة مبدئية ومميزات الموقع وشعارًا مقترحًا ونص إعلان. بعدها تختار بناء الموقع أو تصميم الشعار.</p>
+        <label for="studioProjectIdea">وصف المشروع</label>
+        <textarea id="studioProjectIdea" maxlength="1300" rows="4" placeholder="مثال: عايز أعمل مشروع مطعم برجر في القاهرة اسمه بيت البرجر، لونه أحمر وأسود، فيه منيو وطلب تجريبي"></textarea>
+        <div class="studio-example-row"><button type="button" data-studio-target="studioProjectIdea" data-studio-example="مشروع متجر إلكتروني لبيع منتجات العناية بالنباتات، اسمه نبتة، بالأخضر والبيج، فيه منتجات وأسعار وبحث وسلة تجريبية" >🌱 متجر نباتات</button><button type="button" data-studio-target="studioProjectIdea" data-studio-example="منصة تعليمية عربية للأطفال باسم مدار أكاديمي، فيها كورسات وامتحانات تفاعلية ولوحة تقدم تجريبية" >🎓 منصة تعليمية</button></div>
+        <button type="button" class="studio-primary" data-studio-action="project">✨ جهّز خطة المشروع</button>
+        <div id="studioProjectResult" class="studio-result" hidden></div>
+      </section>
+      <section data-studio-panel="study" class="studio-panel" hidden>
+        <h3>مدرسك الذكي بالمصري</h3><p>اشرح درسًا، اعمل امتحانًا تفاعليًا، أو ارفع صورة من واجبك عشان مدار يساعدك تفهم الحل. التصحيح والشرح محتاجين مراجعتك.</p>
+        <label for="studioStudyTopic">المادة أو اسم الدرس</label>
+        <textarea id="studioStudyTopic" rows="3" maxlength="1100" placeholder="مثال: قانون نيوتن الثاني للصف الثاني الإعدادي"></textarea>
+        <div class="studio-example-row"><button type="button" data-studio-target="studioStudyTopic" data-studio-example="الجهاز الهضمي للصف الخامس الابتدائي">🔬 علوم</button><button type="button" data-studio-target="studioStudyTopic" data-studio-example="المعادلات من الدرجة الأولى">📐 رياضيات</button></div>
+        <div class="studio-buttons"><button type="button" data-studio-action="study-explain">💡 اشرح الدرس</button><button type="button" data-studio-action="study-quiz">📝 امتحني</button><button type="button" data-studio-action="study-photo">📷 ارفع صورة الواجب</button></div>
+      </section>
+      <section data-studio-panel="game" class="studio-panel" hidden>
+        <h3>حوّل الفكرة للعبة تلعبها</h3><p>وصف واحد يفتح صانع الألعاب الموجود في مدار، مع معاينة وكود قابل للتعديل والتحميل. الألعاب ثلاثية الأبعاد قد تكون مجرد نماذج 2.5D تجريبية.</p>
+        <label for="studioGameIdea">وصف اللعبة</label>
+        <textarea id="studioGameIdea" rows="4" maxlength="1150" placeholder="مثال: لعبة سباق سيارات بمنظور خلفي ونقاط ومستويات وتحكم للموبايل وأزرار إعادة اللعب"></textarea>
+        <div class="studio-example-row"><button type="button" data-studio-target="studioGameIdea" data-studio-example="سباق سيارات بمنظور خلف السيارة، طريق بمنظور وسماء وأشجار، عداد سرعة ومنافسين وتصادم وتحكم بالأسهم والموبايل">🏎️ سباق</button><button type="button" data-studio-target="studioGameIdea" data-studio-example="لعبة ألغاز ذكاء فيها عشرة مستويات ونقاط ووقت وأزرار لمس وإعادة اللعب">🧩 ألغاز</button></div>
+        <button type="button" class="studio-primary" data-studio-action="game">🎮 افتح صانع الألعاب</button>
+      </section>
+      <section data-studio-panel="design" class="studio-panel" hidden>
+        <h3>استوديو التصميم</h3><p>اطلب بوستر أو لوجو أو صورة مصغّرة ليوتيوب. التصميم بالذكاء الاصطناعي يعتمد على خدمة Puter وحساب الزائر ورصيده.</p>
+        <label for="studioDesignIdea">وصف التصميم</label>
+        <textarea id="studioDesignIdea" rows="4" maxlength="900" placeholder="مثال: بوستر إعلاني احترافي لمحل قهوة عربي، بخلفية بنية وإضاءة سينمائية وكوب قهوة"></textarea>
+        <div class="studio-example-row"><button type="button" data-studio-target="studioDesignIdea" data-studio-example="شعار بسيط فاخر لشركة تقنية عربية، حرف M بألوان أرجوانية مع خلفية داكنة، تصميم شعار أصلي">✦ لوجو</button><button type="button" data-studio-target="studioDesignIdea" data-studio-example="بوستر إعلاني رأسي 4:5 لمطعم برجر فاخر، برجر في المنتصف وإضاءة درامية، ألوان برتقالية وسوداء">🖼️ بوستر</button><button type="button" data-studio-target="studioDesignIdea" data-studio-example="صورة مصغرة لفيديو يوتيوب عن تعلم البرمجة، شاشة كود مضيئة ودراما بصرية وتباين قوي وألوان بنفسجية">▶️ يوتيوب</button></div>
+        <button type="button" class="studio-primary" data-studio-action="design">🎨 افتح توليد الصورة</button>
+      </section>
+      <section data-studio-panel="repair" class="studio-panel" hidden>
+        <h3>مصلّح أكواد المواقع</h3><p>الصق HTML وCSS وJavaScript، اشرح المشكلة، ومدار يحاول يصلحهم. بعد الإصلاح تقدر تفتح معاينة آمنة وتعدل الملفات. احتفظ بنسخة من الكود الأصلي دائمًا.</p>
+        <label for="studioProblem">المشكلة (اختياري)</label>
+        <textarea id="studioProblem" rows="2" maxlength="1000" placeholder="مثال: زر إضافة المنتج مش شغال"></textarea>
+        <div class="studio-code-grid">
+          <div><label for="studioHtml">HTML</label><textarea id="studioHtml" rows="5" spellcheck="false" maxlength="11000" placeholder="&lt;button id=&quot;save&quot;&gt;Save&lt;/button&gt;"></textarea></div>
+          <div><label for="studioCss">CSS</label><textarea id="studioCss" rows="5" spellcheck="false" maxlength="11000" placeholder="button { color: white; }"></textarea></div>
+          <div><label for="studioJs">JavaScript</label><textarea id="studioJs" rows="5" spellcheck="false" maxlength="11000" placeholder="document.querySelector('button')..."></textarea></div>
+        </div>
+        <div class="studio-buttons"><button type="button" data-studio-action="code-sample">🧪 مثال كود فيه عطل</button><button type="button" class="studio-primary" data-studio-action="repair">🔧 اقترح إصلاحًا ومعاينة</button></div>
+        <div id="studioRepairResult" class="studio-result" hidden></div>
+      </section>
+    </div>
+    <footer class="studio-foot"><span id="madarStudioProgress" hidden>⏳ مدار بيشتغل على طلبك...</span><span id="madarStudioStatus" role="status" aria-live="polite"></span><small>الواجهات والأكواد المولّدة تجريبية؛ النشر والخدمات الخلفية الحقيقية تحتاج مراجعة وربطًا منفصلًا.</small></footer>
+  </dialog>
   <dialog id="madarGameDialog" class="madar-game-dialog" aria-labelledby="madarGameTitle">
     <div class="madar-game-heading">
       <div><span class="madar-game-kicker">MADAR ORIGINAL · WEBGL 3D</span><h2 id="madarGameTitle">🎮 SHADOW UNIT</h2></div>
@@ -985,5 +1081,6 @@ window.MADAR_APP={
   <script src="/madar-image.js" defer></script>
   <script src="/madar-builder.js" defer></script>
   <script src="/madar-chat-tools.js" defer></script>
+  <script src="/madar-studio.js" defer></script>
 </body>
 </html>
