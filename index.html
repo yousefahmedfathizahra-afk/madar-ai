@@ -734,6 +734,15 @@ function isWikipediaResearchRequest(text){
 }
 function handleMinimalChatCommand(text){
   const q=chatCommandText(text);
+  // Connect the current visitor's own Canva account, never a shared owner's token.
+  if(/^(?:(?:عايز|عاوز|محتاج)\s+)?(?:اربط|وصل|ربط|توصيل|افتح|connect|link)\s+(?:لي\s+)?(?:كانفا|canva)(?:\s+(?:بمدار|مع\s+مدار|to\s+madar))?$/.test(q)){
+    fetch('/api/canva/session',{credentials:'same-origin'})
+      .then(r=>r.json()).then(status=>{
+        if(status.configured)window.location.assign('/api/canva/start');
+        else showError('ربط Canva قيد الإعداد. محتاج إعداد التطبيق في Canva Developers الأول.');
+      }).catch(()=>showError('تعذر فتح إعدادات Canva دلوقتي.'));
+    return true;
+  }
   // These explicit UI commands run directly on the user's Send/Enter interaction.
   // No fake assistant response or unneeded AI API request.
   if(/^(?:(?:عايز|عاوز|محتاج)\s+)?(?:ارفع|ارفاق|رفع|اضيف|اختار|ابعت)\s+(?:لي\s+)?(?:صوره|صورتي|صوره\s+من\s+الجهاز|ملف\s+صوره)|^(?:upload|attach)\s+(?:a\s+)?(?:photo|image|picture)$/.test(q)){
