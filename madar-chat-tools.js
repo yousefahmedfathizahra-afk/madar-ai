@@ -13,11 +13,54 @@ function normalize(text){
   .replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
   .replace(/\s+/g,' ').trim();
 }
+// Named places: prefer real Wikimedia photos to imagined landmark images.
+const PHOTO_PLACES=[
+ {id:'amr',name:'جامع عمرو بن العاص',test:/(?:جامع|مسجد)\s+عمرو\s+(?:بن|ابن)\s+العاص/,search:'Amr Ibn Al As Mosque Cairo',match:/(?:mosque.{0,22}amr|amr.{0,24}mosque)/i},
+ {id:'ali',name:'جامع محمد علي',test:/(?:جامع|مسجد)\s+محمد\s+علي/,search:'Muhammad Ali Mosque Cairo',match:/(?:muhammad\s+ali.{0,32}mosque|mosque.{0,18}muhammad\s+ali)/i},
+ {id:'hassan',name:'مسجد السلطان حسن',test:/(?:جامع|مسجد)\s+(?:ال)?سلطان\s+حسن/,search:'Sultan Hassan Mosque Cairo',match:/(?:mosque.{0,24}sultan\s+hassan|sultan\s+hassan.{0,24}mosque)/i},
+ {id:'citadel',name:'قلعة صلاح الدين',test:/(?:قلعه|قلعة)\s+(?:صلاح\s+الدين|الناصر\s+صلاح)/,search:'Cairo Citadel Saladin',match:/(?:citadel.{0,28}(?:cairo|saladin|salah)|saladin.{0,22}citadel)/i}
+];
+function realPhotoIntent(value){
+ const q=normalize(value);
+ if(!/(?:صوره|صور|photo|photos|picture|pictures)/i.test(q))return null;
+ if(/(?:ارسم|صمم|تصميم|تخيل|خيالي|مولد|بالذكاء|generate|illustrat|draw|design|ai image)/i.test(q))return null;
+ const p=PHOTO_PLACES.find(p=>p.test.test(q));
+ return p?{type:'landmark-photo',id:p.id}:null;
+}
+async function landmarkPhotos(id,signal){
+ const place=PHOTO_PLACES.find(p=>p.id===id);
+ if(!place)throw Error('اسم المكان غير معروف.');
+ const params=new URLSearchParams({action:'query',generator:'search',gsrsearch:place.search,gsrnamespace:'6',gsrlimit:'16',prop:'imageinfo',iiprop:'url',iiurlwidth:'900',format:'json',origin:'*'});
+ const controller=new AbortController();
+ if(signal?.aborted)throw Error('تم إلغاء الطلب.');
+ const cancel=()=>controller.abort();
+ signal?.addEventListener('abort',cancel,{once:true});
+ const timer=setTimeout(()=>controller.abort(),9000);
+ let j;
+ try{
+   const r=await fetch('https://commons.wikimedia.org/w/api.php?'+params,{signal:controller.signal});
+   if(!r.ok)throw Error('ويكيميديا مش متاحة دلوقتي.');
+   j=await r.json();
+ }finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
+ const safe=(uri,hosts)=>{try{const u=new URL(uri);return u.protocol==='https:'&&hosts.includes(u.hostname)}catch{return false}};
+ const photos=Object.values(j?.query?.pages||{})
+   .filter(x=>place.match.test(String(x?.title||''))&&/\.(?:jpe?g|png|webp)$/i.test(String(x?.title||'')))
+   .filter(x=>!/painting|drawing|watercolor|poster|portrait|statue/i.test(String(x?.title||'')))
+   .sort((a,b)=>(a.index||99)-(b.index||99))
+   .map(x=>{
+     const info=x.imageinfo?.[0],src=String(info?.thumburl||info?.url||''),source=String(info?.descriptionurl||'');
+     if(!safe(src,['thumb.wikimedia.org','upload.wikimedia.org'])||!safe(source,['commons.wikimedia.org']))return null;
+     return{src,source,title:String(x.title||'').replace(/^File:/,'')};
+   }).filter(Boolean).slice(0,3);
+ return{place,photos};
+}
 // Natural Egyptian-Arabic wishes and English requests are creation intents.
 // Only act on an identifiable requested output, otherwise keep normal chat.
 function detect(input,history=[]){
  const raw=String(input||'').trim(),text=normalize(raw);
  if(!text||text.length>1200)return null;
+ const photoRequest=realPhotoIntent(raw);
+ if(photoRequest)return photoRequest;
  const how=/^(?:(?:يا مدار|مدار|لو سمحت|بص|انا|ممكن|هو|هي|ايه|يعني)\s+){0,4}(?:ازاي|كيف|اشرح(?:لي)?|علمني|طريقه|خطوات|ليه|ايه|why|what|how|teach|explain)\s+/;
  const studying=/(?:عايز|عاوز|اريد|i want|i need)\s+(?:اعرف|اتعلم|افهم|شرح|طريقه|معلومات|to learn|to know|to understand)\s+/;
  const negation=/(?:مش عايز|مش عاوز|لا اريد|متعملش|ما تعملش|don't (?:make|create)|do not (?:make|create))/;
@@ -100,6 +143,13 @@ async function run(request,options={}){
   pictures.set(id,{src:source,prompt:imagePrompt});
   return{toolType:'image',toolKey:id,content:'🎨 عملت صورة جديدة بناءً على وصفك وتعديلك. (دي إعادة توليد، مش تعديل مباشر على نفس الصورة.)'};
  }
+ if(request?.type==='landmark-photo'){
+  const {place,photos}=await landmarkPhotos(request.id,options.signal);
+  if(!photos.length)return{content:'ملقتش صور أقدر أنسبها بثقة للمكان ده. مش هعرض صورة مولّدة وأقول إنها حقيقية. لو عايز رسمة اكتب «ارسم '+place.name+'».'};
+  const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
+  pictures.set(id,{kind:'reference',photos,name:place.name});
+  return{toolType:'image',toolKey:id,content:'📷 دي صور حقيقية منشورة باسم **'+place.name+'** على Wikimedia Commons، مش صور متخيلة. افتح مصدر كل صورة للتأكد من المعلومات والترخيص.'};
+ }
  if(request?.type==='image'){
   const maker=window.MADAR_IMAGE_STUDIO;
   if(!maker?.generateFromChat)throw Error('خدمة الصور مش جاهزة. حدّث الصفحة وجرب تاني.');
@@ -139,6 +189,18 @@ function element(tag,cls,text){
 function render(message,body){
  if(message?.toolType==='image'){
   const picture=pictures.get(message.toolKey);
+  if(picture?.kind==='reference'&&Array.isArray(picture.photos)){
+   const holder=element('div','madar-chat-image-wrap');
+   for(const photo of picture.photos){
+    const img=element('img','madar-chat-image');
+    img.src=photo.src;img.loading='lazy';img.alt=picture.name+' — '+photo.title;img.referrerPolicy='no-referrer';
+    holder.append(img);
+    const credit=element('a','madar-chat-action','📷 المصدر والترخيص: Wikimedia Commons');
+    credit.href=photo.source;credit.target='_blank';credit.rel='noopener noreferrer';
+    holder.append(credit);
+   }
+   body.append(holder);return;
+  }
   const src=typeof picture==='string'?picture:picture?.src;
   if(!src){
    body.append(element('p','madar-tool-note','الصورة اتعملت قبل كده، لكن مش متخزنة بعد تحديث الصفحة. ابعت وصفها تاني عشان مدار يعملها من جديد.'));return;
