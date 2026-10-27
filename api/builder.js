@@ -5,6 +5,7 @@ const fallbackWebsite=require('./builder-fallback');
 const MODELS=['gemini-3.1-flash-lite','gemini-3.5-flash-lite','gemini-2.5-flash','gemini-3.6-flash','gemini-2.5-flash-lite'];
 // Realistic games benefit from the more capable free-eligible model when available.
 const REALISTIC_MODELS=['gemini-3.6-flash','gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite'];
+const WEBSITE_MODELS=['gemini-2.5-flash','gemini-3.1-flash-lite','gemini-3.5-flash-lite'];
 const LIMITS={prompt:1200,html:22000,css:20000,js:26000,explanation:800,previous:42000};
 const requestsByIp=new Map();
 const SYSTEM=[
@@ -134,10 +135,10 @@ module.exports=async function builder(req,res){
   'USER IDEA:\n'+prompt.trim()
  ];
  if(previous)descriptions.push('PREVIOUS PROJECT FOR REFINEMENT:\n'+JSON.stringify({title:previous.title,html:previous.html,css:previous.css,js:previous.js}));
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),27000);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),kind==='website'?17500:27000);
  let busy=false,invalid=false;
  try{
-  for(const model of (realistic?REALISTIC_MODELS:MODELS)){
+  for(const model of (realistic?REALISTIC_MODELS:kind==='website'?WEBSITE_MODELS:MODELS)){
    let response;
    try{
     response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{
