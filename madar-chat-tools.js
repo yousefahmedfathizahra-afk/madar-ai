@@ -179,7 +179,7 @@ async function run(request,options={}){
   if(!window.MADAR_BUILDER?.validProject(project))throw Error('الذكاء الاصطناعي رجّع مشروع ناقص. حاول تاني.');
   const id=cacheProject(project,kind);
   const what=kind==='game'?'اللعبة':kind==='website'?'الموقع':'التطبيق';
-  return{toolType:'builder',toolKey:id,content:(editing?'✅ عدّلت ':kind==='game'?'🎮 جهزت ':'🌐 بنيت ')+what+' **'+project.title+'** حسب وصفك. تقدر تتصفحه من المعاينة وتحمّل ملف HTML وتشغّله على أي متصفح. '+(kind==='website'?'لو عايز تسجيل حسابات أو دفع أو قاعدة بيانات فعلية، ده محتاج ربط خادم منفصل. ':'')+(project.explanation||'')};
+  return{toolType:'builder',toolKey:id,content:(payload.fallback?'🧩 Gemini اتأخر؛ جهزت لك قالب ':editing?'✅ عدّلت ':kind==='game'?'🎮 جهزت ':'🌐 بنيت ')+what+' **'+project.title+'**. تقدر تتصفحه من المعاينة وتحمّل ملف HTML وتشغّله على أي متصفح. '+(kind==='website'?'الحسابات أو الدفع أو قواعد البيانات الحقيقية محتاجة ربط خادم منفصل. ':'')+(project.explanation||'')};
  }
  throw Error('نوع الطلب غير معروف.');
 }
