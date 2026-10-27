@@ -23,10 +23,17 @@ const PRESETS={
 };
 function nameFrom(prompt,config){
  const match=String(prompt).match(/(?:اسمها|اسمه|باسم|اسمو|اسم المشروع|called|named)\s*[:：]?\s*[«"“]?([^\n،.!؟؛"”»]{2,40})/i);
- return (match?match[1].split(/\s+(?:فيه|اللي|with|وتكون|وبها|باللغة|بالعربي|حيث)\s+/)[0].trim():config.type).slice(0,45);
+ return (match?match[1].split(/\s+(?:فيه|فيها|وفيه|وفيها|اللي|with|وتكون|وبها|باللغة|بالعربي|حيث)\s+/)[0].trim():config.type).slice(0,45);
 }
-module.exports=function fallbackWebsite(prompt){
- const kind=categoryFor(prompt),config=PRESETS[kind],brand=esc(nameFrom(prompt,config));
+module.exports=function fallbackWebsite(prompt,spec=null){
+ const kind=spec?.category&&PRESETS[spec.category]?spec.category:categoryFor(prompt);
+ const original=PRESETS[kind];
+ const proposed=Array.isArray(spec?.items)?spec.items.filter(x=>Array.isArray(x)&&x.length>=3&&x[0]?.length>1).slice(0,6):[];
+ const config={...original,items:proposed.length>=3?proposed:original.items};
+ const brandName=String(spec?.brand||nameFrom(prompt,config)).trim().slice(0,45);
+ const brand=esc(brandName),heroTitle=esc(String(spec?.hero||'مساحة جديدة لأفكار أكبر').slice(0,100));
+ const tagline=esc(String(spec?.subtitle||('اكتشف تجربة متكاملة عبر '+config.type+' بتصميم عربي أنيق، وأقسام سهلة الاستخدام وتجربة متجاوبة مع الموبايل.')).slice(0,245));
+ const accent=/^#[a-fA-F0-9]{6}$/.test(String(spec?.accent||''))?spec.accent:null;
  const label=esc(config.tab),type=esc(config.type);
  const description=esc(String(prompt).slice(0,220));
  const html=[
@@ -35,7 +42,7 @@ module.exports=function fallbackWebsite(prompt){
  '<nav id="nav" aria-label="التنقل الرئيسي"><button data-view="home" class="nav-active">الرئيسية</button><button data-view="list">'+label+'</button><button data-view="about">من نحن</button><button data-view="contact">تواصل معنا</button></nav>',
  '<button class="counter" data-view="cart" id="cart-btn" aria-label="العناصر المحفوظة">🛒 <span id="count">0</span></button></header>',
  '<main><section class="view" data-page="home"><div class="hero"><div class="hero-text"><span class="eyebrow">مرحباً بك في '+brand+'</span>',
- '<h1>مساحة جديدة لأفكار أكبر<span class="dot">.</span></h1><p>اكتشف تجربة متكاملة عبر '+type+' بتصميم عربي أنيق، وأقسام سهلة الاستخدام وتجربة متجاوبة مع الموبايل.</p>',
+ '<h1>'+heroTitle+'<span class="dot">.</span></h1><p>'+tagline+'</p>',
  '<div class="hero-actions"><button class="primary" data-view="list">استكشف '+label+'</button><button class="secondary" data-view="about">اعرف أكثر</button></div>',
  '<div class="stats"><div><strong>+6</strong><small>خيارات متنوعة</small></div><div><strong>100%</strong><small>متوافق مع الموبايل</small></div><div><strong>عربي</strong><small>تجربة RTL</small></div></div></div>',
  '<div class="hero-art" aria-hidden="true"><div class="big-bubble">✦</div><div class="glass g1">تصميم بسيط</div><div class="glass g2">تجربة تفاعلية ✨</div><div class="shape-a"></div><div class="shape-b"></div></div></div>',
@@ -61,6 +68,7 @@ module.exports=function fallbackWebsite(prompt){
  '@media(max-width:800px){.hero{grid-template-columns:1fr}.hero-text{padding:46px 30px}.hero-art{min-height:240px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.menu-btn{display:block;margin-right:auto}nav{display:none;position:absolute;z-index:8;top:70px;left:20px;right:20px;flex-direction:column;background:white;padding:12px;border:1px solid #e2e8ee;border-radius:14px;box-shadow:0 20px 45px #112c4522}nav.open{display:flex}nav button{width:100%;text-align:right}}',
  '@media(max-width:520px){.site-header{gap:10px;height:72px;padding:0 14px}.logo{font-size:1.05rem}.counter{padding:10px}main{padding:0 14px 45px}.hero{border-radius:16px}.hero-text{padding:40px 23px}.hero h1{letter-spacing:-1px}.hero-art{min-height:185px}.big-bubble{font-size:6rem}.stats{gap:14px;margin-top:25px}.cards{grid-template-columns:1fr}.intro{align-items:flex-start;flex-direction:column;padding:35px 0 22px}.page-head{padding:35px 0 18px}.glass{font-size:.8rem;padding:10px}.contact-form{padding:18px}}'
  ].join('\n');
+ const themeCss=accent?css.replace(/#0c364a/gi,accent):css;
  const items=JSON.stringify(config.items);
  const action=JSON.stringify(config.action);
  const mode=JSON.stringify(kind);
@@ -81,7 +89,7 @@ module.exports=function fallbackWebsite(prompt){
  'document.getElementById("contact-form").addEventListener("submit",e=>{e.preventDefault();toast("الرسالة اتعرضت محلياً فقط ولم يتم إرسالها.");e.target.reset()});',
  'render("");count();show("home");})();'
  ].join('\n');
- return{title:String(brand).replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>'),
-  html,css,js,
-  explanation:'خدمة توليد المواقع بالذكاء الاصطناعي تأخرت؛ دي واجهة تجريبية جاهزة ومتجاوبة بنظام أقسام وبحث وتفاعلات محلية، وليست تنفيذًا كاملًا لكل تفاصيل طلبك. يمكنك تعديلها وتحميلها الآن.'};
+ return{title:brandName,
+  html,css:themeCss,js,
+  explanation:(spec?'تم تخصيص الاسم والمحتوى والألوان بحسب وصفك. ':'')+'الموقع قالب تفاعلي تجريبي متجاوب، وليس تنفيذًا كاملًا للخدمات الخلفية أو كل التفاصيل. تقدر تعاينه وتعدله وتحمله الآن.'};
 };
