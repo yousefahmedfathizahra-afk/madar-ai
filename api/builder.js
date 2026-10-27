@@ -28,8 +28,8 @@ const SYSTEM=[
 const WEBSITE_SYSTEM=[
  'WEBSITE BUILDER MODE. The user can ask for ANY type of original website: online shops, school portals, restaurant ordering, portfolio, blogs, news, SaaS landing pages, booking sites, dashboards, social platforms, e-learning, marketplaces, admin dashboards and more.',
  'Deliver an attractive COMPLETE responsive multi-view WEBSITE, not merely a static hero image or 1-screen landing page unless that is explicitly what the user requested.',
- 'For a requested multi-page or platform site, implement at least Home + the key additional requested views with genuine client-side navigation. Use semantic sections with data-page attributes or an equivalent JS view controller; implement active nav, back/home navigation, mobile menu, accessible labels, and no dead links. Do not use window.location redirects.',
- 'Build a coherent original design system: consistent font stacks, spacing, rich content, color palette, polished hero, cards, navigation, CTA, footer, hover/focus states, responsive desktop+mobile layout. Respect any exact names, colors, sections, audiences and languages specified.',
+ 'For a requested multi-page or platform site, implement at least Home + the key additional requested views with genuine client-side navigation and substantive content. Use semantic sections with data-page attributes or a JS view controller; implement active nav, back/home, mobile menu, accessible labels, and no dead links. Do not use window.location redirects. Minimum output for a platform: substantial HTML (>=3000 chars), stylesheet (>=2500 chars) and functional JavaScript (>=1500 chars). A single-screen skeleton with fake buttons is unacceptable.',
+ 'Build a coherent premium 2026 SaaS-quality design system: editorial typography, purposeful visual hierarchy, generous whitespace, strong card surfaces, sophisticated restrained palette, gradient/accent treatments, intuitive UI patterns, nav, footer, accessible CTA and hover/focus states, responsive desktop and mobile. Avoid generic default-looking Bootstrap demo aesthetics. Respect exact requested names, colors, sections, audiences and languages.',
  'All visible buttons and navigation must be usable. For an e-commerce store implement local product filtering/search, cart item count and quantities and clear checkout-DEMO messaging. For a restaurant implement a readable menu, category filtering, cart and demo order summary. For blogs implement posts and filtering. For dashboards implement interactive tabs and charts using CSS/SVG/canvas. For schools implement courses and detail screens. For community/social implement demo posts, profile/feed tabs, likes and posts in temporary browser memory only.',
  'DO NOT fabricate working cloud accounts, payments, live bookings, emails, real databases, third-party integrations or user authentication. For actions needing a backend use clearly labeled LOCAL DEMO interactions, with a visible message that server integration is needed before launch. Never request real passwords, payment card numbers or other secrets.',
  'No remote assets. For attractive visuals create accurate self-contained inline SVG illustrations, icons, rich CSS or stylized product cards. No external fonts, images or CDNs; no TODO, lorem ipsum, broken image URLs or placeholder-only pages.',
@@ -59,6 +59,23 @@ function validProject(p){
  &&typeof p.title==='string'&&p.title.length<=110
  &&typeof p.explanation==='string'&&p.explanation.length<=LIMITS.explanation
  &&(p.html.trim().length>=15||p.js.trim().length>=15);
+}
+// A successful JSON response is not necessarily a usable site. Reject tiny,
+// single-screen mockups for platform/store requests and try another model.
+function websiteQuality(project,prompt){
+ const h=String(project.html||''),c=String(project.css||''),j=String(project.js||''),q=String(prompt||'').toLowerCase();
+ const intentionallySimple=/(?:صفحه واحده|صفحة واحدة|landing page|single page|صفحه هبوط|صفحة هبوط|بسيط جدا|بسيطة جدًا)/i.test(q);
+ const hasNavigation=/<nav\b/i.test(h)||/data-view|data-page|class=["'][^"']*(?:nav|menu|sidebar)/i.test(h);
+ const hasInteraction=/addEventListener|onclick|oninput|onsubmit|function\s+\w+|=>/.test(j);
+ const layoutAdaptable=/@media|clamp\s*\(|minmax\s*\(|grid-template-columns/i.test(c);
+ if(!h.includes('<')||h.length<950||c.length<1000||j.length<350)return false;
+ if(!hasInteraction||!layoutAdaptable)return false;
+ if(!intentionallySimple && !hasNavigation)return false;
+ // Multi-screen apps should have real view/tab logic or at least several sections.
+ const isPlatform=/(?:منصه|منصة|متجر|داشبورد|dashboard|platform|store|shop|education|تعليم|اجتماعي|social|community|marketplace)/i.test(q);
+ if(isPlatform&&!intentionallySimple&&
+  !/showPage|showView|switchTab|data-page|data-view|activePage|displayPage|renderPage|navigateTo|location\.hash|hashchange/i.test(h+j))return false;
+ return true;
 }
 function parseGenerated(value){
  const raw=String(value||'').trim().replace(/^\x60{3}(?:json)?\s*/i,'').replace(/\s*\x60{3}$/,'');
@@ -147,8 +164,15 @@ module.exports=async function builder(req,res){
    }
    const output=(result?.candidates?.[0]?.content?.parts||[])
     .filter(v=>typeof v?.text==='string').map(v=>v.text).join('\n');
-   try{return send(res,200,{project:parseGenerated(output)});}
-   catch{invalid=true;continue;}
+   try{
+    const project=parseGenerated(output);
+    if(kind==='website'&&!websiteQuality(project,prompt)){
+     invalid=true;
+     console.warn('MADAR Builder skipped low-quality site from model',model);
+     continue;
+    }
+    return send(res,200,{project});
+   }catch{invalid=true;continue;}
   }
   if(invalid)return maybeFallback(res,kind,prompt,422,'Gemini did not return complete HTML, CSS and JS. Try a shorter idea.');
   return maybeFallback(res,kind,prompt,busy?503:502,busy?'Gemini is busy. Try again soon.':'No compatible Gemini free model is available for Builder right now.');
