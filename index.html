@@ -230,6 +230,11 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .composer-hint{font-size:10px}
 .compose-wrap{padding-bottom:14px}
 @media(max-width:550px){.composer{padding:11px 13px 9px}.composer textarea{font-size:14px;min-height:40px}}
+.madar-builder-view-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.madar-builder-export{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.madar-builder-export button{flex:1;min-width:185px}
+#madarBuilderPreview:fullscreen{width:100%;height:100%;border:0;background:#fff}
+@media(max-width:600px){.madar-builder-export button{min-width:100%}}
 </style>
   <title>MADAR AI | دردشة وصور وبناء مواقع ومنصات وألعاب</title>
 </head>
@@ -393,10 +398,10 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <strong id="madarBuilderProjectTitle">MADAR Project</strong>
           <p id="madarBuilderExplanation"></p>
         </div>
-        <button id="madarBuilderDevice" type="button" class="madar-builder-switch">📱 Mobile view</button>
+        <div class="madar-builder-view-actions"><button id="madarBuilderDevice" type="button" class="madar-builder-switch">📱 Mobile view</button><button id="madarBuilderFullscreen" type="button" class="madar-builder-switch">⛶ عرض كبير</button></div>
       </div>
       <div class="madar-builder-preview-shell">
-        <iframe id="madarBuilderPreview" title="Isolated interactive generated project" sandbox="allow-scripts" referrerpolicy="no-referrer" loading="lazy"></iframe>
+        <iframe id="madarBuilderPreview" title="Isolated interactive generated project" sandbox="allow-scripts" referrerpolicy="no-referrer" loading="lazy" allow="fullscreen"></iframe>
       </div>
       <p class="madar-builder-safety">🔒 المعاينة معزولة عن حسابات مدار. المواقع الناتجة مواقع HTML/CSS/JS قابلة للتنزيل؛ الحسابات الحقيقية وقواعد البيانات والدفع الفعلي تحتاج خدمات خلفية منفصلة.</p>
       <details class="madar-builder-source">
@@ -410,7 +415,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
         <textarea id="madarBuilderJs" spellcheck="false" aria-label="Generated JavaScript"></textarea>
         <button id="madarBuilderApply" type="button">▶ Apply code changes to preview</button>
       </details>
-      <button id="madarBuilderDownload" type="button" class="madar-builder-download">⬇ Download working HTML project</button>
+      <div class="madar-builder-export"><button id="madarBuilderDownloadZip" type="button" class="madar-builder-download">📦 تنزيل المشروع ZIP (HTML + CSS + JS)</button><button id="madarBuilderDownload" type="button" class="madar-builder-download">⬇ تنزيل ملف HTML واحد</button></div>
     </section>
     <p class="madar-builder-disclaimer">إنشاء المواقع والألعاب يستخدم Gemini بحدود الاستخدام المتاحة. المواقع الناتجة تبدأ كنماذج واجهات تفاعلية يمكن تنزيلها وتطويرها ونشرها بعد مراجعة الكود. لا يتم نشر المشاريع تلقائيًا أو تفعيل مدفوعات أو تسجيل دخول حقيقي بدون ربط منفصل.</p>
   </dialog>
