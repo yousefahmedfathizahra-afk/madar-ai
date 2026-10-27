@@ -7,6 +7,7 @@
   <meta name="description" content="مدار AI: دردشة عربية ومركز إبداع بخمس أدوات: صانع المشاريع، المدرس الذكي، صانع الألعاب، تصميم الصور بالذكاء الاصطناعي، ومصلّح الأكواد. ابنِ مواقع ومعاينات وحمّل مشاريعك.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://madar-ai-yousef.vercel.app/">
+  <link rel="stylesheet" href="/madar-robot.css">
   <meta property="og:type" content="website">
   <meta property="og:title" content="مدار AI | دردشة ذكية وبناء مواقع ومتاجر ومنصات">
   <meta property="og:description" content="جرّب مدار ستوديو: صانع مشاريع ومواقع، مدرس ذكي، ألعاب، تصميم شعارات وصور، وإصلاح أكواد، في مكان واحد.">
@@ -1076,11 +1077,95 @@ window.MADAR_APP={
 };
 
 </script>
+
+  <!-- MADAR Buddy: white-and-black friendly assistant. Pupils follow mouse, not webcam. -->
+  <div class="madar-buddy" id="madarBuddy" data-open="false" lang="ar" dir="rtl">
+    <span class="madar-buddy-hint" aria-hidden="true">أنا مساعد مدار! 👋</span>
+    <button id="madarBuddyToggle" class="madar-buddy-btn" type="button"
+      aria-label="افتح مساعد مدار الروبوت" aria-controls="madarBuddyPanel" aria-expanded="false"
+      title="حرّك الماوس وشوف عيون الروبوت، أو اضغط عليه للمساعدة">
+      <span class="madar-buddy-orbit" aria-hidden="true"></span>
+      <span class="madar-buddy-figure" aria-hidden="true">
+        <svg id="madarBuddyHead" class="madar-buddy-robot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 260" aria-hidden="true">
+          <defs>
+            <linearGradient id="buddyHelmet" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fff"/>
+              <stop offset=".46" stop-color="#e8e9ed"/>
+              <stop offset="1" stop-color="#9e9faa"/>
+            </linearGradient>
+            <linearGradient id="buddyFace" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#2a2a31"/>
+              <stop offset="1" stop-color="#09090d"/>
+            </linearGradient>
+            <linearGradient id="buddyBody" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fff"/>
+              <stop offset="1" stop-color="#a3a4ad"/>
+            </linearGradient>
+          </defs>
+          <!-- antenna and ears -->
+          <g class="madar-buddy-antenna">
+            <path d="M110 45V23" stroke="#f6f6f8" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="110" cy="17" r="11" fill="#17171c" stroke="#fff" stroke-width="5"/>
+            <circle cx="106" cy="13" r="3.5" fill="#fff"/>
+          </g>
+          <rect x="10" y="92" width="29" height="47" rx="14" fill="#dddde4" stroke="#212127" stroke-width="5"/>
+          <rect x="181" y="92" width="29" height="47" rx="14" fill="#dddde4" stroke="#212127" stroke-width="5"/>
+          <rect x="16" y="108" width="14" height="15" rx="7" fill="#1d1d23"/>
+          <rect x="190" y="108" width="14" height="15" rx="7" fill="#1d1d23"/>
+          <!-- legs and little arms -->
+          <rect x="71" y="222" width="27" height="29" rx="12" fill="#24242a" stroke="#e4e4e8" stroke-width="5"/>
+          <rect x="122" y="222" width="27" height="29" rx="12" fill="#24242a" stroke="#e4e4e8" stroke-width="5"/>
+          <path d="M48 181Q22 177 22 205" fill="none" stroke="#e5e5ea" stroke-width="18" stroke-linecap="round"/>
+          <path d="M172 181Q198 177 198 205" fill="none" stroke="#e5e5ea" stroke-width="18" stroke-linecap="round"/>
+          <circle cx="22" cy="209" r="13" fill="#fff" stroke="#15151b" stroke-width="5"/>
+          <circle cx="198" cy="209" r="13" fill="#fff" stroke="#15151b" stroke-width="5"/>
+          <!-- body -->
+          <ellipse cx="110" cy="205" rx="68" ry="46" fill="url(#buddyBody)" stroke="#16161b" stroke-width="6"/>
+          <ellipse cx="110" cy="207" rx="35" ry="30" fill="#151519" stroke="#3c3c43" stroke-width="3"/>
+          <circle cx="110" cy="207" r="20" fill="#eeeeF3"/>
+          <text x="110" y="215" fill="#15151b" font-size="24" font-weight="900" font-family="Arial,sans-serif" text-anchor="middle">M</text>
+          <path d="M67 187l9 -5M145 182l10 5" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="5" stroke-linecap="round"/>
+          <!-- head with glossy black faceplate -->
+          <rect x="18" y="43" width="184" height="133" rx="55" fill="url(#buddyHelmet)" stroke="#18181f" stroke-width="6"/>
+          <path d="M43 64Q80 44 117 53" fill="none" stroke="#fff" stroke-width="7" stroke-opacity=".9" stroke-linecap="round"/>
+          <rect x="38" y="66" width="144" height="87" rx="35" fill="url(#buddyFace)" stroke="#4f4f58" stroke-width="3"/>
+          <path d="M56 78Q106 59 163 78" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-opacity=".16" stroke-linecap="round"/>
+          <!-- eyes (gaze pupils track mouse) -->
+          <g class="madar-buddy-eye-lid">
+            <ellipse cx="83" cy="109" rx="20" ry="25" fill="#fbfbff"/>
+            <g id="buddyPupilLeft"><ellipse cx="83" cy="111" rx="9" ry="13" fill="#14141b"/><circle cx="79.5" cy="104.5" r="3.4" fill="#fff"/></g>
+          </g>
+          <g class="madar-buddy-eye-lid madar-buddy-eye-second">
+            <ellipse cx="137" cy="109" rx="20" ry="25" fill="#fbfbff"/>
+            <g id="buddyPupilRight"><ellipse cx="137" cy="111" rx="9" ry="13" fill="#14141b"/><circle cx="133.5" cy="104.5" r="3.4" fill="#fff"/></g>
+          </g>
+          <path d="M97 141Q110 150 123 141" fill="none" stroke="#f8f8fc" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="55" cy="133" r="3" fill="#c6c6d0" opacity=".8"/>
+          <circle cx="165" cy="133" r="3" fill="#c6c6d0" opacity=".8"/>
+          <path d="M70 167Q110 181 149 167" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </button>
+    <section class="madar-buddy-panel" id="madarBuddyPanel" hidden aria-label="مساعدة مدار">
+      <button class="madar-buddy-close" type="button" aria-label="إغلاق مساعد مدار">×</button>
+      <div class="madar-buddy-panel-head"><span class="madar-buddy-panel-mark">🤖</span><strong>أهلًا! أنا مساعد مدار</strong></div>
+      <p>حرّك الماوس وشوفني ببص فين 👀. تحب أساعدك في إيه؟</p>
+      <div class="madar-buddy-actions">
+        <button type="button" data-buddy-action="chat">💬 اسأل مدار</button>
+        <button type="button" data-buddy-action="website">🌐 ابني موقع</button>
+        <button type="button" data-buddy-action="studio">✨ مدار ستوديو</button>
+        <button type="button" data-buddy-action="study">📚 اشرحلي درس</button>
+      </div>
+      <div class="madar-buddy-foot">مساعد داخل الموقع · مفيش كاميرا أو تتبُّع خارجي</div>
+    </section>
+  </div>
+
   <script src="/auth.js" defer></script>
   <script src="/madar-features.js" defer></script>
   <script src="/madar-image.js" defer></script>
   <script src="/madar-builder.js" defer></script>
   <script src="/madar-chat-tools.js" defer></script>
   <script src="/madar-studio.js" defer></script>
+  <script src="/madar-robot.js" defer></script>
 </body>
 </html>
