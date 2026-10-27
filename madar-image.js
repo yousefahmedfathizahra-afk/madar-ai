@@ -347,5 +347,9 @@ for(const example of dialog.querySelectorAll('[data-image-idea]')){
  example.addEventListener('click',()=>{prompt.value=example.getAttribute('data-image-idea')||'';prompt.focus();});
 }
 updateConnection();
-window.MADAR_IMAGE_STUDIO={open,generateFromChat,prepareImagePrompt};
+function openWithIdea(description){
+ prompt.value=String(description||'').slice(0,900);
+ open();prompt.focus();
+}
+window.MADAR_IMAGE_STUDIO={open,openWithIdea,generateFromChat,prepareImagePrompt};
 })();
