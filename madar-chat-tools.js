@@ -78,7 +78,7 @@ function detect(input,history=[]){
  const types=[
   {type:'image',re:/(?:^|[\s،:])(?:صوره|صور|رسمه|لوحه|لوجو|لوغو|شعار|بوستر|ملصق|بانر|غلاف|image|picture|photo|drawing|artwork|logo|poster|banner|thumbnail|cover art)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'game',re:/(?:^|[\s،:])(?:لعبه|العاب|game|video game|3d game)(?=$|[\s،.!؟:])/g},
-  {type:'builder',kind:'website',re:/(?:^|[\s،:])(?:موقع|صفحه ويب|ويب سايت|ويبسايت|website|web ?site|webpage|landing page)(?=$|[\s،.!؟:])/g},
+  {type:'builder',kind:'website',re:/(?:^|[\s،:])(?:موقع(?:\s+الكتروني)?|مواقع|منصه|متجر(?:\s+الكتروني)?|متجر|موقع\s+ويب|صفحه\s+ويب|ويب\s*سايت|ويبسايت|مدونه|بورتفوليو|لوحه\s+تحكم|داشبورد|website|web\s?site|webpage|landing\s+page|web\s?app|web\s?platform|online\s+store|e-?commerce|portfolio|blog|dashboard|saas)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'tool',re:/(?:^|[\s،:])(?:تطبيق|ابلكيشن|اداه|app|application|tool)(?=$|[\s،.!؟:])/g}
  ];
  let found=null;
@@ -179,7 +179,7 @@ async function run(request,options={}){
   if(!window.MADAR_BUILDER?.validProject(project))throw Error('الذكاء الاصطناعي رجّع مشروع ناقص. حاول تاني.');
   const id=cacheProject(project,kind);
   const what=kind==='game'?'اللعبة':kind==='website'?'الموقع':'التطبيق';
-  return{toolType:'builder',toolKey:id,content:(editing?'✅ عدّلت ':'🎮 جهزت ')+what+' **'+project.title+'** حسب وصفك. جربها في الشات، والتغيير اللي طلبته موجود في النسخة الجديدة. '+(project.explanation||'')};
+  return{toolType:'builder',toolKey:id,content:(editing?'✅ عدّلت ':kind==='game'?'🎮 جهزت ':'🌐 بنيت ')+what+' **'+project.title+'** حسب وصفك. تقدر تتصفحه من المعاينة وتحمّل ملف HTML وتشغّله على أي متصفح. '+(kind==='website'?'لو عايز تسجيل حسابات أو دفع أو قاعدة بيانات فعلية، ده محتاج ربط خادم منفصل. ':'')+(project.explanation||'')};
  }
  throw Error('نوع الطلب غير معروف.');
 }
@@ -223,7 +223,7 @@ function render(message,body){
    body.append(element('p','madar-tool-note','المشروع متاح على الجهاز اللي اتعمل عليه فقط، وممكن يكون اتشال من ذاكرة المتصفح. ابعت الطلب تاني عشان مدار يعمله.'));return;
   }
   const card=element('section','madar-chat-project');
-  const header=element('div','madar-chat-project-title','🎮 '+project.title);
+  const header=element('div','madar-chat-project-title',(projectKinds.get(message.toolKey)==='game'?'🎮 ':'🌐 ')+project.title);
   const frame=element('iframe','madar-chat-game-frame');
   frame.title='مشروع بناه MADAR: '+project.title;
   frame.setAttribute('sandbox','allow-scripts');
