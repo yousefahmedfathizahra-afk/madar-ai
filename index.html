@@ -345,15 +345,15 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
     <div class="madar-builder-heading">
       <div>
         <span class="madar-builder-eyebrow">✦ MADE BY MADAR AI</span>
-        <h2 id="madarBuilderTitle">🛠 MADAR BUILDER</h2>
-        <p>Just describe the idea. MADAR AI writes the code and builds the game or website for you.</p>
+        <h2 id="madarBuilderTitle">🌐 MADAR SITE BUILDER</h2>
+        <p>اكتب وصف أي موقع أو متجر أو منصة أو لعبة، ومدار يكتب الكود ويعرض معاينة قابلة للتجربة والتحميل.</p>
       </div>
       <button id="madarBuilderClose" type="button" class="madar-builder-close" aria-label="Close Builder">×</button>
     </div>
     <form id="madarBuilderForm" class="madar-builder-form">
       <label for="madarBuilderKind">Choose what MADAR should create</label>
       <select id="madarBuilderKind">
-        <option value="website">🌐 Website</option>
+        <option value="website">🌐 موقع / متجر / منصة / لوحة تحكم</option>
         <option value="game">🎮 Playable game</option>
         <option value="tool">⚙️ Mini app / tool</option>
       </select>
@@ -368,13 +368,17 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
         </select>
       </div>
       <label for="madarBuilderIdea">Tell MADAR your idea — no coding needed!</label>
-      <textarea id="madarBuilderIdea" dir="auto" maxlength="1200" placeholder="مثال: يا مدار اعملي لعبة عربيات فيها نقاط ومراحل وزرار إعادة اللعب" required></textarea>
+      <textarea id="madarBuilderIdea" dir="auto" maxlength="1200" placeholder="مثال: اعمل منصة تعليمية عربية فيها الصفحة الرئيسية والكورسات وصفحة كل كورس وبحث وتسجيل تجريبي" required></textarea>
       <div class="madar-builder-examples">
         <button type="button" data-builder-kind="game" data-builder-graphics="realistic" data-builder-idea="يا مدار اعملي لعبة سباق عربيات واقعية، الكاميرا ورا العربية، الطريق ثلاثي الأبعاد بالمنظور، السماء والأشجار وإضاءة وظلال، عربية متفصلة مرسومة باحتراف، حركة سلسة بالسرعة والدركسيون، عربيات منافسة، تصادم، عداد سرعة ونقاط وزر إعادة اللعب، وأزرار للموبايل">🏎️ Realistic racing</button>
         <button type="button" data-builder-kind="game" data-builder-graphics="standard" data-builder-idea="اعمل لي لعبة ثعبان Snake عربية كاملة تشتغل بالأسهم وبأزرار اللمس مع نقاط وإعادة لعب">🐍 Classic Snake</button>
         <button type="button" data-builder-kind="game" data-builder-graphics="realistic" data-builder-idea="اعمل لعبة كرة قدم بمنظور واقعي، ملعب وأضواء وظلال، لاعيبة متحركة، كرة لها فيزياء، تسديد، حارس مرمى، أهداف ونتيجة ومراحل وأزرار تحكم للموبايل">⚽ Realistic football</button>
         <button type="button" data-builder-kind="game" data-builder-graphics="realistic" data-builder-idea="اعمل لعبة قيادة سيارات في مدينة بمنظور ثالث شخص ورا العربية، مباني وشوارع وسماء وإضاءة واقعية نسبيًا، سرعة وفرامل ودركسيون، شوارع ومنعطفات ونقاط وتحكم بالموبايل">🏙️ City driving</button>
-        <button type="button" data-builder-kind="website" data-builder-idea="اعمل موقع شيك لمطعم اسمه الملك باللغة العربية فيه منيو وأسعار وسلة طلبات تفاعلية">🍔 Restaurant site</button>
+        <button type="button" data-builder-kind="website" data-builder-idea="اعمل موقع مطعم اسمه الملك باللغة العربية فيه الصفحة الرئيسية والمنيو وفلترة الأصناف وسلة طلبات تفاعلية وصفحة تواصل">🍔 مطعم</button>
+        <button type="button" data-builder-kind="website" data-builder-idea="اعمل متجر إلكتروني عربي احترافي لبيع الملابس فيه صفحة رئيسية وقائمة منتجات وبحث وفلاتر وسلة مشتريات ودفع تجريبي بوضوح">🛍️ متجر إلكتروني</button>
+        <button type="button" data-builder-kind="website" data-builder-idea="اعمل منصة تعليمية عربية اسمها مدار أكاديمي فيها الرئيسية وتصنيفات الكورسات وتفاصيل الدروس ولوحة طالب واختبارات تفاعلية تجريبية">🎓 منصة تعليمية</button>
+        <button type="button" data-builder-kind="website" data-builder-idea="اعمل موقع شركة عربي احترافي فيه رئيسية وخدمات ومعرض أعمال وأسئلة شائعة ونموذج تواصل تجريبي">🏢 موقع شركة</button>
+        <button type="button" data-builder-kind="website" data-builder-idea="اعمل منصة مجتمع مصغرة عربية فيها منشورات وبروفايل وبحث وإعجاب وتعليقات محلية كتجربة دون حسابات حقيقية">💬 منصة اجتماعية</button>
         <button type="button" data-builder-kind="tool" data-builder-idea="Build a beautiful task planner with add, complete, filter and delete task features.">✅ Task planner</button>
       </div>
       <div class="madar-builder-controls">
@@ -394,7 +398,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       <div class="madar-builder-preview-shell">
         <iframe id="madarBuilderPreview" title="Isolated interactive generated project" sandbox="allow-scripts" referrerpolicy="no-referrer" loading="lazy"></iframe>
       </div>
-      <p class="madar-builder-safety">🔒 Preview runs in a restricted sandbox, without access to MADAR accounts or chats. Generated projects don't have network access.</p>
+      <p class="madar-builder-safety">🔒 المعاينة معزولة عن حسابات مدار. المواقع الناتجة مواقع HTML/CSS/JS قابلة للتنزيل؛ الحسابات الحقيقية وقواعد البيانات والدفع الفعلي تحتاج خدمات خلفية منفصلة.</p>
       <details class="madar-builder-source">
         <summary>🧩 View and optionally edit the generated code</summary>
         <p>MADAR AI wrote all the code automatically. You don't need to edit anything.</p>
@@ -408,7 +412,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       </details>
       <button id="madarBuilderDownload" type="button" class="madar-builder-download">⬇ Download working HTML project</button>
     </section>
-    <p class="madar-builder-disclaimer">Gemini's free tier has usage limits. Realistic mode creates 2.5D / 3D-inspired browser mini-games, not photorealistic console games. Your last project is saved on this device only.</p>
+    <p class="madar-builder-disclaimer">إنشاء المواقع والألعاب يستخدم Gemini بحدود الاستخدام المتاحة. المواقع الناتجة تبدأ كنماذج واجهات تفاعلية يمكن تنزيلها وتطويرها ونشرها بعد مراجعة الكود. لا يتم نشر المشاريع تلقائيًا أو تفعيل مدفوعات أو تسجيل دخول حقيقي بدون ربط منفصل.</p>
   </dialog>
   <dialog id="madarImageDialog" class="madar-image-dialog" aria-labelledby="madarImageTitle">
     <div class="madar-image-head">
