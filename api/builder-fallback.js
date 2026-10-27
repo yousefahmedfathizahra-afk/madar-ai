@@ -22,7 +22,7 @@ const PRESETS={
  general:{type:'موقع إلكتروني',tab:'الأقسام',items:[['خدماتنا','قسم','🚀'],['أعمالنا','قسم','🎯'],['المدونة','قسم','📰'],['الأسئلة الشائعة','قسم','💬'],['فريق العمل','قسم','👥'],['تواصل معنا','قسم','📩']],action:'عرض التفاصيل'}
 };
 function nameFrom(prompt,config){
- const match=String(prompt).match(/(?:اسمه|اسمها|باسم|اسمو|اسم المشروع|called|named)\s*[:：]?\s*[«"“]?([^\n،.!؟؛"”»]{2,40})/i);
+ const match=String(prompt).match(/(?:اسمها|اسمه|باسم|اسمو|اسم المشروع|called|named)\s*[:：]?\s*[«"“]?([^\n،.!؟؛"”»]{2,40})/i);
  return (match?match[1].split(/\s+(?:فيه|اللي|with|وتكون|وبها|باللغة|بالعربي|حيث)\s+/)[0].trim():config.type).slice(0,45);
 }
 module.exports=function fallbackWebsite(prompt){
