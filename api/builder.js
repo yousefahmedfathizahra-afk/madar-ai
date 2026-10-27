@@ -1,7 +1,7 @@
 'use strict';
 // MADAR Builder — generates a self-contained HTML/CSS/JS project via existing Gemini key.
 // All generated code executes only in a sandboxed iframe on the client.
-const MODELS=['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-3.6-flash','gemini-2.5-flash-lite','gemini-2.5-flash'];
+const MODELS=['gemini-2.5-flash','gemini-3.6-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite'];
 // Realistic games benefit from the more capable free-eligible model when available.
 const REALISTIC_MODELS=['gemini-3.6-flash','gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite'];
 const LIMITS={prompt:1200,html:22000,css:20000,js:26000,explanation:800,previous:42000};
@@ -15,7 +15,7 @@ const SYSTEM=[
  'For games: implement gameplay, keyboard and touch controls, collision or rules, score, restart and win or game over, when appropriate.',
  'USER INSTRUCTIONS ARE THE SPECIFICATION: implement the exact requested game genre, gameplay, appearance, camera perspective, colors, characters and features. Do not substitute a different game, invent unrelated features, or replace explicit user details with your own preferences.',
  'If refining a previous project, change exactly what the latest user asks and preserve everything else that works. The existing generated project is the starting point, not a suggestion.',
- 'For websites: implement functional menus, buttons and sections. For tools: implement actual logic and responsive interface.',
+ 'For websites: implement functional navigable pages, menus, buttons and sections. For tools: implement actual logic and responsive interface.',
  'SELF CONTAINED: NO imports, external dependencies, network calls, external scripts/styles/images/fonts, embedded frames, cookies, localStorage, sessionStorage, document redirects, popup windows, camera/microphone, file access, payments or credentials.',
  'Use only inline SVG, CSS, emoji or canvas for art. No external resources or data collection.',
  'Prefer under 6000 characters of HTML, 7000 of CSS and 10000 of JS. No missing placeholders or TODOs.',
@@ -23,6 +23,20 @@ const SYSTEM=[
  'Keep explanation one brief sentence in the user language; title descriptive and short.',
  'If previous source code is given, apply requested changes without breaking existing working features.',
  'Never construct malicious, deceptive or unsafe functionality.'
+].join('\n');
+const WEBSITE_SYSTEM=[
+ 'WEBSITE BUILDER MODE. The user can ask for ANY type of original website: online shops, school portals, restaurant ordering, portfolio, blogs, news, SaaS landing pages, booking sites, dashboards, social platforms, e-learning, marketplaces, admin dashboards and more.',
+ 'Deliver an attractive COMPLETE responsive multi-view WEBSITE, not merely a static hero image or 1-screen landing page unless that is explicitly what the user requested.',
+ 'For a requested multi-page or platform site, implement at least Home + the key additional requested views with genuine client-side navigation. Use semantic sections with data-page attributes or an equivalent JS view controller; implement active nav, back/home navigation, mobile menu, accessible labels, and no dead links. Do not use window.location redirects.',
+ 'Build a coherent original design system: consistent font stacks, spacing, rich content, color palette, polished hero, cards, navigation, CTA, footer, hover/focus states, responsive desktop+mobile layout. Respect any exact names, colors, sections, audiences and languages specified.',
+ 'All visible buttons and navigation must be usable. For an e-commerce store implement local product filtering/search, cart item count and quantities and clear checkout-DEMO messaging. For a restaurant implement a readable menu, category filtering, cart and demo order summary. For blogs implement posts and filtering. For dashboards implement interactive tabs and charts using CSS/SVG/canvas. For schools implement courses and detail screens. For community/social implement demo posts, profile/feed tabs, likes and posts in temporary browser memory only.',
+ 'DO NOT fabricate working cloud accounts, payments, live bookings, emails, real databases, third-party integrations or user authentication. For actions needing a backend use clearly labeled LOCAL DEMO interactions, with a visible message that server integration is needed before launch. Never request real passwords, payment card numbers or other secrets.',
+ 'No remote assets. For attractive visuals create accurate self-contained inline SVG illustrations, icons, rich CSS or stylized product cards. No external fonts, images or CDNs; no TODO, lorem ipsum, broken image URLs or placeholder-only pages.',
+ 'Initialize events once after DOM elements exist; avoid throwing on null selectors. Use event delegation for dynamically inserted cards; ensure repeat clicks, search, filters, modals and navigation keep working. Provide useful initial data hardcoded for the demonstration rather than empty views.',
+ 'Use the correct content language and direction; Arabic websites should default to natural Arabic and RTL; English sites should default to English and LTR. Ensure a usable experience down to 360px widths.',
+ 'If user wants an actual deployable backend or real integrations, provide a functioning local frontend demo within the sandbox restrictions and mention the missing backend in explanation; never claim a production service is live.',
+ 'When refining: preserve original branding, functional components and pages while implementing only the requested modifications.',
+ 'Spend more output tokens on genuinely usable markup/CSS/JavaScript, fewer on filler explanations. Return exactly the JSON schema required by SYSTEM.'
 ].join('\n');
 const REALISTIC_SYSTEM=[
  'REALISTIC GAME MODE: create an immersive PLAYABLE original browser game with convincing graphics. User describes it and MADAR writes every line.',
@@ -90,7 +104,7 @@ module.exports=async function builder(req,res){
  if(requestsByIp.size>600)for(const [ip,v] of requestsByIp)if(now-v.start>900000)requestsByIp.delete(ip);
  const realistic=kind==='game'&&graphics==='realistic';
  const descriptions=[
-  kind==='game'?'Build a PLAYABLE browser game.':kind==='tool'?'Build an INTERACTIVE utility app.':'Build a RESPONSIVE website.',
+  kind==='game'?'Build a PLAYABLE browser game.':kind==='tool'?'Build an INTERACTIVE utility app.':'Build an ORIGINAL, RESPONSIVE, MULTI-VIEW WEBSITE OR DEMO PLATFORM matched to the user requirements.',
   realistic?'VISUALS: Realistic 2.5D / cinematic 3D-inspired, convincing perspective and responsive physics, not emoji or blocks.':'VISUALS: polished and responsive.',
   'USER IDEA:\n'+prompt.trim()
  ];
@@ -105,9 +119,9 @@ module.exports=async function builder(req,res){
      method:'POST',signal:controller.signal,
      headers:{'Content-Type':'application/json','x-goog-api-key':key},
      body:JSON.stringify({
-      systemInstruction:{parts:[{text:SYSTEM+(realistic?'\n'+REALISTIC_SYSTEM:'')}]},
+      systemInstruction:{parts:[{text:SYSTEM+(realistic?'\n'+REALISTIC_SYSTEM:'')+(kind==='website'?'\n'+WEBSITE_SYSTEM:'')}]},
       contents:[{role:'user',parts:[{text:descriptions.join('\n\n')}]}],
-      generationConfig:{responseMimeType:'application/json',maxOutputTokens:realistic?13500:11000,temperature:0.65}
+      generationConfig:{responseMimeType:'application/json',maxOutputTokens:realistic?13500:kind==='website'?14000:11000,temperature:0.55,...(model.startsWith('gemini-2.5-')?{thinkingConfig:{thinkingBudget:0}}:{})}
      })
     });
    }catch(error){
