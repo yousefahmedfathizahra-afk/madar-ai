@@ -317,10 +317,39 @@ async function generateFromProvider(description){
    throw Error('Puter لم يرجع صورة صالحة. حاول تاني.');
  return source;
 }
+// Canva image generation uses the visitor's own separately authorized account.
+// No owner API token is ever sent to the browser. Canva's image API is in preview.
+async function connectedCanva(){
+ try{
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),2800);
+  try{
+   const r=await fetch('/api/canva/session',{method:'GET',signal:c.signal,credentials:'same-origin'});
+   if(!r.ok)return false;
+   const s=await r.json();
+   return s.configured===true&&s.connected===true;
+  }finally{clearTimeout(t);}
+ }catch{return false;}
+}
+async function canvaImage(description){
+ const request=await fetch('/api/canva/image',{method:'POST',credentials:'same-origin',
+  headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prepareImagePrompt(description)})});
+ let job=await request.json().catch(()=>({}));
+ if(!request.ok)throw Error(job.error||'Canva did not accept the image request.');
+ for(let attempts=0;attempts<34;attempts++){
+  if(job.status==='success'&&typeof job.url==='string')return job.url;
+  if(job.status==='failed')throw Error('Canva could not generate this image.');
+  await new Promise(resolve=>setTimeout(resolve,2200));
+  const r=await fetch('/api/canva/image?job='+encodeURIComponent(job.jobId),{credentials:'same-origin'});
+  job=await r.json().catch(()=>({}));
+  if(!r.ok)throw Error(job.error||'Canva image job failed.');
+ }
+ throw Error('Canva is taking longer than expected; please try again later.');
+}
 async function generateFromChat(description){
  const promptText=String(description||'').trim().slice(0,900);
  if(promptText.length<3)throw Error('اكتب وصف الصورة بعد كلمة اعمل صورة.');
  if(chatImageRequest)throw Error('استنى الصورة الحالية تخلص الأول.');
+ if(await connectedCanva())return await canvaImage(promptText);
  try{await loadSdk();}
  catch(e){throw Error('مش قادر أحمل خدمة الصور Puter. جرّب تغيير الشبكة أو المتصفح.');}
  if(signedIn()){
