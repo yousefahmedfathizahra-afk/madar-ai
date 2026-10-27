@@ -1,0 +1,33 @@
+/* MADAR Buddy: animated black-and-white assistant; no external assets. */
+.madar-buddy{position:fixed;right:clamp(8px,2vw,25px);bottom:114px;z-index:18;display:flex;align-items:flex-end;flex-direction:column;gap:10px;direction:rtl;pointer-events:none}
+.madar-buddy *{box-sizing:border-box}
+.madar-buddy-btn{position:relative;display:grid;place-items:center;width:122px;height:143px;padding:0;border:0;background:transparent;color:inherit;cursor:pointer;pointer-events:auto;filter:drop-shadow(0 18px 20px #0008);transition:scale .2s ease,filter .2s ease}
+.madar-buddy-btn:hover{scale:1.045;filter:drop-shadow(0 18px 24px #000a)}
+.madar-buddy-btn:focus-visible{outline:3px solid #bfa3ff;outline-offset:2px;border-radius:18px}
+.madar-buddy-orbit{position:absolute;inset:12px 4px auto;width:113px;height:113px;border-radius:50%;background:radial-gradient(circle,#ffffff22,#8f7cb91c 52%,transparent 74%);z-index:-1}
+.madar-buddy-figure{width:100%;height:100%;display:block;animation:buddy-float 4.1s ease-in-out infinite;will-change:transform}
+.madar-buddy-robot{width:100%;height:100%;overflow:visible;transform-origin:center;transform:rotate(var(--buddy-tilt,0deg));transition:transform .13s}
+.madar-buddy-eye-lid{transform-box:fill-box;transform-origin:center;animation:buddy-blink 8s ease-in-out infinite}
+.madar-buddy-eye-second{animation-delay:.1s}
+.madar-buddy-antenna{animation:buddy-wiggle 5s ease-in-out infinite;transform-origin:110px 31px}
+.madar-buddy-hint{pointer-events:none;position:absolute;right:110px;bottom:92px;width:max-content;background:#fff;border:1px solid #ddd9e4;color:#17141e;border-radius:14px 14px 3px 14px;padding:9px 12px;font:800 12px/1.6 inherit;box-shadow:0 12px 24px #0004;opacity:.96}
+.madar-buddy[data-open=true] .madar-buddy-hint{opacity:0}
+.madar-buddy-panel{pointer-events:auto;position:absolute;bottom:128px;right:95px;width:min(304px,calc(100vw - 115px));padding:16px;border-radius:18px;color:#fff;background:linear-gradient(150deg,#292932,#111117);border:1px solid #fff4;box-shadow:0 18px 55px #0009;direction:rtl;text-align:right}
+.madar-buddy-panel[hidden]{display:none!important}
+.madar-buddy-panel-head{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px}
+.madar-buddy-panel-mark{display:grid;place-items:center;background:#fff;color:#15151d;border-radius:10px;width:34px;height:34px}
+.madar-buddy-panel p{font-size:12px;color:#d0ccd8;line-height:1.85;margin:9px 0 14px}
+.madar-buddy-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.madar-buddy-actions button{border:1px solid #ffffff31;border-radius:10px;background:#31313c;color:#fff;padding:11px 8px;font:700 12px/1.3 inherit;cursor:pointer}
+.madar-buddy-actions button:hover,.madar-buddy-actions button:focus-visible{background:#f7f6fa;color:#14141d}
+.madar-buddy-close{position:absolute;top:10px;left:10px;padding:5px;background:transparent;color:#d4d0dc;border:0;font-size:22px;cursor:pointer}
+.madar-buddy-close:hover{color:#fff}
+.madar-buddy-foot{font-size:10px;color:#a8a5b2;margin-top:12px}
+.madar-buddy-foot:before{content:'●';color:#8ae3ac;margin-left:6px}
+@keyframes buddy-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes buddy-blink{0%,43%,46%,100%{transform:scaleY(1)}44.2%,44.7%{transform:scaleY(.08)}}
+@keyframes buddy-wiggle{0%,80%,100%{transform:rotate(0deg)}84%{transform:rotate(9deg)}88%{transform:rotate(-6deg)}93%{transform:rotate(0deg)}}
+@media(max-width:720px){.madar-buddy{bottom:106px;right:7px}.madar-buddy-btn{width:88px;height:103px}.madar-buddy-orbit{width:82px;height:82px}.madar-buddy-panel{right:69px;bottom:93px;width:min(277px,calc(100vw - 90px))}.madar-buddy-hint{right:80px;bottom:73px;font-size:10px;padding:6px 9px}body:has(#prompt:focus) .madar-buddy{opacity:0;visibility:hidden;pointer-events:none}}
+@media(max-width:470px){.madar-buddy-hint{display:none}.madar-buddy-panel{right:0;bottom:103px;width:min(290px,calc(100vw - 18px))}}
+@media(max-height:460px){.madar-buddy{bottom:60px}.madar-buddy-panel{bottom:55px;right:90px;max-height:73vh;overflow-y:auto}.madar-buddy-hint{display:none}}
+@media(prefers-reduced-motion:reduce){.madar-buddy-figure,.madar-buddy-eye-lid,.madar-buddy-antenna{animation:none!important}.madar-buddy-robot{transition:none!important}}
