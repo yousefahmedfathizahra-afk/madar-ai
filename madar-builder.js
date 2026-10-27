@@ -283,5 +283,11 @@ function downloadProject(project){
  try{downloadHtml();}
  finally{current=previous;}
 }
-window.MADAR_BUILDER={open,setProject,standalone,downloadProject,validProject};
+function openWithIdea(description,type='website'){
+ if(!['website','game','tool'].includes(type))type='website';
+ kind.value=type;updateGraphicsChoice();
+ idea.value=String(description||'').slice(0,1200);
+ open();idea.focus();
+}
+window.MADAR_BUILDER={open,openWithIdea,setProject,standalone,downloadProject,validProject};
 })();
