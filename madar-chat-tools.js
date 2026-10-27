@@ -18,7 +18,8 @@ const PHOTO_PLACES=[
  {id:'amr',name:'جامع عمرو بن العاص',test:/(?:جامع|مسجد)\s+عمرو\s+(?:بن|ابن)\s+العاص/,search:'Amr Ibn Al As Mosque Cairo',match:/(?:mosque.{0,22}amr|amr.{0,24}mosque)/i},
  {id:'ali',name:'جامع محمد علي',test:/(?:جامع|مسجد)\s+محمد\s+علي/,search:'Muhammad Ali Mosque Cairo',match:/(?:muhammad\s+ali.{0,32}mosque|mosque.{0,18}muhammad\s+ali)/i},
  {id:'hassan',name:'مسجد السلطان حسن',test:/(?:جامع|مسجد)\s+(?:ال)?سلطان\s+حسن/,search:'Sultan Hassan Mosque Cairo',match:/(?:mosque.{0,24}sultan\s+hassan|sultan\s+hassan.{0,24}mosque)/i},
- {id:'citadel',name:'قلعة صلاح الدين',test:/(?:قلعه|قلعة)\s+(?:صلاح\s+الدين|الناصر\s+صلاح)/,search:'Cairo Citadel Saladin',match:/(?:citadel.{0,28}(?:cairo|saladin|salah)|saladin.{0,22}citadel)/i}
+ {id:'citadel',name:'قلعة صلاح الدين',test:/(?:قلعه|قلعة)\s+(?:صلاح\s+الدين|الناصر\s+صلاح)/,search:'Cairo Citadel Saladin',match:/(?:citadel.{0,28}(?:cairo|saladin|salah)|saladin.{0,22}citadel)/i},
+ {id:'generic-mosque',name:'مساجد مختلفة',test:/(?:^|[\s،])(?:ال)?(?:جامع|مسجد)(?=$|[\s،.!؟:])/,search:'mosque Cairo Egypt architecture',match:/mosque/i}
 ];
 function realPhotoIntent(value){
  const q=normalize(value);
@@ -156,7 +157,7 @@ async function run(request,options={}){
   const source=await maker.generateFromChat(request.prompt);
   const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
   pictures.set(id,{src:source,prompt:request.prompt});
-  return{toolType:'image',toolKey:id,content:'🎨 خلصت الصورة! هتلاقيها هنا تحت. تقدر تحفظها على جهازك. (الصور مش بتتحفظ في سجل الشات بعد إعادة فتح الصفحة.)'};
+  return{toolType:'image',toolKey:id,content:'🎨 دي صورة مولَّدة بالذكاء الاصطناعي حسب وصفك، مش صورة فوتوغرافية موثقة لمكان حقيقي. تقدر تحفظها، لكنها مش بتفضل موجودة بعد تحديث الصفحة.'};
  }
  if(request?.type==='builder'||(request?.type==='refine'&&request.kind==='builder')){
   const editing=request.type==='refine';
