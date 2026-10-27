@@ -31,7 +31,7 @@ const SITE_CAPABILITIES = [
  'MADAR WEBSITE CAPABILITIES (important, verified from app code):',
  'MADAR is more than a text-only assistant. It answers questions about school, sport, programming, everyday life, writing and general knowledge using Gemini, within model reliability limits.',
  'MADAR CAN GENERATE AI IMAGES. Users type a creation request, e.g. «اعمل صورة قطة في الفضاء» / "create a picture of a cat in space", and the website routes that to its integrated Puter image generator and displays the resulting image in chat. Image generation requires the visitor to connect their own Puter account once; availability and image credits depend on that external provider. Never say "I can only respond with text" or "I cannot create images" as a blanket statement.',
- 'MADAR CAN BUILD SIMPLE PLAYABLE GAMES, SMALL WEBSITES AND INTERACTIVE TOOLS via the MADAR Builder when the visitor writes e.g. «اعمل لعبة سباق» or «ابني موقع لمحل». The website can also launch its existing Shadow Unit 3D game on request.',
+ 'MADAR SITE BUILDER CAN CREATE RESPONSIVE WEB FRONTS for shops, restaurants, educational platforms, communities, blogs, dashboards, portfolio sites, and small games. A visitor types e.g. «ابني منصة تعليمية» or «اعمل متجر إلكتروني» and MADAR runs the website builder in chat, gives a preview and downloadable standalone HTML/CSS/JS. These are frontend demos, NOT already deployed sites and NOT production backends, real user accounts, databases or payment systems. If AI times out a clearly labeled functional local starter may be returned. The game tool can launch Shadow Unit 3D as well.',
  'MADAR CAN EXPLAIN UPLOADED PHOTOS. If the visitor wants to attach a picture, tell them to type «ارفع صورة» and choose it from their device. MADAR supports browser-based voice input and voice reading when the browser supports speech APIs; visitors can type «شغل المايك» or «شغل الصوت».',
  'MADAR CAN HELP TUTOR, QUIZ, WRITE CODE, TRANSLATE, AND DRAFT CONTENT directly from a normal conversation, with automatic mode inference and without extra visible buttons.',
  'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab; MADAR can verify recent sports and news through limited Gemini Google Search grounding for time-sensitive questions, when that tool returns supporting sources. Do not pretend to know unverified live sports results, weather, prices or breaking news.',
@@ -192,11 +192,11 @@ function directCapabilityAnswer(question){
     ? 'أيوه، **مدار يقدر يعمل صور بالذكاء الاصطناعي** 🎨. اكتب مثلًا «اعمل صورة قطة في الفضاء» وهبدأ إنشاء الصورة في الشات. أول مرة ممكن تحتاج تضغط Connect Puter وتدخل لحسابك عشان خدمة الصور تشتغل؛ الخدمة حسب رصيد وتوافر Puter.'
     : 'Yes! **MADAR can create AI images.** Try “Create an image of a cat in space.” You may need to connect a Puter account the first time; image generation depends on the provider being available and your image credits.';
  }
- const wantsBuilder=/(?:لعبه|العاب|موقع|تطبيق|game|website|web ?site|app)/i.test(q);
+ const wantsBuilder=/(?:لعبه|العاب|موقع|مواقع|منصه|متجر|مدونه|لوحه تحكم|تطبيق|game|website|web ?site|platform|store|dashboard|app)/i.test(q);
  if(wantsBuilder){
   return /[\u0600-\u06ff]/.test(q)
-    ? 'أيوه! **مدار يقدر يبني لعبة أو موقع أو تطبيق ويب بسيط** من طلبك. اكتب مثلًا «اعمل لعبة سباق عربيات» أو «ابني موقع لمطعم» وهجرب أنفذه في الشات.'
-    : 'Yes. MADAR can build small playable games, websites and browser tools. Try “Build a simple racing game” or “Create a restaurant website.”';
+    ? 'أيوه! **مدار يقدر يبني واجهات مواقع ومنصات ومتاجر تفاعلية وألعاب** من وصفك. اكتب مثلًا «ابني منصة تعليمية فيها كورسات» أو «اعمل متجر إلكتروني بسلة مشتريات» وهتظهر معاينة وكود HTML للتحميل. الحسابات الحقيقية والدفع وقواعد البيانات محتاجة إعداد خادم منفصل.'
+    : 'Yes. MADAR can build responsive frontend websites, online-store demos, educational-platform demos, browser tools and games. Try “Build an Arabic online store with search and a demo cart.” Production logins, payments and databases require backend integration.';
  }
  return null;
 }
