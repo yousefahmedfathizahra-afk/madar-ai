@@ -8,6 +8,7 @@ module.exports=async function(req,res){
  const state=String(req.query?.state||''),code=String(req.query?.code||'');
  if(req.query?.error)return res.redirect(302,'/?canva=cancelled');
  if(!tx||!state||!code||Date.now()-tx.created>600000||tx.created>Date.now()+60000
+  ||state.length!==String(tx.state||'').length
   ||!crypto.timingSafeEqual(Buffer.from(state),Buffer.from(String(tx.state||''))))
   return res.redirect(302,'/?canva=invalid');
  try{
