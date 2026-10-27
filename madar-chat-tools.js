@@ -46,7 +46,7 @@ async function landmarkPhotos(id,signal){
  const safe=(uri,hosts)=>{try{const u=new URL(uri);return u.protocol==='https:'&&hosts.includes(u.hostname)}catch{return false}};
  const photos=Object.values(j?.query?.pages||{})
    .filter(x=>place.match.test(String(x?.title||''))&&/\.(?:jpe?g|png|webp)$/i.test(String(x?.title||'')))
-   .filter(x=>!/painting|drawing|watercolor|poster|portrait|statue/i.test(String(x?.title||'')))
+   .filter(x=>!/painting|drawing|watercolor|poster|portrait|statue|the hour of prayer|by joseph farquharson|sketch|illustration/i.test(String(x?.title||'')))
    .sort((a,b)=>(a.index||99)-(b.index||99))
    .map(x=>{
      const info=x.imageinfo?.[0],src=String(info?.thumburl||info?.url||''),source=String(info?.descriptionurl||'');
