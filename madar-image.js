@@ -28,7 +28,7 @@ const SDK_SOURCES=[
 ];
 const MODELS={
  fast:{model:'@cf/black-forest-labs/flux-1-schnell',provider:'cloudflare',steps:4},
- detailed:{model:'gemini-3.1-flash-lite-image',provider:'gemini',quality:'1K'}
+ detailed:{model:'gemini-3.1-flash-image',provider:'gemini',quality:'1K'}
 };
 // Ground place requests BEFORE passing them to the AI image provider.
 // A mosque/church/landmark named after a person must not turn into a portrait.
@@ -67,6 +67,19 @@ function prepareImagePrompt(description){
      'Respect additional objects, scenery, style and viewpoint explicitly requested by the visitor.',
      'VISITOR REQUEST: '+original.slice(0,900)
    ].join('\n');
+ }
+ // A general mosque request still needs an unmistakable MOSQUE, not an
+ // unrelated building, a face, a church or a religious symbol drawn in error.
+ const mosque=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد)(?=$|[\s،.!؟:])/.test(normalized);
+ if(mosque){
+  return [
+   'CREATE AN ARCHITECTURAL IMAGE OF A MOSQUE (Islamic place of worship).',
+   'VISUAL CATEGORY: mosque building itself, with traditional Islamic architectural cues such as arches, prayer hall/courtyard and a minaret or dome where appropriate to the visitor description.',
+   'Do not substitute a historical person, a portrait, a church, a generic palace, an unrelated religious monument, or a different type of building.',
+   'If a specific mosque name is supplied, depict the mosque as architecture. Any image generated from text is an AI illustration, NOT a verified photograph of that exact real-world site.',
+   'Follow the specific location, viewpoint, details, style and extra objects requested by the visitor.',
+   'VISITOR REQUEST: '+original.slice(0,900)
+  ].join('\n');
  }
  // Place names may contain historical personal names. Preserve the user's place
  // as the principal visual subject; people may still appear when explicitly asked.
@@ -294,7 +307,11 @@ async function generateFromProvider(description){
  const instance=await loadSdk();
  if(!signedIn())throw Error('Puter sign-in is required.');
  // Use the free-allowance fast model by default, without paid calls on MADAR.
- const result=await instance.ai.txt2img(prepareImagePrompt(description),MODELS.fast);
+ const normalized=normalizeLandmark(description);
+ // Higher-fidelity Gemini image model for buildings/landmarks; fast FLUX
+ // remains the economical default for unrelated image requests.
+ const architecture=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد|قلعه|قصر|كاتدرائيه|معبد|كنيسه|متحف|هرم|اهرام|برج)(?=$|[\s،.!؟:])/.test(normalized);
+ const result=await instance.ai.txt2img(prepareImagePrompt(description),architecture?MODELS.detailed:MODELS.fast);
  const source=typeof result?.src==='string'?result.src:'';
  if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
    throw Error('Puter لم يرجع صورة صالحة. حاول تاني.');
