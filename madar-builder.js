@@ -148,7 +148,7 @@ async function generate(keepPrevious){
   if(!validProject(data?.project))throw Error('Gemini returned an incomplete project. Try again.');
   current=data.project;
   refresh();
-  report('✅ Your project is ready! Play in the preview, edit the code, or download the HTML file.');
+  report(data.fallback?'🧩 خادم الذكاء الاصطناعي اتأخر؛ جهّزنا قالب موقع تجريبي جاهز للمعاينة والتعديل والتحميل.':'✅ المشروع جاهز! جربه في المعاينة وعدّل الكود أو نزّله كملف HTML.');
   results.scrollIntoView({behavior:'smooth',block:'nearest'});
  }catch(error){
   report(error?.name==='AbortError'
