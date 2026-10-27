@@ -510,12 +510,21 @@ let authActiveUser=null;
 let pendingImage=null;
 let wikiResearch=false;
 const temporaryPhotos=new Map();
+function safeSourceLink(source){
+ if(!source||typeof source.title!=='string'||typeof source.url!=='string')return false;
+ try{
+  const url=new URL(source.url);
+  return url.protocol==='https:' && !url.username && !url.password
+   && !/(?:^|\.)(?:localhost|local|internal)$/i.test(url.hostname)
+   && !/^\d+(?:\.\d+){3}$/.test(url.hostname);
+ }catch{return false;}
+}
 function escapeState(input) {
   if (!Array.isArray(input)) return [];
   return input.filter(c => typeof c?.id === 'string' && Array.isArray(c.messages)).slice(0,MAX_CONVERSATIONS).map(c => ({
     id: c.id, title: String(c.title ?? 'New chat').slice(0, 70),
     updatedAt: Number(c.updatedAt) || Date.now(),
-    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>s&&typeof s.title==='string'&&/^https:\/\/(en|ar)\.wikipedia\.org\/\?curid=\d+$/.test(s.url)).slice(0,3):[],toolType:['builder','image'].includes(m.toolType)?m.toolType:undefined,toolKey:typeof m.toolKey==='string'&&m.toolKey.length<110?m.toolKey:undefined}))
+    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>safeSourceLink(s)).slice(0,3):[],toolType:['builder','image'].includes(m.toolType)?m.toolType:undefined,toolKey:typeof m.toolKey==='string'&&m.toolKey.length<110?m.toolKey:undefined}))
   }));
 }
 function loadChats(){try{return escapeState(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'));}catch{return []}}
@@ -603,9 +612,9 @@ function appendMessage(message, isPending=false, messageIndex=-1){const row=docu
   else body.append(heading,text);
   if(message.role==='assistant'&&Array.isArray(message.sources)&&message.sources.length){
     const sources=document.createElement('div');sources.className='message-sources';
-    const heading=document.createElement('span');heading.textContent='Wikipedia sources:';heading.style.fontSize='11px';heading.style.color='var(--muted)';sources.append(heading);
+    const heading=document.createElement('span');heading.textContent='المصادر:';heading.style.fontSize='11px';heading.style.color='var(--muted)';sources.append(heading);
     for(const s of message.sources.slice(0,3)){
-      if(!/^https:\/\/(en|ar)\.wikipedia\.org\/\?curid=\d+$/.test(s.url))continue;
+      if(!safeSourceLink(s))continue;
       const a=document.createElement('a');a.href=s.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=s.title;sources.append(a);
     }
     body.append(sources);
@@ -798,7 +807,7 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
     if(typeof data?.reply !== 'string' || !data.reply.trim()) {
       throw Error('The AI service returned no valid answer. Please try again.');
     }
-    const verifiedSources=Array.isArray(data.sources)?data.sources.filter(s=>s&&typeof s.title==='string'&&/^https:\/\/(en|ar)\.wikipedia\.org\/\?curid=\d+$/.test(s.url)).slice(0,3):[];
+    const verifiedSources=Array.isArray(data.sources)?data.sources.filter(s=>safeSourceLink(s)).slice(0,5):[];
     chat.messages.push({role:'assistant',content:data.reply,sources:verifiedSources});chat.updatedAt=Date.now();saveChats();
     window.MADAR_FEATURES?.onReply(data.reply);
   }catch(err){
