@@ -1,5 +1,6 @@
 'use strict';
 const fallbackWebsite=require('./builder-fallback');
+const {siteSpec}=require('./site-spec');
 // MADAR Builder — generates a self-contained HTML/CSS/JS project via existing Gemini key.
 // All generated code executes only in a sandboxed iframe on the client.
 const MODELS=['gemini-3.1-flash-lite','gemini-3.5-flash-lite','gemini-2.5-flash','gemini-3.6-flash','gemini-2.5-flash-lite'];
@@ -90,10 +91,14 @@ function parseGenerated(value){
  if(!validProject(p))throw Error('invalid project');
  return {title:p.title.trim()||'MADAR creation',html:p.html,css:p.css,js:p.js,explanation:p.explanation.trim()};
 }
-function maybeFallback(res,kind,prompt,status,message){
+async function maybeFallback(res,kind,prompt,status,message,specPromise,previous){
+ // Never throw away a user's existing project on a failed edit.
+ if(previous)return send(res,status,{error:'تعذر تعديل المشروع دلوقتي؛ النسخة السابقة محفوظة بدون تغيير. حاول تاني.'});
  if(kind==='website'){
-  try{return send(res,200,{project:fallbackWebsite(prompt),fallback:true});}
-  catch(error){console.warn('MADAR local site starter unavailable:',error?.name);}
+  try{
+   const spec=specPromise?await specPromise:null;
+   return send(res,200,{project:fallbackWebsite(prompt,spec),fallback:true,personalized:!!spec});
+  }catch(error){console.warn('MADAR local site starter unavailable:',error?.name);}
  }
  return send(res,status,{error:message});
 }
@@ -128,6 +133,10 @@ module.exports=async function builder(req,res){
  if(entry.count>=6)return send(res,429,{error:'Builder allows 6 generations per 15 minutes on this connection. Try again shortly.'});
  entry.count++;requestsByIp.set(addr,entry);
  if(requestsByIp.size>600)for(const [ip,v] of requestsByIp)if(now-v.start>900000)requestsByIp.delete(ip);
+ // Run a tiny site-design brief in parallel with full code generation, so that
+ // if code fails, the responsive starter still reflects the visitor's brand.
+ const siteSpecPromise=kind==='website'&&!previous?siteSpec(prompt,key):Promise.resolve(null);
+ const localFallback=(status,message)=>maybeFallback(res,kind,prompt,status,message,siteSpecPromise,previous);
  const realistic=kind==='game'&&graphics==='realistic';
  const descriptions=[
   kind==='game'?'Build a PLAYABLE browser game.':kind==='tool'?'Build an INTERACTIVE utility app.':'Build an ORIGINAL, RESPONSIVE, MULTI-VIEW WEBSITE OR DEMO PLATFORM matched to the user requirements.',
@@ -151,14 +160,14 @@ module.exports=async function builder(req,res){
      })
     });
    }catch(error){
-    if(controller.signal.aborted)return maybeFallback(res,kind,prompt,504,'Builder took too long. Try a shorter project idea.');
+    if(controller.signal.aborted)return localFallback(504,'Builder took too long. Try a shorter project idea.');
     busy=true;continue;
    }
    const result=await response.json().catch(()=>({}));
    if(response.status===404||response.status===400)continue;
    if(!response.ok){
     const status=String(result?.error?.status||'');
-    if(response.status===429||status==='RESOURCE_EXHAUSTED')return maybeFallback(res,kind,prompt,429,'The Gemini free quota is currently exhausted. Please try again later.');
+    if(response.status===429||status==='RESOURCE_EXHAUSTED')return localFallback(429,'The Gemini free quota is currently exhausted. Please try again later.');
     if(response.status===401||response.status===403)return send(res,502,{error:'Gemini key was rejected. Check Google AI Studio.'});
     if([408,500,502,503,504].includes(response.status)){busy=true;continue;}
     return send(res,502,{error:'Gemini rejected this project request. Try describing a simpler project.'});
@@ -175,11 +184,11 @@ module.exports=async function builder(req,res){
     return send(res,200,{project});
    }catch{invalid=true;continue;}
   }
-  if(invalid)return maybeFallback(res,kind,prompt,422,'Gemini did not return complete HTML, CSS and JS. Try a shorter idea.');
-  return maybeFallback(res,kind,prompt,busy?503:502,busy?'Gemini is busy. Try again soon.':'No compatible Gemini free model is available for Builder right now.');
+  if(invalid)return localFallback(422,'Gemini did not return complete HTML, CSS and JS. Try a shorter idea.');
+  return localFallback(busy?503:502,busy?'Gemini is busy. Try again soon.':'No compatible Gemini free model is available for Builder right now.');
  }catch(error){
-  if(controller.signal.aborted)return maybeFallback(res,kind,prompt,504,'Builder timed out. Try again with a simpler idea.');
+  if(controller.signal.aborted)return localFallback(504,'Builder timed out. Try again with a simpler idea.');
   console.warn('MADAR Builder error:',error?.name);
-  return maybeFallback(res,kind,prompt,502,'Could not connect to Gemini Builder.');
+  return localFallback(502,'Could not connect to Gemini Builder.');
  }finally{clearTimeout(timer);}
 };
