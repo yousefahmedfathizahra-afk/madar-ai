@@ -230,6 +230,7 @@ function render(message,body){
   frame.setAttribute('referrerpolicy','no-referrer');
   frame.setAttribute('loading','lazy');
   frame.srcdoc=window.MADAR_BUILDER.standalone(project);
+   if(projectKinds.get(message.toolKey)==='website')frame.style.minHeight='530px';
   const actions=element('div','madar-chat-tool-actions');
   const save=element('button','madar-chat-action','⬇ تنزيل المشروع');
   save.type='button';
@@ -237,7 +238,7 @@ function render(message,body){
    try{window.MADAR_BUILDER.downloadProject(project);}
    catch{window.MADAR_APP?.notice('تعذر تنزيل المشروع. جرب تاني.');}
   });
-  const edit=element('button','madar-chat-action madar-chat-action-secondary','✏️ تعديل اللعبة');
+  const edit=element('button','madar-chat-action madar-chat-action-secondary',projectKinds.get(message.toolKey)==='game'?'✏️ تعديل اللعبة':'✏️ تعديل الموقع');
   edit.type='button';
   edit.addEventListener('click',()=>{
    window.MADAR_BUILDER?.setProject(project);
@@ -245,7 +246,7 @@ function render(message,body){
   });
   actions.append(save,edit);
   card.append(header,frame,actions);
-  const disclaimer=element('p','madar-tool-note','اللعبة شغالة في إطار آمن؛ اضغط داخلها للتحكم. ممكن تحتاج تعديلات لو Gemini رجّع كود مش مكتمل.');
+  const disclaimer=element('p','madar-tool-note',projectKinds.get(message.toolKey)==='game'?'اللعبة شغالة في إطار آمن؛ اضغط داخلها للتحكم. ممكن تحتاج تعديلات لو Gemini رجّع كود مش مكتمل.':'دي معاينة آمنة للموقع، وتقدر تنزّله وتعدّل عليه. قواعد البيانات والدفع والحسابات الحقيقية محتاجة ربط مستقل قبل النشر.');
   card.append(disclaimer);
   body.append(card);
  }
