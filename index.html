@@ -494,7 +494,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
         <button id="madarBuilderGenerate" type="submit" class="madar-builder-main-btn">✨ Let MADAR build it!</button>
         <button id="madarBuilderRefine" type="button" disabled>↻ Update existing project</button>
       </div>
-      <p id="madarBuilderStatus" class="madar-builder-status" role="status" aria-live="polite">MADAR uses the existing Gemini connection. Describe an idea to get started.</p>
+      <p id="madarBuilderStatus" class="madar-builder-status" role="status" aria-live="polite">مدار جاهز يبني مشروعك. اكتب فكرتك وابدأ.</p>
     </form>
     <section id="madarBuilderResults" class="madar-builder-results" hidden>
       <div class="madar-builder-project-top">
@@ -521,7 +521,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       </details>
       <div class="madar-builder-export"><button id="madarBuilderDownloadZip" type="button" class="madar-builder-download">📦 تنزيل المشروع ZIP (HTML + CSS + JS)</button><button id="madarBuilderDownload" type="button" class="madar-builder-download">⬇ تنزيل ملف HTML واحد</button></div>
     </section>
-    <p class="madar-builder-disclaimer">إنشاء المواقع والألعاب يستخدم Gemini بحدود الاستخدام المتاحة. المواقع الناتجة تبدأ كنماذج واجهات تفاعلية يمكن تنزيلها وتطويرها ونشرها بعد مراجعة الكود. لا يتم نشر المشاريع تلقائيًا أو تفعيل مدفوعات أو تسجيل دخول حقيقي بدون ربط منفصل.</p>
+    <p class="madar-builder-disclaimer">إنشاء المواقع والألعاب يعتمد على خدمة ذكاء اصطناعي بحدود استخدام متاحة. المواقع الناتجة تبدأ كنماذج واجهات تفاعلية يمكن تنزيلها وتطويرها ونشرها بعد مراجعة الكود. لا يتم نشر المشاريع تلقائيًا أو تفعيل مدفوعات أو تسجيل دخول حقيقي بدون ربط منفصل.</p>
   </dialog>
   <dialog id="madarImageDialog" class="madar-image-dialog" aria-labelledby="madarImageTitle">
     <div class="madar-image-head">
@@ -540,7 +540,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       <label for="madarImageModel">Image style / engine</label>
       <select id="madarImageModel">
         <option value="fast">⚡ Fast • FLUX (1024 × 1024)</option>
-        <option value="detailed">✨ Detailed • Gemini Flash Image</option>
+        <option value="detailed">✨ صورة بتفاصيل أعلى</option>
       </select>
       <p class="madar-image-note">Images use <strong>Puter</strong> (a separate service). Connect a separate Puter account before generating images. Free allowance may be limited; extra usage may require adding credit to your own Puter account. MADAR's owner is never billed for images. Images are only requested when you press Generate.</p>
       <div class="madar-image-connection" aria-label="Connect to Puter for image creation">
@@ -805,7 +805,7 @@ function apiError(response, data){
   if (response.status === 401 || response.status === 403) return 'Hosting is blocking access to MADAR’s API. Check deployment protection.';
   if (response.status === 404 || response.status === 405) return 'The AI or research endpoint is unavailable. Try again.';
   if (response.status === 429) return 'Too many requests. Please wait and try again.';
-  if (response.status === 503) return 'The AI service is temporarily unavailable. Check your Gemini connection.';
+  if (response.status === 503) return 'خدمة مدار غير متاحة مؤقتًا. جرّب بعد قليل.';
   if (response.status >= 500) return `Server error (HTTP ${response.status}). Check the deployed backend and its logs.`;
   return `Unexpected API response (HTTP ${response.status}). Check the server setup.`;
 }
