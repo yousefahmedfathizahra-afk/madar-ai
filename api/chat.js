@@ -25,18 +25,18 @@ function preferredModels(question,mode){
  return challenging?['gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite','gemini-3.6-flash']:MODELS;
 }
 
-const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. The MADAR website was created by Youssef Ahmed (يوسف أحمد); mention this when asked who created MADAR, but never assume a visitor is Youssef or address visitors by that name unless they tell you. The underlying Gemini AI model was made by Google.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly. Avoid accidentally inserting Korean, Chinese, or other unrelated-language words in Arabic or English sentences. Keep common technical names in their original spelling only when useful.\n- Answer genuinely different questions on science, history, maths, coding, literature, language, technology and daily life based on the user's request, not on canned examples. Follow requested length and format, and account for prior conversation context.\n- For mathematics, verify calculations and state key steps when nontrivial. For factual claims, separate established facts from uncertainty and avoid presenting guesses as facts.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
+const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. The MADAR AI product and website were developed by Youssef Ahmed (يوسف أحمد). If asked who created or developed MADAR AI, credit Youssef Ahmed accurately as the application developer, not as the creator of the foundation AI model. Do not mention underlying AI model/provider brands in ordinary answers, introductions, capabilities, or sign-offs. Implementation/provider selection are internal product details. If directly asked which model, company or provider powers the assistant, courteously say that internal model/provider details are not publicly disclosed; do not invent an alternative model, deny true technical dependencies, or claim the underlying foundation model was trained by MADAR. Answer the user's actual topic rather than appending attribution.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly. Avoid accidentally inserting Korean, Chinese, or other unrelated-language words in Arabic or English sentences. Keep common technical names in their original spelling only when useful.\n- Answer genuinely different questions on science, history, maths, coding, literature, language, technology and daily life based on the user's request, not on canned examples. Follow requested length and format, and account for prior conversation context.\n- For mathematics, verify calculations and state key steps when nontrivial. For factual claims, separate established facts from uncertainty and avoid presenting guesses as facts.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
 // Facts about the actual MADAR product, so the model won't invent missing limitations.
 const SITE_CAPABILITIES = [
  'MADAR WEBSITE CAPABILITIES (important, verified from app code):',
- 'MADAR is more than a text-only assistant. It answers questions about school, sport, programming, everyday life, writing and general knowledge using Gemini, within model reliability limits.',
+ 'MADAR is more than a text-only assistant. It answers questions about school, sport, programming, everyday life, writing and general knowledge using AI, within model reliability limits.',
  'MADAR CAN GENERATE AI IMAGES. Users type a creation request, e.g. «اعمل صورة قطة في الفضاء» / "create a picture of a cat in space", and the website routes that to its integrated Puter image generator and displays the resulting image in chat. Image generation requires the visitor to connect their own Puter account once; availability and image credits depend on that external provider. Never say "I can only respond with text" or "I cannot create images" as a blanket statement.',
  'MADAR SITE BUILDER CAN CREATE RESPONSIVE WEB FRONTS for shops, restaurants, educational platforms, communities, blogs, dashboards, portfolio sites, and small games. A visitor types e.g. «ابني منصة تعليمية» or «اعمل متجر إلكتروني» and MADAR runs the website builder in chat, gives a preview and downloadable standalone HTML/CSS/JS. These are frontend demos, NOT already deployed sites and NOT production backends, real user accounts, databases or payment systems. If AI times out a clearly labeled functional local starter may be returned. The game tool can launch Shadow Unit 3D as well.',
  'MADAR CREATIVE STUDIO is accessible from the visible «✦ مدار ستوديو» button at the top of the homepage, with five sections: (1) entrepreneur project pack with concept, marketing caption, logo description and handoff to site builder; (2) smart tutor with lesson explanations, five-question interactive quizzes and photo homework upload; (3) browser game maker; (4) design studio powered by a separately signed-in Puter account for posters, logos and thumbnails; (5) code repair where a visitor pastes HTML/CSS/JS, receives an AI repair suggestion, then previews it in an isolated iframe. Generated products are DRAFTS and should be verified. Real cloud login, payments and automatic publication are not offered by Studio.',
  'MADAR CAN EXPLAIN UPLOADED PHOTOS. If the visitor wants to attach a picture, tell them to type «ارفع صورة» and choose it from their device. MADAR supports browser-based voice input and voice reading when the browser supports speech APIs; visitors can type «شغل المايك» or «شغل الصوت».',
  'MADAR CAN HELP TUTOR, QUIZ, WRITE CODE, TRANSLATE, AND DRAFT CONTENT directly from a normal conversation, with automatic mode inference and without extra visible buttons.',
- 'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab; MADAR can verify recent sports and news through limited Gemini Google Search grounding for time-sensitive questions, when that tool returns supporting sources. Do not pretend to know unverified live sports results, weather, prices or breaking news.',
- 'Important: tools are triggered by the WEBSITE before or alongside text chat, NOT by the Gemini text model. Answer capability questions positively with honest setup requirements and actionable instructions. Never claim a generated picture, live lookup, or deployed site was completed when the tool did not actually run.'
+ 'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab; MADAR can verify recent sports and news through limited web-grounded search for time-sensitive questions, when that tool returns supporting sources. Do not pretend to know unverified live sports results, weather, prices or breaking news.',
+ 'Important: tools are triggered by the WEBSITE before or alongside text chat, NOT by the text-answering AI model. Answer capability questions positively with honest setup requirements and actionable instructions. Never claim a generated picture, live lookup, or deployed site was completed when the tool did not actually run.'
 ].join('\\n');
 // Modes change response behavior only; users still share the same safe Gemini backend.
 const MODE_INSTRUCTIONS = Object.freeze({
@@ -180,6 +180,23 @@ function liveDateSystemInstruction(info) {
     +'For time-sensitive external news or facts you cannot verify, acknowledge the limitation rather than invent updates.';
 }
 
+// Treat the base-model vendor as an undisclosed internal implementation detail.
+function directMadarIdentityAnswer(question){
+ const q=String(question||'').normalize('NFKC').toLowerCase()
+  .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
+  .replace(/[؟?!،.,:;]+/g,' ').replace(/\s+/g,' ').trim();
+ if(!q||q.length>160)return null;
+ const askingProvider=/(?:جميناي|جيمناي|جيميني|gemini|شركه.*(?:الذكاء|تشتغل)|موديل.*(?:تستخدم|تشغل|شغال)|نموذج.*(?:تستخدم|تشغل|شغال)|بتستخدم.*(?:موديل|نموذج|شركه)|مين.*(?:مزود|موديل|النموذج)|powered by|underlying model|which model|what model|model provider|ai provider|is this gemini|are you gemini|google ai)/i.test(q);
+ if(askingProvider)return /[\u0600-\u06ff]/.test(q)
+  ?'أنا **مدار AI**. تفاصيل مزوّد التقنية والنماذج المستخدمة داخليًا مش معلنة، لكن أقدر أساعدك في سؤالك.'
+  :'I’m MADAR AI. Internal model-provider and implementation details are not publicly disclosed, but I can help with your question.';
+ const askingCreator=/(?:مين|من|اسم|who|which person).{0,55}(?:عمل|صنع|طور|اسس|أنشأ|انشا|بني|برمج|المطور|المؤسس|مالك|created|made|developed|founded|built|owner)|(?:عملك|صنعك|طورك|مبرمجك|مطورك|مؤسس مدار|صاحب مدار|who made you|who created you)/i.test(q);
+ const aboutMadar=/(?:مدار|madar|انت|إنت|أنت|you|your)/i.test(q);
+ if(askingCreator&&aboutMadar)return /[\u0600-\u06ff]/.test(q)
+  ?'**مدار AI من تطوير يوسف أحمد.**'
+  :'**MADAR AI was developed by Youssef Ahmed.**';
+ return null;
+}
 function directCapabilityAnswer(question){
  const q=String(question||'').normalize('NFKC').toLowerCase()
    .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
@@ -244,7 +261,7 @@ module.exports = async function chat(req,res) {
     } catch { return send(res,403,{error:'Invalid origin.'}); }
   }
   const key = process.env.GEMINI_API_KEY;
-  if (!key) return send(res,503,{error:'Gemini key is missing on the server. Add GEMINI_API_KEY in Vercel Production and redeploy.'});
+  if (!key) return send(res,503,{error:'خدمة مدار غير مهيأة على الخادم حاليًا. تواصل مع إدارة الموقع.'});
   if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('application/json'))
     return send(res,415,{error:'Content-Type must be application/json.'});
   let data=req.body;
@@ -283,7 +300,10 @@ module.exports = async function chat(req,res) {
   }
   const currentDate=liveDateInfo();
   const currentQuestion=messages[messages.length-1].content;
-  const capabilityAnswer=mode==='chat' && !image && data.webSearch!==true
+  const identityAnswer=mode==='chat' && !image && data.webSearch!==true
+     ? directMadarIdentityAnswer(currentQuestion) : null;
+   if(identityAnswer)return send(res,200,{reply:identityAnswer,sources:[]});
+   const capabilityAnswer=mode==='chat' && !image && data.webSearch!==true
     ? directCapabilityAnswer(currentQuestion) : null;
   if(capabilityAnswer)return send(res,200,{reply:capabilityAnswer,sources:[]});
   const directDateAnswer=mode==='chat' && !image && data.webSearch!==true
@@ -348,7 +368,7 @@ module.exports = async function chat(req,res) {
       } catch(err) {
         console.error('MADAR Gemini network issue:', model,err?.name,'elapsedMs',Date.now()-started);
         if(controller.signal.aborted || err?.name==='AbortError')
-          return send(res,504,{error:'Gemini is not responding quickly enough. The server connection timed out; please try again.'});
+          return send(res,504,{error:'خدمة الذكاء الاصطناعي لا تستجيب بسرعة كافية. جرّب مرة أخرى.'});
         sawBusy=true;
         break; // Try another free model after a network error.
       }
@@ -366,7 +386,7 @@ module.exports = async function chat(req,res) {
           break;
         }
         if(response.status===401||response.status===403)
-          return send(res,502,{error:'Gemini API key was rejected or Google restricted this project. Check Google AI Studio.'});
+          return send(res,502,{error:'تعذر الاتصال بخدمة الذكاء الاصطناعي. راجع إعدادات الخادم.'});
         if(response.status===400){
           // Model-specific thinking settings can be unsupported; keep trying.
           sawBadRequest=true;
@@ -380,7 +400,7 @@ module.exports = async function chat(req,res) {
           }
           break; // Try the next free-tier model.
         }
-        return send(res,502,{error:'The Gemini service returned an error. Try again shortly.'});
+        return send(res,502,{error:'الخدمة غير متاحة مؤقتًا. جرّب مرة أخرى بعد قليل.'});
       }
       const candidates=Array.isArray(answer?.candidates)?answer.candidates:[];
       // Do not display model reasoning ("thought" parts) to visitors.
@@ -395,21 +415,21 @@ module.exports = async function chat(req,res) {
         'finishReason',finish||'none','blockReason',block||'none',
         'candidateCount',candidates.length,'elapsedMs',Date.now()-started);
       if(block||/(?:SAFETY|PROHIBITED_CONTENT|BLOCKLIST|SPII)/.test(finish))
-        return send(res,422,{error:'Gemini could not answer this request because its safety filter blocked the response. Try a different request.'});
+        return send(res,422,{error:'تعذر الرد على الطلب بسبب قيود الأمان. جرّب صياغة مختلفة.'});
       sawEmpty=true;emptyReason=finish||'EMPTY';
       break; // Try next Gemini model, rather than failing the entire chat.
 
       }
     }
-    if(sawQuota)return send(res,429,{error:'Gemini free quota or per-model request limit was reached across the available models. Please try again later.'});
-    if(sawEmpty)return send(res,502,{error:'Gemini did not return an answer after trying alternative models. Please send the message again shortly.',reason:emptyReason});
-    if(sawBusy)return send(res,503,{error:'Gemini is temporarily busy across all tried free models. Please try again later.'});
+    if(sawQuota)return send(res,429,{error:'تم الوصول لحد الاستخدام المؤقت لخدمة مدار. جرّب لاحقًا.'});
+    if(sawEmpty)return send(res,502,{error:'تعذر إنشاء ردّ حاليًا. ابعت السؤال مرة تانية بعد قليل.',reason:emptyReason});
+    if(sawBusy)return send(res,503,{error:'خدمة مدار مشغولة مؤقتًا. حاول بعد قليل.'});
     return send(res,502,{error:sawBadRequest
-      ?'Gemini rejected this message or its model settings. Try again with a shorter message.'
-      :'No compatible Gemini model is enabled for this API key. Check Google AI Studio access.'});
+      ?'تعذر معالجة الرسالة. جرّب سؤالًا أقصر.'
+      :'خدمة الذكاء الاصطناعي غير مهيأة حاليًا. تواصل مع إدارة الموقع.'});
   } catch(err) {
     console.error('MADAR unexpected Gemini error:',err?.name);
-    if(controller.signal.aborted)return send(res,504,{error:'Gemini connection timed out. Please try again.'});
-    return send(res,502,{error:'Gemini connection failed. Please try again.'});
+    if(controller.signal.aborted)return send(res,504,{error:'الاتصال بخدمة مدار أخد وقت طويل. حاول مرة تانية.'});
+    return send(res,502,{error:'تعذر الاتصال بالخدمة حاليًا. حاول مرة تانية.'});
   } finally {clearTimeout(timer);}
 };
