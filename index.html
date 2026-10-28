@@ -280,8 +280,17 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .studio-error{color:#ff9da9}.studio-panel[hidden]{display:none!important}
 @media(max-width:750px){.studio-code-grid{grid-template-columns:1fr}.studio-head{padding:18px}.studio-scroll{padding:6px 15px 16px}.studio-tabs{padding:9px}.studio-tabs button{font-size:11px}.studio-launch{font-size:11px;padding:8px}.topbar{padding:0 13px}.studio-head h2{font-size:20px}}
 @media(max-width:400px){.top-subtitle,.top-divider{display:none}.studio-launch{padding:8px 7px}.topbar-right,.topbar-left{gap:6px}}
+
+.madar-voice-btn{border:1px solid var(--line-strong);background:var(--control);color:var(--fg);padding:8px;border-radius:10px;font-size:13px;cursor:pointer;min-width:32px}
+.madar-voice-btn[aria-pressed=true]{background:var(--purple);color:white}
+.madar-voice-quick{max-width:91px;min-width:60px;border:1px solid var(--line-strong);border-radius:9px;color:var(--fg);background:var(--control);padding:6px 2px;font-size:11px}
+.studio-language-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.studio-language-grid select,.studio-lang-input{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line-strong);border-radius:10px;padding:12px;font:inherit;font-size:13px}
+.studio-language-voice{padding:13px 15px;border-radius:12px;border:1px solid var(--line-strong);margin:17px 0}
+.studio-language-voice small{font-size:11px;color:var(--muted);line-height:1.9;display:block}
+@media(max-width:620px){.studio-language-grid{grid-template-columns:1fr}.madar-voice-quick{max-width:62px}.madar-voice-btn{font-size:12px;padding:7px 5px;min-width:28px}.composer-hint{font-size:9px}}
 </style>
-  <title>مدار AI | ستوديو المشاريع والمواقع والتصميم والألعاب</title>
+  <title>مدار AI | ستوديو المشاريع ومدرس اللغات والتصميم والألعاب</title>
 </head>
 <body>
   <div class="background-glow" aria-hidden="true"></div>
@@ -325,7 +334,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <div class="planet" aria-hidden="true"><div class="planet-halo"></div><div class="planet-ring one"></div><div class="planet-ring two"></div><div class="planet-core">M</div><div class="satellite"></div></div>
           <h1>Welcome to <span>MADAR</span><span class="title-star">✳</span></h1>
           <p class="welcome-description">اسأل مدار، أو اكتب وصف موقع أو متجر أو منصة تعليمية — هتقدر تعاين وتحمّل الكود من الشات.</p>
-          <p class="studio-welcome-note">جديد: صانع المشاريع · المدرس الذكي · صانع الألعاب · استوديو التصميم · مصلّح الأكواد — من زر «مدار ستوديو» أعلى الصفحة.</p>
+          <p class="studio-welcome-note">مدار ستوديو: صانع المشاريع · المدرس الذكي · مدرس اللغات · صانع الألعاب · استوديو التصميم · مصلّح الأكواد.</p>
           <div class="starter-label">Get started <span>↙</span></div>
           <div class="starters">
             <button class="starter" data-prompt="Help me make a simple, realistic study plan for this week."><span class="starter-symbol violet">✎</span><span><strong>Plan your day</strong><small>A plan to help you begin</small></span><span class="starter-arrow">↗</span></button>
@@ -350,9 +359,16 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
             </select>
             <label for="madarVoiceLang">Voice</label>
             <select id="madarVoiceLang" aria-label="Speech language">
-              <option value="auto">Auto</option>
-              <option value="ar-EG">العربية</option>
-              <option value="en-US">English</option>
+              <option value="auto">🌐 تلقائي</option>
+              <option value="ar-EG">العربية</option><option value="en-US">English</option>
+              <option value="fr-FR">Français</option><option value="es-ES">Español</option>
+              <option value="de-DE">Deutsch</option><option value="it-IT">Italiano</option>
+              <option value="pt-BR">Português</option><option value="tr-TR">Türkçe</option>
+              <option value="ru-RU">Русский</option><option value="zh-CN">中文</option>
+              <option value="ja-JP">日本語</option><option value="ko-KR">한국어</option>
+              <option value="hi-IN">हिन्दी</option><option value="ur-PK">اردو</option>
+              <option value="id-ID">Bahasa Indonesia</option><option value="nl-NL">Nederlands</option>
+              <option value="sv-SE">Svenska</option><option value="sw-KE">Kiswahili</option>
             </select>
             <button type="button" id="madarMicBtn" class="tool" aria-pressed="false" title="Speak your message (if supported)">🎙️ Talk</button>
             <button type="button" id="madarSpeakToggle" class="tool" aria-pressed="false" title="Read new replies aloud (if supported)">🔈 Voice off</button>
@@ -376,7 +392,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
           <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
           <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار عن أي حاجة، أو اطلب صورة أو لعبة أو موقع..." aria-label="Write your message"></textarea>
-          <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
+          <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><select id="madarVoiceQuick" class="madar-voice-quick" aria-label="اختار لغة الميكروفون والنطق"><option value="auto">🌐 تلقائي</option></select><button id="madarMicQuick" class="madar-voice-btn" type="button" aria-label="تكلم مع مدار بالميكروفون" title="اتكلم مع مدار">🎙️</button><button id="madarSpeakQuick" class="madar-voice-btn" type="button" aria-pressed="false" aria-label="تشغيل نطق ردود مدار" title="تشغيل أو إيقاف الردود الصوتية">🔈</button><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
         </div>
         <p class="disclaimer">اسأل أو اكتب طلبك مباشرة: «اعمل صورة»، «ابني موقع»، «امتحني»، «ارفع صورة». <span>✧</span> راجع المعلومات المهمة.</p>
       </div>
@@ -390,6 +406,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
     <div class="studio-tabs" role="tablist" aria-label="أدوات استوديو مدار">
       <button type="button" role="tab" data-studio-tab="project" aria-selected="true" class="active">🚀 صانع المشاريع</button>
       <button type="button" role="tab" data-studio-tab="study" aria-selected="false">📚 المدرس الذكي</button>
+      <button type="button" role="tab" data-studio-tab="language" aria-selected="false">🌍 مدرس اللغات</button>
       <button type="button" role="tab" data-studio-tab="game" aria-selected="false">🎮 صانع الألعاب</button>
       <button type="button" role="tab" data-studio-tab="design" aria-selected="false">🎨 استوديو التصميم</button>
       <button type="button" role="tab" data-studio-tab="repair" aria-selected="false">💻 مصلّح الأكواد</button>
@@ -409,6 +426,36 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
         <textarea id="studioStudyTopic" rows="3" maxlength="1100" placeholder="مثال: قانون نيوتن الثاني للصف الثاني الإعدادي"></textarea>
         <div class="studio-example-row"><button type="button" data-studio-target="studioStudyTopic" data-studio-example="الجهاز الهضمي للصف الخامس الابتدائي">🔬 علوم</button><button type="button" data-studio-target="studioStudyTopic" data-studio-example="المعادلات من الدرجة الأولى">📐 رياضيات</button></div>
         <div class="studio-buttons"><button type="button" data-studio-action="study-explain">💡 اشرح الدرس</button><button type="button" data-studio-action="study-quiz">📝 امتحني</button><button type="button" data-studio-action="study-photo">📷 ارفع صورة الواجب</button></div>
+      </section>
+      <section data-studio-panel="language" class="studio-panel" hidden>
+        <h3>🌍 تعلم أي لغة مع مدار</h3><p>اختار اللغة ومستواك: شرح بالعربي، مفردات، جمل من الحياة، تمارين، تصحيح إجابات، ومحادثة تدريبية. تقدر تستخدم لغات إضافية بكتابة اسمها.</p>
+        <div class="studio-language-grid">
+          <div><label for="studioLearnLang">اللغة اللي عايز تتعلمها</label>
+            <select id="studioLearnLang">
+              <option value="الإنجليزية">🇬🇧 الإنجليزية</option><option value="الفرنسية">🇫🇷 الفرنسية</option>
+              <option value="الإسبانية">🇪🇸 الإسبانية</option><option value="الألمانية">🇩🇪 الألمانية</option>
+              <option value="الإيطالية">🇮🇹 الإيطالية</option><option value="التركية">🇹🇷 التركية</option>
+              <option value="البرتغالية">🇵🇹 البرتغالية</option><option value="الروسية">🇷🇺 الروسية</option>
+              <option value="الصينية الماندرين">🇨🇳 الصينية</option><option value="اليابانية">🇯🇵 اليابانية</option>
+              <option value="الكورية">🇰🇷 الكورية</option><option value="الهندية">🇮🇳 الهندية</option>
+              <option value="الأردية">🇵🇰 الأردية</option><option value="الإندونيسية">🇮🇩 الإندونيسية</option>
+              <option value="السويدية">🇸🇪 السويدية</option><option value="الهولندية">🇳🇱 الهولندية</option>
+              <option value="السواحيلية">🇰🇪 السواحيلية</option>
+              <option value="other">🌐 لغة تانية...</option>
+            </select></div>
+          <div><label for="studioLearnLevel">مستواك</label><select id="studioLearnLevel"><option value="مبتدئ جدًا من الصفر">🌱 مبتدئ من الصفر</option><option value="مبتدئ A1-A2">📘 مبتدئ A1–A2</option><option value="متوسط B1-B2">🗣️ متوسط B1–B2</option><option value="متقدم C1-C2">🏅 متقدم C1–C2</option></select></div>
+        </div>
+        <label for="studioLearnOther" id="studioLearnOtherLabel" hidden>اكتب اسم اللغة</label>
+        <input id="studioLearnOther" hidden maxlength="70" placeholder="مثال: اليونانية، الفارسية، التايلاندية..." dir="auto" class="studio-lang-input">
+        <label for="studioLearnTopic">موضوع التدريب (اختياري)</label>
+        <textarea id="studioLearnTopic" rows="2" maxlength="250" placeholder="مثال: التحية، السفر، المطعم، مقابلة عمل، قراءة، قواعد..."></textarea>
+        <div class="studio-buttons"><button type="button" class="studio-primary" data-studio-action="lang-lesson">📖 ابدأ درسًا</button><button type="button" data-studio-action="lang-quiz">📝 امتحني</button><button type="button" data-studio-action="lang-chat">💬 محادثة تدريبية</button></div>
+        <div class="studio-language-voice">
+          <label for="studioPronounce">نطق جملة باللغة المختارة</label>
+          <input id="studioPronounce" maxlength="300" dir="auto" placeholder="Hello! How are you?" class="studio-lang-input">
+          <div class="studio-buttons"><button type="button" data-studio-action="lang-speak">🔊 اسمع النطق</button><button type="button" data-studio-action="lang-mic">🎙️ اتكلم باللغة</button></div>
+          <small>ميزة الصوت تعتمد على الأصوات ودعم التعرف على الكلام في جهازك ومتصفحك، ومش كل اللغات مدعومة صوتيًا.</small>
+        </div>
       </section>
       <section data-studio-panel="game" class="studio-panel" hidden>
         <h3>حوّل الفكرة للعبة تلعبها</h3><p>وصف واحد يفتح صانع الألعاب الموجود في مدار، مع معاينة وكود قابل للتعديل والتحميل. الألعاب ثلاثية الأبعاد قد تكون مجرد نماذج 2.5D تجريبية.</p>
