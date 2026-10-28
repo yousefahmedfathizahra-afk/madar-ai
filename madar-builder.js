@@ -120,7 +120,7 @@ function setBusy(value){
 }
 function errorMessage(response,data){
  if(data?.error&&typeof data.error==='string')return data.error.slice(0,300);
- if(response.status===429)return 'Gemini free quota or Builder request limit reached. Please try later.';
+ if(response.status===429)return 'وصلت لحد الاستخدام المؤقت. جرّب بعد شوية.';
  if(response.status===504)return 'This project took too long. Try a simpler idea.';
  return 'MADAR Builder is temporarily unavailable. Try again.';
 }
@@ -131,7 +131,7 @@ async function generate(keepPrevious){
  if(prompt.length>1200){report('Shorten your idea to 1200 characters.',true);return;}
  const previous=keepPrevious&&current?current:undefined;
  setBusy(true);
- report(previous?'✨ Updating your existing project with Gemini...':'✨ Gemini is building your project. This may take around 10–30 seconds...');
+ report(previous?'✨ مدار بيحدّث مشروعك الحالي...':'✨ مدار بيبني مشروعك دلوقتي...');
  const controller=new AbortController();
  requestController=controller;
  const timer=setTimeout(()=>controller.abort(),33000);
@@ -145,7 +145,7 @@ async function generate(keepPrevious){
   const type=response.headers?.get('content-type')||'';
   const data=type.includes('application/json')?await response.json().catch(()=>null):null;
   if(!response.ok)throw Error(errorMessage(response,data));
-  if(!validProject(data?.project))throw Error('Gemini returned an incomplete project. Try again.');
+  if(!validProject(data?.project))throw Error('مدار رجّع مشروعًا غير مكتمل. جرّب تاني.');
   current=data.project;
   refresh();
   report(data.fallback?'🧩 خادم الذكاء الاصطناعي اتأخر؛ جهّزنا قالب موقع تجريبي جاهز للمعاينة والتعديل والتحميل.':'✅ المشروع جاهز! جربه في المعاينة وعدّل الكود أو نزّله كملف HTML.');
