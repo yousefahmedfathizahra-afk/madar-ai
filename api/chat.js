@@ -4,9 +4,9 @@
 // Start with the stable low-latency free model; fall back if a model is unavailable
 // or returns an empty response (e.g. thinking consumed the output token budget).
 // Prefer a newer, more capable free-tier model; preserve fallbacks if a quota is reached.
-// Prefer the fallback that answered successfully in production; keep the full
+// Prefer the lightweight model without thinking for ordinary chat; keep the full
 // request deadline instead of aborting healthy requests after nine seconds.
-const MODELS = ['gemini-3.1-flash-lite','gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.6-flash'];
+const MODELS = ['gemini-2.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.6-flash'];
 const VISION_MODELS = ['gemini-3.1-flash-lite','gemini-3.5-flash-lite','gemini-3.6-flash','gemini-2.5-flash'];
 const VISION_RULES = [
  'IMAGE ANALYSIS: A photo or screenshot is attached to the current user message. It is actual visual evidence; analyze it directly and carefully before answering.',
