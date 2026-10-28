@@ -12,8 +12,14 @@ function language(text){
  const selected=$('madarVoiceLang').value;
  if(selected!=='auto')return selected;
  const value=String(text||'').trim();
- if(!value)return (navigator.language||'en-US').toLowerCase().startsWith('ar')?'ar-EG':'en-US';
- return /[\u0600-\u06ff]/.test(value)?'ar-EG':'en-US';
+ if(!value)return navigator.language||'ar-EG';
+ if(/[\u3040-\u30ff]/.test(value))return 'ja-JP';
+ if(/[\uac00-\ud7af]/.test(value))return 'ko-KR';
+ if(/[\u4e00-\u9fff]/.test(value))return 'zh-CN';
+ if(/[\u0900-\u097f]/.test(value))return 'hi-IN';
+ if(/[\u0400-\u04ff]/.test(value))return 'ru-RU';
+ if(/[\u0600-\u06ff]/.test(value))return 'ar-EG';
+ return navigator.language&&navigator.language!=='ar-EG'?navigator.language:'en-US';
 }
 function stopSpeech(){
  if(speechSupported)window.speechSynthesis.cancel();
@@ -44,6 +50,8 @@ function setListening(value){
  button.setAttribute('aria-pressed',String(value));
  button.textContent=value?'⏹️ Stop':'🎙️ Talk';
  button.classList.toggle('active',value);
+ const quick=$('madarMicQuick');
+ if(quick){quick.setAttribute('aria-pressed',String(value));quick.textContent=value?'⏹️':'🎙️';}
 }
 function toggleMic(){
  if(app.isWaiting()){notify('Wait for MADAR to finish replying before recording.');return;}
@@ -149,15 +157,28 @@ function setVoiceEnabled(enabled){
  button.setAttribute('aria-pressed',String(speakingEnabled));
  button.classList.toggle('active',speakingEnabled);
  button.textContent=speakingEnabled?'🔊 Voice on':'🔈 Voice off';
+ const quick=$('madarSpeakQuick');
+ if(quick){quick.setAttribute('aria-pressed',String(speakingEnabled));quick.textContent=speakingEnabled?'🔊':'🔈';}
  if(!speakingEnabled)stopSpeech();
 }
 $('madarSpeakToggle').addEventListener('click',()=>setVoiceEnabled(!speakingEnabled));
+// Public compact controls share the same settings as the existing voice engine.
+const quickSelect=$('madarVoiceQuick');
+if(quickSelect){
+ const original=$('madarVoiceLang');
+ quickSelect.innerHTML=original.innerHTML;
+ quickSelect.value=original.value||'auto';
+ quickSelect.addEventListener('change',()=>{original.value=quickSelect.value;stopSpeech();});
+ original.addEventListener('change',()=>{quickSelect.value=original.value;});
+}
+$('madarMicQuick')?.addEventListener('click',toggleMic);
+$('madarSpeakQuick')?.addEventListener('click',()=>setVoiceEnabled(!speakingEnabled));
 function getModeFor(text,history=[]){
  // All modes remain available without an extra row of mode-selection controls.
  const q=String(text||'').normalize('NFKC').toLowerCase()
    .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
  if(/(?:^|\s)(?:ترجم|ترجمه|translate|translation)(?:\s|$)/i.test(q))return 'translate';
- if(/(?:امتحني|اختبرني|اعمل\s+اختبار|اعمل\s+امتحان|اسالني\s+اسئله|صحح\s+اجابتي|واجب\s+مدرسي|quiz\s+me|study\s+mode)/i.test(q))return 'study';
+ if(/(?:امتحني|اختبرني|اعمل\s+اختبار|اعمل\s+امتحان|اسالني\s+اسئله|صحح\s+اجابتي|واجب\s+مدرسي|علمني\s+لغ|تعليم\s+لغ|اتعلم\s+لغ|درس\s+(?:الانجليزي|الفرنساوي|الالماني|الاسباني)|teach\s+me\s+(?:a\s+)?language|learn\s+(?:english|french|spanish|german|japanese|korean|arabic)|language\s+lesson|quiz\s+me|study\s+mode)/i.test(q))return 'study';
  if(/(?:اكتب\s+كود|اعمل\s+كود|شرح\s+كود|بايثون|جافاسكريبت|برمج|debug|python|javascript|typescript|coding|programming)/i.test(q))return 'code';
  if(/(?:اكتب\s+(?:رساله|بوست|مقال|قصه|ايميل)|صيغ\s+(?:رساله|خطاب)|write\s+(?:an?\s+)?(?:email|letter|story|essay|post))/i.test(q))return 'write';
  // A study quiz should remain in tutoring mode over short answer turns.
