@@ -369,6 +369,11 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
               <option value="hi-IN">हिन्दी</option><option value="ur-PK">اردو</option>
               <option value="id-ID">Bahasa Indonesia</option><option value="nl-NL">Nederlands</option>
               <option value="sv-SE">Svenska</option><option value="sw-KE">Kiswahili</option>
+              <option value="fa-IR">فارسی</option><option value="el-GR">Ελληνικά</option>
+              <option value="th-TH">ไทย</option><option value="vi-VN">Tiếng Việt</option>
+              <option value="bn-BD">বাংলা</option><option value="he-IL">עברית</option>
+              <option value="pl-PL">Polski</option><option value="uk-UA">Українська</option>
+              <option value="ms-MY">Bahasa Melayu</option><option value="fil-PH">Filipino</option>
             </select>
             <button type="button" id="madarMicBtn" class="tool" aria-pressed="false" title="Speak your message (if supported)">🎙️ Talk</button>
             <button type="button" id="madarSpeakToggle" class="tool" aria-pressed="false" title="Read new replies aloud (if supported)">🔈 Voice off</button>
@@ -391,7 +396,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Select a photo">
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
           <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
-          <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار عن أي حاجة، أو اطلب صورة أو لعبة أو موقع..." aria-label="Write your message"></textarea>
+          <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني إسباني، اعمل صورة، أو لعبة..." aria-label="Write your message"></textarea>
           <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><select id="madarVoiceQuick" class="madar-voice-quick" aria-label="اختار لغة الميكروفون والنطق"><option value="auto">🌐 تلقائي</option></select><button id="madarMicQuick" class="madar-voice-btn" type="button" aria-label="تكلم مع مدار بالميكروفون" title="اتكلم مع مدار">🎙️</button><button id="madarSpeakQuick" class="madar-voice-btn" type="button" aria-pressed="false" aria-label="تشغيل نطق ردود مدار" title="تشغيل أو إيقاف الردود الصوتية">🔈</button><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
         </div>
         <p class="disclaimer">اسأل أو اكتب طلبك مباشرة: «اعمل صورة»، «ابني موقع»، «امتحني»، «ارفع صورة». <span>✧</span> راجع المعلومات المهمة.</p>
@@ -441,6 +446,11 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
               <option value="الأردية">🇵🇰 الأردية</option><option value="الإندونيسية">🇮🇩 الإندونيسية</option>
               <option value="السويدية">🇸🇪 السويدية</option><option value="الهولندية">🇳🇱 الهولندية</option>
               <option value="السواحيلية">🇰🇪 السواحيلية</option>
+              <option value="الفارسية">🇮🇷 الفارسية</option><option value="اليونانية">🇬🇷 اليونانية</option>
+              <option value="التايلاندية">🇹🇭 التايلاندية</option><option value="الفيتنامية">🇻🇳 الفيتنامية</option>
+              <option value="البنغالية">🇧🇩 البنغالية</option><option value="العبرية">🇮🇱 العبرية</option>
+              <option value="البولندية">🇵🇱 البولندية</option><option value="الأوكرانية">🇺🇦 الأوكرانية</option>
+              <option value="الماليزية">🇲🇾 الماليزية</option><option value="الفلبينية">🇵🇭 الفلبينية</option>
               <option value="other">🌐 لغة تانية...</option>
             </select></div>
           <div><label for="studioLearnLevel">مستواك</label><select id="studioLearnLevel"><option value="مبتدئ جدًا من الصفر">🌱 مبتدئ من الصفر</option><option value="مبتدئ A1-A2">📘 مبتدئ A1–A2</option><option value="متوسط B1-B2">🗣️ متوسط B1–B2</option><option value="متقدم C1-C2">🏅 متقدم C1–C2</option></select></div>
