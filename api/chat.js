@@ -4,7 +4,9 @@
 // Start with the stable low-latency free model; fall back if a model is unavailable
 // or returns an empty response (e.g. thinking consumed the output token budget).
 // Prefer a newer, more capable free-tier model; preserve fallbacks if a quota is reached.
-const MODELS = ['gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3.6-flash'];
+// Prefer the fallback that answered successfully in production; keep the full
+// request deadline instead of aborting healthy requests after nine seconds.
+const MODELS = ['gemini-3.1-flash-lite','gemini-2.5-flash-lite','gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.6-flash'];
 const VISION_MODELS = ['gemini-3.1-flash-lite','gemini-3.5-flash-lite','gemini-3.6-flash','gemini-2.5-flash'];
 const VISION_RULES = [
  'IMAGE ANALYSIS: A photo or screenshot is attached to the current user message. It is actual visual evidence; analyze it directly and carefully before answering.',
@@ -48,29 +50,6 @@ const MODE_INSTRUCTIONS = Object.freeze({
  write: 'MADAR WRITING MODE: Help draft and improve polished messages, posts, stories or documents in the requested language and tone. Give a practical copy-ready draft first, then brief options or edits if they would help.'
 });
 const counters = new Map();
-// Remember transient model failures per warm instance; never cache user replies.
-const modelCooldowns = new Map();
-function availableModels(models, now = Date.now()) {
- const ready = models.filter(model => (modelCooldowns.get(model) || 0) <= now);
- // Probe one model if every model is cooling down, allowing recovery.
- return ready.length ? ready : [models.reduce((a,b) =>
-  (modelCooldowns.get(a)||0) <= (modelCooldowns.get(b)||0) ? a : b)];
-}
-async function fetchModel(endpoint, options, timeoutMs) {
- const controller = new AbortController();
- const abort = () => controller.abort();
- if(options.signal.aborted)abort();
- options.signal.addEventListener('abort',abort,{once:true});
- const timer=setTimeout(abort,timeoutMs);
- try {
-  const response=await fetch(endpoint,{...options,signal:controller.signal});
-  const answer=await response.json();
-  return {response,answer};
- } finally {
-  clearTimeout(timer);
-  options.signal.removeEventListener('abort',abort);
- }
-}
 function send(res, status, body) { return res.status(status).json(body); }
 
 
@@ -368,13 +347,13 @@ module.exports = async function chat(req,res) {
   let sawBusy=false,sawEmpty=false,sawBadRequest=false,sawQuota=false;
   let emptyReason='';
   try {
-    for (const model of availableModels(image ? VISION_MODELS : preferredModels(messages[messages.length-1].content,mode))) {
-      for (let attempt=0;attempt<1;attempt++) {
+    for (const model of (image ? VISION_MODELS : preferredModels(messages[messages.length-1].content,mode))) {
+      for (let attempt=0;attempt<2;attempt++) {
       const endpoint='https://generativelanguage.googleapis.com/v1beta/models/'
         +model+':generateContent';
-      let response,answer;
+      let response;
       try {
-        ({response,answer}=await fetchModel(endpoint,{
+        response=await fetch(endpoint,{
           method:'POST',signal:controller.signal,
           headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
           body:JSON.stringify({
@@ -388,17 +367,16 @@ module.exports = async function chat(req,res) {
                 ?{thinkingBudget:0}:{thinkingLevel:'low'}
             }
           })
-        },image || mode!=='chat' || currentQuestion.length>=230 ? 12000 : 9000));
+        });
       } catch(err) {
         console.error('MADAR Gemini network issue:', model,err?.name,'elapsedMs',Date.now()-started);
-        if(controller.signal.aborted)
+        if(controller.signal.aborted || err?.name==='AbortError')
           return send(res,504,{error:'خدمة الذكاء الاصطناعي لا تستجيب بسرعة كافية. جرّب مرة أخرى.'});
-        modelCooldowns.set(model,Date.now()+15000);
         sawBusy=true;
         break; // Try another free model after a network error.
       }
+      const answer=await response.json().catch(()=>({}));
       if(response.status===404) {
-        modelCooldowns.set(model,Date.now()+300000);
         console.warn('MADAR Gemini model missing:',model);
         break; // Model not enabled: try the next model.
       }
@@ -406,7 +384,6 @@ module.exports = async function chat(req,res) {
         const upstreamCode=String(answer?.error?.status||'');
         console.warn('MADAR Gemini API status:',response.status,upstreamCode,'model',model);
         if(response.status===429||upstreamCode==='RESOURCE_EXHAUSTED'){
-          modelCooldowns.set(model,Date.now()+60000);
           // Each Gemini free-tier model can have different quota; try a fallback.
           sawQuota=true;
           break;
@@ -414,14 +391,16 @@ module.exports = async function chat(req,res) {
         if(response.status===401||response.status===403)
           return send(res,502,{error:'تعذر الاتصال بخدمة الذكاء الاصطناعي. راجع إعدادات الخادم.'});
         if(response.status===400){
-          modelCooldowns.set(model,Date.now()+60000);
           // Model-specific thinking settings can be unsupported; keep trying.
           sawBadRequest=true;
           break;
         }
         if([408,500,502,503,504].includes(response.status)) {
           sawBusy=true;
-          modelCooldowns.set(model,Date.now()+15000);
+          if(attempt===0&&!controller.signal.aborted){
+            await new Promise(resolve=>setTimeout(resolve,400));
+            continue; // Retry one time after a short delay.
+          }
           break; // Try the next free-tier model.
         }
         return send(res,502,{error:'الخدمة غير متاحة مؤقتًا. جرّب مرة أخرى بعد قليل.'});
@@ -431,10 +410,7 @@ module.exports = async function chat(req,res) {
       const reply=candidates.map(candidate=>(candidate?.content?.parts||[])
         .filter(p=>typeof p?.text==='string'&&p.thought!==true)
         .map(p=>p.text).join('\n').trim()).find(Boolean);
-      if(reply){
-        modelCooldowns.delete(model);
-        return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url}))});
-      }
+      if(reply)return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url}))});
       const finish=candidates.map(c=>String(c?.finishReason||'')).filter(Boolean).join(',');
       const block=String(answer?.promptFeedback?.blockReason||'');
       // Only log diagnostics, never log user messages, keys, or image bytes.
