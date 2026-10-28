@@ -135,6 +135,59 @@ dlg.querySelector('[data-studio-action="study-quiz"]')?.addEventListener('click'
  const t=topic.value.trim();if(!t)return say('اكتب المادة أو الدرس الأول.',true);
  toChat('امتحني في '+t+' بخمس أسئلة، سؤال واحد كل مرة، استنى إجابتي وصححها واجمع الدرجة.');
 });
+// Guided language tutoring. The user chooses a language, level and topic.
+const learnLang=$('studioLearnLang'),learnLevel=$('studioLearnLevel'),learnOther=$('studioLearnOther');
+const LANGUAGE_LOCALES={
+ 'الإنجليزية':'en-US','الفرنسية':'fr-FR','الإسبانية':'es-ES','الألمانية':'de-DE',
+ 'الإيطالية':'it-IT','التركية':'tr-TR','البرتغالية':'pt-BR','الروسية':'ru-RU',
+ 'الصينية الماندرين':'zh-CN','اليابانية':'ja-JP','الكورية':'ko-KR','الهندية':'hi-IN',
+ 'الأردية':'ur-PK','الإندونيسية':'id-ID','السويدية':'sv-SE','الهولندية':'nl-NL',
+ 'السواحيلية':'sw-KE','العربية':'ar-EG'
+};
+function selectedLanguage(){
+ const lang=learnLang.value==='other'?learnOther.value.trim():learnLang.value;
+ if(!lang||lang.length>70){say('اختار اسم اللغة الأول.',true);return null;}
+ return lang;
+}
+function voiceLanguage(lang){
+ const select=$('madarVoiceLang'),quick=$('madarVoiceQuick');
+ const code=LANGUAGE_LOCALES[lang]||'auto';
+ select.value=code; if(quick)quick.value=code;
+ return code;
+}
+learnLang.addEventListener('change',()=>{
+ const other=learnLang.value==='other';
+ learnOther.hidden=!other;
+ $('studioLearnOtherLabel').hidden=!other;
+ if(other)learnOther.focus();
+});
+function languageTask(kind){
+ const lang=selectedLanguage();if(!lang)return;
+ const level=learnLevel.value,topic=$('studioLearnTopic').value.trim().slice(0,250)||'المحادثات اليومية';
+ voiceLanguage(lang);
+ const pre='أنت مدرس لغات تفاعلي في مدار AI. اللغة الهدف: '+lang+'. مستوى الطالب: '+level+'. موضوع الدرس: '+topic+'. استخدم العربية المصرية في الشرح عند الحاجة، واظهر جملًا سليمة باللغة الهدف مع ترجمتها العربية ونطق مكتوب تقريبي إن أمكن. صحح الأخطاء بأدب وبدقة؛ لو مش متأكد من النطق قل ذلك ولا تخمن. ';
+ if(kind==='lesson')toChat(pre+'ابدأ درسًا منظمًا من المستوى ده: 8 كلمات مفيدة و5 جمل أمثلة وقاعدة قصيرة ثم تمرين بسيط، واستنى إجابتي قبل التصحيح.');
+ if(kind==='quiz')toChat(pre+'اعملي اختبارًا تفاعليًا من خمس أسئلة مناسبة للمستوى، سؤال واحد في كل مرة، واستنى الإجابة وصححها واجمع الدرجة في الآخر.');
+ if(kind==='chat')toChat(pre+'ابدأ محادثة باللغة الهدف معايا، جملة واحدة أو سؤال واحد كل مرة، واستنى ردي، وبعده صحح أخطائي وفسر المعنى بالعربية المختصرة.');
+}
+for(const [action,kind] of [['lang-lesson','lesson'],['lang-quiz','quiz'],['lang-chat','chat']]){
+ dlg.querySelector('[data-studio-action="'+action+'"]')?.addEventListener('click',()=>languageTask(kind));
+}
+dlg.querySelector('[data-studio-action="lang-speak"]')?.addEventListener('click',()=>{
+ const lang=selectedLanguage();if(!lang)return;
+ const phrase=$('studioPronounce').value.trim();
+ if(!phrase)return say('اكتب الجملة اللي عايز تسمع نطقها الأول.',true);
+ const code=voiceLanguage(lang);
+ if(code==='auto')say('اللغة دي ممكن ما يكونش ليها صوت على جهازك. هيتم استخدام الصوت المتاح.',false);
+ window.MADAR_FEATURES?.speak(phrase);
+});
+dlg.querySelector('[data-studio-action="lang-mic"]')?.addEventListener('click',()=>{
+ const lang=selectedLanguage();if(!lang)return;
+ voiceLanguage(lang);
+ hide();
+ window.MADAR_APP?.setDraft('');
+ $('madarMicBtn')?.click();
+});
 dlg.querySelector('[data-studio-action="study-photo"]')?.addEventListener('click',()=>{
  hide();window.MADAR_APP?.setDraft('اشرح المسألة الموجودة في الصورة خطوة بخطوة، واقرأ السؤال بدقة قبل الحل.');
  $('photoInput')?.click();
