@@ -807,10 +807,10 @@ function appendMessage(message, isPending=false, messageIndex=-1){const row=docu
     edit.addEventListener('click',()=>startEdit(messageIndex));
     actions.append(edit);body.append(actions);
   }
-  if(message.role==='assistant'&&!isPending&&messageIndex>=0&&messageIndex===(activeChat()?.messages.length||0)-1){
+  if(!isWaiting&&!isPending&&messageIndex>=0&&messageIndex===(activeChat()?.messages.length||0)-1&&!message.photoId){
     const actions=document.createElement('div');actions.className='madar-message-actions';
     const retry=document.createElement('button');retry.type='button';retry.className='message-action';
-    retry.textContent='↻ إعادة الرد';retry.title='جرّب توليد الرد مرة ثانية بنفس الطلب';
+    retry.textContent=message.role==='user'?'↻ إعادة المحاولة':'↻ إعادة الرد';retry.title='جرّب توليد الرد مرة ثانية بنفس الطلب';
     retry.addEventListener('click',regenerateLastReply);
     actions.append(retry);body.append(actions);
   }
@@ -835,8 +835,7 @@ function regenerateLastReply(){
  const chat=activeChat();
  if(!chat?.messages.length)return;
  const end=chat.messages.length-1;
- if(chat.messages[end].role!=='assistant')return;
- let previous=end-1;
+ let previous=chat.messages[end].role==='user'?end:end-1;
  while(previous>=0&&chat.messages[previous].role!=='user')previous--;
  if(previous<0)return;
  const last=chat.messages[previous];
@@ -927,11 +926,28 @@ function handleMinimalChatCommand(text){
   }
   return false;
 }
+// Fit API limits without changing the saved conversation. Keep the newest
+// context and the complete current question; bound older long assistant replies.
+function chatRequestMessages(messages){
+ const recent=messages.slice(-18);
+ const result=[];
+ let remaining=16000;
+ for(let i=recent.length-1;i>=0;i--){
+  const message=recent[i];
+  const text=String(message.content||'').slice(0,5000);
+  if(!text.trim())continue;
+  if(text.length>remaining)break;
+  result.unshift({role:message.role,content:text});
+  remaining-=text.length;
+ }
+ return result;
+}
 async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false){
   if(isWaiting)return;
   const imageForMessage=pendingImage;
   const content=String(prefill??el.prompt.value).trim()||(imageForMessage?'What is in this photo?':'');
   if(!content)return;
+  if(content.length>5000)return showError('الرسالة طويلة جدًا. قسّمها لأجزاء، كل جزء لحد ٥٠٠٠ حرف.');
   hideError();
   if(!imageForMessage&&!Number.isInteger(replaceAfterIndex)&&!Number.isInteger(pendingEditIndex)&&handleMinimalChatCommand(content)){
     el.prompt.value='';resizePrompt();return;
@@ -967,7 +983,7 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
     }
     let response;
     try{
-      response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chat.messages.slice(-18).map(m=>({role:m.role,content:m.content})),image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch||isWikipediaResearchRequest(content),mode:window.MADAR_FEATURES?.getModeFor?.(content,chat.messages)||'chat'}),signal:controller.signal});
+      response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatRequestMessages(chat.messages),image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch||isWikipediaResearchRequest(content),mode:window.MADAR_FEATURES?.getModeFor?.(content,chat.messages)||'chat'}),signal:controller.signal});
     }catch(err){
       if(err?.name === 'AbortError') throw err;
       throw Error('Cannot reach /api/chat. Deploy the full MADAR server on HTTPS, not only the HTML file.');
@@ -986,7 +1002,8 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
       hideError(); // An intentional cancel is not an AI connectivity error.
     }else{
       showError(err?.name === 'AbortError'?'الطلب أخد وقت أطول من المتوقع، جرّب تاني.':err?.message||'تعذر الحصول على رد من مدار.');
-      if(err?.name!=='AbortError')await healthCheck();
+      // Do not keep the composer locked for another health-check timeout.
+      // The next normal page health check can update connection status.
     }
   }finally{
     clearTimeout(timeout);busyController=null;activeToolType=null;stoppedByUser=false;isWaiting=false;render();scrollDown();el.prompt.focus();
