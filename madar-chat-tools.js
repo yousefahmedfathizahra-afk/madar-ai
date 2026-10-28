@@ -179,7 +179,7 @@ async function run(request,options={}){
   if(!window.MADAR_BUILDER?.validProject(project))throw Error('الذكاء الاصطناعي رجّع مشروع ناقص. حاول تاني.');
   const id=cacheProject(project,kind);
   const what=kind==='game'?'اللعبة':kind==='website'?'الموقع':'التطبيق';
-  return{toolType:'builder',toolKey:id,content:(payload.fallback?'🧩 Gemini اتأخر؛ جهزت لك قالب ':editing?'✅ عدّلت ':kind==='game'?'🎮 جهزت ':'🌐 بنيت ')+what+' **'+project.title+'**. تقدر تتصفحه من المعاينة وتحمّل ملف HTML وتشغّله على أي متصفح. '+(kind==='website'?'الحسابات أو الدفع أو قواعد البيانات الحقيقية محتاجة ربط خادم منفصل. ':'')+(project.explanation||'')};
+  return{toolType:'builder',toolKey:id,content:(payload.fallback?'🧩 توليد المشروع اتأخر؛ جهزت لك قالب ':editing?'✅ عدّلت ':kind==='game'?'🎮 جهزت ':'🌐 بنيت ')+what+' **'+project.title+'**. تقدر تتصفحه من المعاينة وتحمّل ملف HTML وتشغّله على أي متصفح. '+(kind==='website'?'الحسابات أو الدفع أو قواعد البيانات الحقيقية محتاجة ربط خادم منفصل. ':'')+(project.explanation||'')};
  }
  throw Error('نوع الطلب غير معروف.');
 }
@@ -246,7 +246,7 @@ function render(message,body){
   });
   actions.append(save,edit);
   card.append(header,frame,actions);
-  const disclaimer=element('p','madar-tool-note',projectKinds.get(message.toolKey)==='game'?'اللعبة شغالة في إطار آمن؛ اضغط داخلها للتحكم. ممكن تحتاج تعديلات لو Gemini رجّع كود مش مكتمل.':'دي معاينة آمنة للموقع، وتقدر تنزّله وتعدّل عليه. قواعد البيانات والدفع والحسابات الحقيقية محتاجة ربط مستقل قبل النشر.');
+  const disclaimer=element('p','madar-tool-note',projectKinds.get(message.toolKey)==='game'?'اللعبة شغالة في إطار آمن؛ اضغط داخلها للتحكم. ممكن تحتاج تعديلات لو الكود الناتج مش مكتمل.':'دي معاينة آمنة للموقع، وتقدر تنزّله وتعدّل عليه. قواعد البيانات والدفع والحسابات الحقيقية محتاجة ربط مستقل قبل النشر.');
   card.append(disclaimer);
   body.append(card);
  }
