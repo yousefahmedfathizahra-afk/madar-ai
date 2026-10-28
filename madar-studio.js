@@ -142,7 +142,10 @@ const LANGUAGE_LOCALES={
  'الإيطالية':'it-IT','التركية':'tr-TR','البرتغالية':'pt-BR','الروسية':'ru-RU',
  'الصينية الماندرين':'zh-CN','اليابانية':'ja-JP','الكورية':'ko-KR','الهندية':'hi-IN',
  'الأردية':'ur-PK','الإندونيسية':'id-ID','السويدية':'sv-SE','الهولندية':'nl-NL',
- 'السواحيلية':'sw-KE','العربية':'ar-EG'
+ 'السواحيلية':'sw-KE','العربية':'ar-EG',
+ 'الفارسية':'fa-IR','اليونانية':'el-GR','التايلاندية':'th-TH',
+ 'الفيتنامية':'vi-VN','البنغالية':'bn-BD','العبرية':'he-IL',
+ 'البولندية':'pl-PL','الأوكرانية':'uk-UA','الماليزية':'ms-MY','الفلبينية':'fil-PH'
 };
 function selectedLanguage(){
  const lang=learnLang.value==='other'?learnOther.value.trim():learnLang.value;
