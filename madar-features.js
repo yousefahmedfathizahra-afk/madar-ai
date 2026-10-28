@@ -178,6 +178,11 @@ function getModeFor(text,history=[]){
  const q=String(text||'').normalize('NFKC').toLowerCase()
    .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
  if(/(?:^|\s)(?:ترجم|ترجمه|translate|translation)(?:\s|$)/i.test(q))return 'translate';
+ const languageNames=/(?:انجليز(?:ي|يه)|انجليزى|فرنساو(?:ي|يه)|فرنس(?:ي|يه)|المان(?:ي|يه)|اسباني(?:ه)?|ايطالي(?:ه)?|يابان(?:ي|يه)|كور(?:ي|يه)|صين(?:ي|يه)|ترك(?:ي|يه)|روس(?:ي|يه)|هند(?:ي|يه)|برتغال(?:ي|يه)|عرب(?:ي|يه)|ارد(?:ي|يه)|فارسي(?:ه)?|يوناني(?:ه)?|تايلاند(?:ي|يه)|هولند(?:ي|يه)|سويد(?:ي|يه)|اندونيس(?:ي|يه)|فيتنام(?:ي|يه)|بولند(?:ي|يه)|english|french|spanish|german|japanese|korean|arabic|italian|turkish|portuguese|chinese|russian|hindi|urdu|persian|greek|thai|swahili|language|لغه|لغات)/;
+ const learningVerbs=/(?:عايز|عاوز|نفسي|محتاج|ياريت|ممكن|خلينا|علمني|اتعلم|تعلم|دربني|اتدرب|ابدأ|ابدا|محادثه|كلم(?:ني)?|نتكلم|امتحني|اختبرني|teach me|learn|practice|tutor|lesson|conversation|quiz me)/;
+ // A chat-first tutor should understand "عايز أتعلم إسباني من الصفر",
+ // "دربني على الياباني" and comparable requests without a mode switch.
+ if(languageNames.test(q)&&learningVerbs.test(q))return 'study';
  if(/(?:امتحني|اختبرني|اعمل\s+اختبار|اعمل\s+امتحان|اسالني\s+اسئله|صحح\s+اجابتي|واجب\s+مدرسي|علمني\s+لغ|تعليم\s+لغ|اتعلم\s+لغ|مدرس\s+لغات|اللغه\s+الهدف|اللغة\s+الهدف|محادثه\s+باللغه|درس\s+(?:الانجليزي|الفرنساوي|الالماني|الاسباني)|teach\s+me\s+(?:a\s+)?language|learn\s+(?:english|french|spanish|german|japanese|korean|arabic)|language\s+lesson|quiz\s+me|study\s+mode)/i.test(q))return 'study';
  if(/(?:اكتب\s+كود|اعمل\s+كود|شرح\s+كود|بايثون|جافاسكريبت|برمج|debug|python|javascript|typescript|coding|programming)/i.test(q))return 'code';
  if(/(?:اكتب\s+(?:رساله|بوست|مقال|قصه|ايميل)|صيغ\s+(?:رساله|خطاب)|write\s+(?:an?\s+)?(?:email|letter|story|essay|post))/i.test(q))return 'write';
