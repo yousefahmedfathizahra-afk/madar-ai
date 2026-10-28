@@ -114,7 +114,7 @@ module.exports=async function builder(req,res){
  if(!String(req.headers?.['content-type']||'').toLowerCase().startsWith('application/json'))
   return send(res,415,{error:'JSON requests only.'});
  const key=process.env.GEMINI_API_KEY;
- if(!key)return send(res,503,{error:'Gemini is not configured on this server.'});
+ if(!key)return send(res,503,{error:'خدمة بناء المشاريع غير مهيأة حاليًا.'});
  let data=req.body;
  if(typeof data==='string'){try{data=JSON.parse(data);}catch{return send(res,400,{error:'Invalid JSON.'});}}
  const prompt=data?.prompt,kind=data?.kind||'website';
@@ -167,10 +167,10 @@ module.exports=async function builder(req,res){
    if(response.status===404||response.status===400)continue;
    if(!response.ok){
     const status=String(result?.error?.status||'');
-    if(response.status===429||status==='RESOURCE_EXHAUSTED')return localFallback(429,'The Gemini free quota is currently exhausted. Please try again later.');
-    if(response.status===401||response.status===403)return send(res,502,{error:'Gemini key was rejected. Check Google AI Studio.'});
+    if(response.status===429||status==='RESOURCE_EXHAUSTED')return localFallback(429,'وصلت لحد الاستخدام المؤقت. جرّب بعد شوية.');
+    if(response.status===401||response.status===403)return send(res,502,{error:'تعذر الاتصال بخدمة بناء المشاريع. راجع إعدادات الخادم.'});
     if([408,500,502,503,504].includes(response.status)){busy=true;continue;}
-    return send(res,502,{error:'Gemini rejected this project request. Try describing a simpler project.'});
+    return send(res,502,{error:'تعذر تنفيذ وصف المشروع. جرّب فكرة أبسط.'});
    }
    const output=(result?.candidates?.[0]?.content?.parts||[])
     .filter(v=>typeof v?.text==='string').map(v=>v.text).join('\n');
@@ -184,11 +184,11 @@ module.exports=async function builder(req,res){
     return send(res,200,{project});
    }catch{invalid=true;continue;}
   }
-  if(invalid)return localFallback(422,'Gemini did not return complete HTML, CSS and JS. Try a shorter idea.');
-  return localFallback(busy?503:502,busy?'Gemini is busy. Try again soon.':'No compatible Gemini free model is available for Builder right now.');
+  if(invalid)return localFallback(422,'مدار رجع كود غير مكتمل. جرّب وصفًا أقصر.');
+  return localFallback(busy?503:502,busy?'خدمة بناء المشاريع مشغولة. حاول بعد قليل.':'خدمة البناء مش متاحة حاليًا.');
  }catch(error){
   if(controller.signal.aborted)return localFallback(504,'Builder timed out. Try again with a simpler idea.');
   console.warn('MADAR Builder error:',error?.name);
-  return localFallback(502,'Could not connect to Gemini Builder.');
+  return localFallback(502,'تعذر الاتصال بخدمة بناء المشاريع.');
  }finally{clearTimeout(timer);}
 };
