@@ -43,13 +43,50 @@ html[data-theme=light]{color-scheme:light;--bg:#f7f7fc;--sidebar:#fff;--panel:#f
 pre .code-copy{display:block;margin-bottom:9px;direction:rtl}
 .quick-btn[aria-pressed=true]{border-color:var(--gold);color:var(--gold);background:var(--goldsoft)}
 @media(max-width:550px){.message-actions button{padding:6px 8px}.tools-row{gap:5px}}
+
+.language-choice{display:flex;gap:7px;align-items:center;border:1px solid var(--line2);border-radius:10px;background:var(--panel);padding:5px 8px;min-width:0}
+.language-choice span{color:var(--muted);font-size:10px;white-space:nowrap}
+.language-choice select{border:0;outline:0;background:transparent;color:var(--gold);font-weight:750;font-size:11px;cursor:pointer;max-width:145px}
+.language-choice option{background:#241a31;color:#fff}
+.studio-launch{border:1px solid #f0c17a75;background:linear-gradient(130deg,#f0c17a20,#ae83fa24);color:var(--gold);font-weight:850;font-size:11px;padding:8px 12px;border-radius:10px;white-space:nowrap}
+.studio-launch:hover{border-color:var(--gold);background:var(--goldsoft)}
+.studio-dialog{border:1px solid var(--line2);border-radius:20px;padding:0;background:var(--bg);color:var(--fg);width:min(970px,calc(100vw - 24px));max-height:94dvh;box-shadow:0 30px 110px #000b;overflow:hidden;direction:rtl}
+.studio-dialog::backdrop{background:#080710c9;backdrop-filter:blur(7px)}
+.studio-header{display:flex;gap:9px;align-items:center;justify-content:space-between;background:linear-gradient(130deg,#302341,#20172d);padding:15px 22px;border-bottom:1px solid var(--line2)}
+.studio-header h2{margin:0;font-size:18px;color:var(--gold)}
+.studio-sub{color:#c2b5d5;font-size:11px;margin:0}
+.studio-close{color:var(--fg);font-size:19px;background:var(--control);border:1px solid var(--line2);border-radius:10px;width:36px;height:36px}
+.studio-body{overflow-y:auto;max-height:calc(94dvh - 70px);padding:20px}
+.studio-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.studio-tab{background:var(--panel2);color:var(--text);border:1px solid var(--line2);border-radius:11px;padding:10px 13px;font-weight:760;font-size:12px}
+.studio-tab[aria-selected=true]{background:var(--goldsoft);border-color:var(--gold);color:var(--gold)}
+.studio-panel{border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:20px}
+.studio-panel h3{margin:0 0 7px;color:var(--fg);font-size:18px}
+.studio-panel .studio-help{margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.9}
+.studio-field{display:grid;gap:7px;margin-bottom:15px}
+.studio-field label{font-size:12px;font-weight:750;color:var(--text)}
+.studio-field input,.studio-field textarea,.studio-field select{width:100%;padding:12px 13px;border:1px solid var(--line2);border-radius:11px;background:var(--control);color:var(--fg);outline:0;resize:vertical;font-size:13px;line-height:1.7}
+.studio-field select option{background:#21192a;color:#fff}
+.studio-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.studio-action-row{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 6px}
+.studio-main-button,.studio-ghost-button{border:1px solid #f0c17a80;border-radius:11px;background:linear-gradient(110deg,#efc17c,#c79a64);color:#241527;padding:11px 17px;font-size:12px;font-weight:900;text-decoration:none}
+.studio-ghost-button{background:var(--soft);color:var(--fg);border-color:var(--line2)}
+.studio-main-button:disabled,.studio-ghost-button:disabled{opacity:.5}
+.studio-status{min-height:20px;color:var(--gold);font-size:12px;line-height:1.7;margin:10px 0;white-space:pre-wrap}
+.studio-result{border:1px solid var(--line2);background:#0c0e18;border-radius:13px;padding:15px;color:#e3e0ea;white-space:pre-wrap;overflow-wrap:anywhere;min-height:90px;max-height:320px;overflow:auto;font-size:12px;line-height:1.85;direction:auto}
+.studio-image{display:block;max-width:100%;max-height:390px;object-fit:contain;margin:10px auto;border:1px solid var(--line2);border-radius:12px}
+.studio-frame{width:100%;height:350px;background:#101620;border:1px solid var(--line2);border-radius:12px;margin-top:10px}
+.studio-footnote{font-size:11px;color:var(--muted);line-height:1.75}
+html[lang=en] .studio-dialog{direction:ltr}
+@media(max-width:850px){.topbar-end{gap:5px}.language-choice{padding:5px}.language-choice span{display:none}.language-choice select{max-width:105px;font-size:10px}.studio-launch{padding:7px 8px;font-size:10px}.topbar .change-plan{padding:6px;font-size:10px}.studio-cols{grid-template-columns:1fr}.studio-body{padding:13px}.studio-panel{padding:14px}}
+@media(max-width:420px){.top-brand{font-size:13px}.language-choice select{max-width:75px}.studio-launch{padding:6px}.topbar-end .status{display:none}.change-plan{font-size:9px}}
 </style>
 </head>
 <body>
 <div class="shell">
   <aside id="sidebar" class="sidebar" aria-label="القائمة الجانبية">
     <div class="brand"><div class="brand-logo" aria-hidden="true">M</div><div><strong>MADAR</strong><small>PRO</small></div></div>
-    <button id="newChat" type="button" class="new-chat"><span>＋</span> محادثة جديدة</button>
+    <button id="newChat" type="button" class="new-chat"><span>＋</span> <span data-i18n="newChat">محادثة جديدة</span></button>
     <div class="side-heading">محادثاتك <span id="chatCount">0</span></div>
     <input id="search" class="search" placeholder="⌕ ابحث في محادثاتك" aria-label="البحث في المحادثات">
     <div id="history" class="history"><div class="empty-history">محادثاتك هتظهر هنا</div></div>
@@ -58,15 +95,15 @@ pre .code-copy{display:block;margin-bottom:9px;direction:rtl}
   <main class="main">
     <header class="topbar">
       <div class="topbar-start"><button id="openSidebar" type="button" class="icon-btn hamburger" aria-label="افتح القائمة">☰</button><div class="top-brand">مدار <span class="pro-pill">PRO</span></div><span class="top-divider"></span><span class="top-subtitle">مساعدك الذكي</span></div>
-      <div class="topbar-end"><a class="change-plan" href="/" aria-label="ارجع لاختيار الخطة">← الخطط</a><div class="status"><span class="status-dot"></span><span id="chatStatus">PRO تجريبي</span></div><button id="themeToggle" class="icon-btn" type="button" aria-label="تبديل المظهر" title="تبديل المظهر">☀</button><button id="accountBtn" type="button" class="icon-btn" title="الحسابات غير مفعلة في المعاينة" aria-label="الحساب">♙</button></div>
+      <div class="topbar-end"><label class="language-choice" for="languageSelect"><span>اللغة / Language</span><select id="languageSelect" aria-label="Choose language"><option value="ar-mixed">عربي + English</option><option value="en">English</option></select></label><button id="openStudio" class="studio-launch" type="button" aria-label="Open PRO Studio">🎨 Pro Studio</button><a class="change-plan" href="/" data-i18n="plans" aria-label="رجوع لاختيار الخطة">← الخطط</a><div class="status"><span class="status-dot"></span><span id="chatStatus">PRO تجريبي</span></div><button id="themeToggle" class="icon-btn" type="button" aria-label="تبديل المظهر" title="تبديل المظهر">☀</button><button id="accountBtn" type="button" class="icon-btn" title="الحسابات غير مفعلة في المعاينة" aria-label="الحساب">♙</button></div>
     </header>
     <div id="chatContainer" class="chat-container">
       <section id="welcome" class="welcome" aria-label="شاشة البداية">
         <div class="eyebrow">MADAR PRO <span>👑</span></div>
         <div class="planet" aria-hidden="true"><div class="planet-halo"></div><div class="planet-core">M</div><div class="planet-ring"></div><div class="planet-ring two"></div><div class="satellite"></div></div>
-        <h1>أهلًا بيك في <span>مدار PRO</span></h1>
-        <p class="welcome-description">اسأل، اتعلم، وحلّل واشتغل على مشاريعك مع ذكاء مدار PRO التجريبي.<br>النسخة دي شغّالة حاليًا من غير اشتراك، والدفع هيتفعّل لاحقًا.</p>
-        <div class="starter-label">تقدر تبدأ بأي مهمة</div>
+        <h1 data-i18n="welcome">أهلًا بيك في <span>مدار PRO</span></h1>
+        <p class="welcome-description" data-i18n="welcomeDesc">اسأل، اتعلم، وصمّم Websites وGames وImages مع MADAR PRO AI.<br>نسخة Beta مجانية دلوقتي من غير اشتراك أو دفع.</p>
+        <div class="starter-label" data-i18n="starterLabel">ابدأ بأي Task تحبها</div>
         <div class="starters">
           <button class="starter" type="button" data-prompt="صمم لي خطة كاملة لموقع إلكتروني مع هيكل الصفحات وخطوات البرمجة"><span class="starter-symbol violet">🌐</span><span class="starter-body"><strong>خطط لموقع</strong><small>هيكل وكود وخطة تنفيذ</small></span><span class="starter-arrow">↖</span></button>
           <button class="starter" type="button" data-prompt="اشرح لي درس بطريقة سهلة"><span class="starter-symbol gold">📚</span><span class="starter-body"><strong>اشرحلي درس</strong><small>تعليم واضح وخطوة بخطوة</small></span><span class="starter-arrow">↖</span></button>
@@ -79,26 +116,70 @@ pre .code-copy{display:block;margin-bottom:9px;direction:rtl}
     <div class="compose-wrap">
       <div class="composer">
         <div class="tools-row" aria-label="أدوات مدار">
-          <button id="photoBtn" class="tool" type="button" title="اختيار صورة">＋ صورة</button>
-          <button id="cameraBtn" class="tool camera" type="button" title="فتح كاميرا الجهاز">📷 كاميرا</button>
-          <button class="tool" data-prompt-tool="analyze" type="button" title="تحليل عميق للمشكلة">🧠 تحليل</button>
-          <button class="tool" data-prompt-tool="code" type="button" title="مساعدة في كتابة كود وتشخيص الأعطال">💻 برمجة</button>
-          <button class="tool" data-prompt-tool="study" type="button" title="شرح ودروس خطوة بخطوة">📚 تعليم</button>
-          <button class="tool" data-prompt-tool="write" type="button" title="صياغة احترافية للرسائل والمحتوى">📝 كتابة</button>
-          <button class="tool" data-prompt-tool="translate" type="button" title="ترجمة النص مع الاحتفاظ بالمعنى">🌍 ترجمة</button>
-          <button id="webSearchBtn" class="tool" type="button" title="ابحث على جوجل في تبويب جديد">⌕ بحث ويب</button>
-          <button id="exportBtn" class="tool" type="button" title="نزّل المحادثة الحالية كملف نصي">⬇ تصدير</button>
+          <button id="photoBtn" class="tool" type="button" title="اختيار صورة">＋ Photo</button>
+          <button id="cameraBtn" class="tool camera" type="button" title="فتح كاميرا الجهاز">📷 Camera</button>
+          <button class="tool" data-prompt-tool="analyze" type="button" title="تحليل عميق للمشكلة">🧠 Analysis</button>
+          <button class="tool" data-prompt-tool="code" type="button" title="مساعدة في كتابة كود وتشخيص الأعطال">💻 Coding</button>
+          <button class="tool" data-prompt-tool="study" type="button" title="شرح ودروس خطوة بخطوة">📚 Learning</button>
+          <button class="tool" data-prompt-tool="write" type="button" title="صياغة احترافية للرسائل والمحتوى">📝 Writing</button>
+          <button class="tool" data-prompt-tool="translate" type="button" title="ترجمة النص مع الاحتفاظ بالمعنى">🌍 Translate</button>
+          <button id="webSearchBtn" class="tool" type="button" title="ابحث على جوجل في تبويب جديد">⌕ Web Search</button>
+          <button id="exportBtn" class="tool" type="button" title="نزّل المحادثة الحالية كملف نصي">⬇ Export</button>
         </div>
         <input id="photoInput" type="file" accept="image/*" hidden>
         <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden>
         <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="الصورة المختارة"><span>الصورة جاهزة للعرض في المحادثة</span><button id="removePhoto" type="button" aria-label="إزالة الصورة">×</button></div>
         <textarea id="prompt" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني، اعمل صورة، أو ابني موقع..." aria-label="اكتب رسالتك"></textarea>
-        <div class="composer-bottom"><span class="composer-hint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="إملاء صوتي" title="تكلم مع مدار">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-pressed="false" aria-label="قراءة الردود صوتيًا" title="تشغيل النطق">🔈</button><button id="stopBtn" class="quick-btn" type="button" hidden aria-label="إيقاف الرد" title="إيقاف الرد">⏹</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
+        <div class="composer-bottom"><span class="composer-hint" data-i18n="composerHint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="إملاء صوتي" title="تكلم مع مدار">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-pressed="false" aria-label="قراءة الردود صوتيًا" title="تشغيل النطق">🔈</button><button id="stopBtn" class="quick-btn" type="button" hidden aria-label="إيقاف الرد" title="إيقاف الرد">⏹</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
       </div>
-      <p class="disclaimer"><b>MADAR PRO — نسخة تجريبية</b> · تحليل أعمق وأدوات فعّالة، والحفظ بيكون على جهازك فقط. مفيش اشتراك أو دفع حاليًا.</p>
+      <p class="disclaimer" data-i18n="disclaimer"><b>MADAR PRO Beta</b> · شات أوضح وTools أكتر، Chat History بيتحفظ على جهازك. مفيش اشتراك أو دفع دلوقتي.</p>
     </div>
   </main>
 </div>
+
+<dialog id="proStudio" class="studio-dialog" aria-labelledby="studioTitle" lang="ar" dir="rtl">
+  <header class="studio-header"><div><h2 id="studioTitle">🎨 MADAR PRO Studio</h2><p class="studio-sub">Images · Platforms · Games · Learning · Design</p></div><button id="studioClose" class="studio-close" type="button" aria-label="Close Studio">×</button></header>
+  <div class="studio-body">
+    <nav class="studio-tabs" aria-label="Studio tools" role="tablist">
+      <button type="button" class="studio-tab" role="tab" aria-selected="true" data-studio-tab="image">🖼️ Image AI</button>
+      <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="platform">🌐 Platform Builder</button>
+      <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="game">🎮 Game Maker</button>
+      <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="learn">📚 Smart Tutor</button>
+      <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="design">🧩 Design Assistant</button>
+    </nav>
+    <section class="studio-panel" data-studio-panel="image">
+      <h3>Professional AI Images</h3><p class="studio-help">اكتب وصف الصورة واختر Style. الخدمة بتحتاج ربط حساب Puter الخاص بيك، واستهلاك الصور بيكون حسب رصيد الحساب.</p>
+      <div class="studio-field"><label for="studioImageIdea">Image Prompt</label><textarea id="studioImageIdea" rows="3" maxlength="900" placeholder="مثال: صورة إعلان براند قهوة فاخر، إضاءة سينمائية، خلفية بسيطة..."></textarea></div>
+      <div class="studio-cols">
+        <div class="studio-field"><label for="studioImageStyle">Style</label><select id="studioImageStyle"><option value="photorealistic">Photorealistic / تصوير حقيقي</option><option value="cinematic">Cinematic / سينمائي</option><option value="product">Product Photography / تصوير منتجات</option><option value="poster">Poster / بوستر</option><option value="3d">3D Render</option><option value="illustration">Illustration / رسم فني</option></select></div>
+        <div class="studio-field"><label for="studioImageRatio">Composition</label><select id="studioImageRatio"><option value="square">Square 1:1</option><option value="landscape">Landscape 16:9</option><option value="portrait">Portrait 4:5</option></select></div>
+      </div>
+      <div class="studio-action-row"><button id="studioConnect" class="studio-ghost-button" type="button">🔐 Connect Puter</button><button id="studioCreateImage" class="studio-main-button" type="button">🎨 Generate Image</button><a id="studioImageSave" class="studio-ghost-button" download="madar-pro-image.png" hidden>⬇ Download</a></div>
+      <p id="studioImageStatus" class="studio-status" role="status"></p><img id="studioImageOutput" class="studio-image" alt="AI generated professional image" hidden>
+      <p class="studio-footnote">Image quality and availability depend on Puter and its models. Nothing is charged to MADAR automatically.</p>
+    </section>
+    <section class="studio-panel" data-studio-panel="platform" hidden>
+      <h3>AI Platform Builder</h3><p class="studio-help">اكتب فكرتك، والمدار هيولد واجهة Website متعددة الأقسام شبيهة بالمنصات الحديثة. معاينة حية + ملف HTML. Login وPayment وDatabase الحقيقية محتاجة Backend منفصل.</p>
+      <div class="studio-field"><label for="studioPlatformIdea">Platform Idea</label><textarea id="studioPlatformIdea" maxlength="2600" rows="3" placeholder="مثال: منصة ذكاء اصطناعي بشات وقائمة جانبية وحساب مستخدم وصفحة أسعار، RTL وتعمل على الموبايل..."></textarea></div>
+      <div class="studio-cols"><div class="studio-field"><label for="studioPlatformType">Project Type</label><select id="studioPlatformType"><option value="ai-chat">AI Chat Platform</option><option value="education">Education Platform</option><option value="shop">Store / Shop</option><option value="dashboard">Dashboard / Admin</option><option value="business">Business Website</option></select></div><div class="studio-field"><label for="studioPlatformTheme">Design Theme</label><select id="studioPlatformTheme"><option value="premium dark violet with gold details">Premium Dark</option><option value="minimal light white navy">Minimal Light</option><option value="modern colorful gradients">Modern Colorful</option></select></div></div>
+      <div class="studio-action-row"><button id="studioBuildPlatform" class="studio-main-button" type="button">🚀 Build Platform</button><button id="studioDownloadPlatform" class="studio-ghost-button" type="button" disabled>⬇ Download HTML</button></div><p id="studioPlatformStatus" class="studio-status" role="status"></p><iframe id="studioPlatformFrame" class="studio-frame" title="Platform preview" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
+    </section>
+    <section class="studio-panel" data-studio-panel="game" hidden>
+      <h3>AI Game Maker</h3><p class="studio-help">اكتب فكرة Game بميكانيك لعب واضح؛ هتطلع لعبة HTML5 قابلة للمعاينة والتحميل. النتائج تجريبية وتحتاج اختبار.</p>
+      <div class="studio-field"><label for="studioGameIdea">Game Idea</label><textarea id="studioGameIdea" maxlength="2600" rows="3" placeholder="مثال: لعبة سباق بسيطة بمستويات ونقاط وأزرار للموبايل والكمبيوتر..."></textarea></div>
+      <div class="studio-action-row"><button id="studioBuildGame" class="studio-main-button" type="button">🎮 Generate Game</button><button id="studioDownloadGame" class="studio-ghost-button" type="button" disabled>⬇ Download Game</button></div><p id="studioGameStatus" class="studio-status" role="status"></p><iframe id="studioGameFrame" class="studio-frame" title="Game preview" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
+    </section>
+    <section class="studio-panel" data-studio-panel="learn" hidden>
+      <h3>Smart Tutor PRO</h3><p class="studio-help">درس واضح، أمثلة، Mini Quiz، شرح عربي طبيعي مع English Terms المهمة، أو English كامل حسب اختيارك.</p>
+      <div class="studio-field"><label for="studioLearnTopic">Lesson / Topic</label><textarea id="studioLearnTopic" rows="2" maxlength="2500" placeholder="مثال: قواعد المضارع البسيط للصف الأول الإعدادي"></textarea></div><div class="studio-action-row"><button id="studioTeach" class="studio-main-button" type="button">📚 Explain Lesson</button><button id="studioQuiz" class="studio-ghost-button" type="button">📝 Mini Quiz</button></div><p id="studioLearnStatus" class="studio-status" role="status"></p><div id="studioLearnResult" class="studio-result" hidden></div>
+    </section>
+    <section class="studio-panel" data-studio-panel="design" hidden>
+      <h3>Design & Branding PRO</h3><p class="studio-help">اطلع بهوية بصرية، ألوان، Typography، خطة UI/UX، وPrompt للصورة التسويقية. تقدر تنقل الـPrompt لأداة الصور.</p>
+      <div class="studio-field"><label for="studioDesignIdea">Brand or Product Brief</label><textarea id="studioDesignIdea" rows="3" maxlength="2500" placeholder="مثال: براند ملابس رياضية للشباب، محتاج هوية عصرية وألوان وشكل موقع..."></textarea></div>
+      <div class="studio-action-row"><button id="studioMakeDesign" class="studio-main-button" type="button">🧩 Create Design Brief</button><button id="studioDesignToImage" class="studio-ghost-button" type="button">🖼️ Open Image Studio</button></div><p id="studioDesignStatus" class="studio-status" role="status"></p><div id="studioDesignResult" class="studio-result" hidden></div>
+    </section>
+  </div>
+</dialog>
 <div id="overlay" class="overlay" hidden></div>
 <div id="notice" class="notice" hidden role="status" aria-live="polite"></div>
 <script>
@@ -223,7 +304,7 @@ async function send(prefill){
  try{
   if(location.protocol==='file:')throw Error('الذكاء الاصطناعي مش هيشتغل من ملف HTML مفتوح من الجهاز. افتح رابط المعاينة على Vercel لتجربته.');
   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:buildRequestMessages(chat.messages),mode:'pro',image:picture||undefined}),signal:controller.signal});
+    body:JSON.stringify({messages:buildRequestMessages(chat.messages),mode:'pro',language:(window.MadarProLanguage?.()||'ar-mixed'),image:picture||undefined}),signal:controller.signal});
   const data=await response.json().catch(()=>null);
   if(!response.ok)throw Error((data&&typeof data.error==='string'&&data.error)||(response.status===429?'حد الاستخدام اتملأ مؤقتًا. جرّب بعد شوية.':'خدمة مدار مش متاحة دلوقتي ('+response.status+').'));
   if(!data||typeof data.reply!=='string'||!data.reply.trim())throw Error('مدار رجّع رد فاضي. جرّب تاني.');
@@ -310,5 +391,6 @@ $('micBtn').addEventListener('click',()=>{
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});restoreChats();render();resize();
 })();
 </script>
+<script src="/pro-studio.js" defer></script>
 </body>
 </html>
