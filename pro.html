@@ -31,17 +31,29 @@ html[data-theme=light]{color-scheme:light;--bg:#f7f7fc;--sidebar:#fff;--panel:#f
 .change-plan{color:var(--gold);padding:8px 10px;border:1px solid var(--line2);border-radius:10px;background:var(--soft);font-size:11px;font-weight:800;white-space:nowrap}
 .change-plan:hover{color:var(--fg);border-color:var(--gold)}
 @media(max-width:600px){.change-plan{padding:7px 6px;font-size:10px}}
+
+.message-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px}
+.message-actions button,.code-copy{color:var(--purple2);background:var(--soft);border:1px solid var(--line2);border-radius:9px;padding:5px 10px;font-size:11px}
+.message-actions button:hover,.code-copy:hover{color:var(--gold);border-color:var(--gold)}
+.message-text strong{font-weight:850;color:var(--fg)}.message-text h2,.message-text h3{font-size:14px;color:var(--fg);margin:12px 0 5px}
+.message-text p{margin:0 0 6px}.message-text ul{margin:4px 0 8px;padding:0 23px}.message-text li{margin:4px 0}
+.message-text code{direction:ltr;unicode-bidi:plaintext;font-family:ui-monospace,monospace;background:var(--control);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px}
+.message-text pre{direction:ltr;text-align:left;white-space:pre;overflow:auto;background:#0d101b;border:1px solid var(--line2);border-radius:12px;padding:13px;margin:5px 0 10px;font-size:12px}
+.message-text pre code{background:none;border:0;padding:0;color:#dce3ff;white-space:pre}
+pre .code-copy{display:block;margin-bottom:9px;direction:rtl}
+.quick-btn[aria-pressed=true]{border-color:var(--gold);color:var(--gold);background:var(--goldsoft)}
+@media(max-width:550px){.message-actions button{padding:6px 8px}.tools-row{gap:5px}}
 </style>
 </head>
 <body>
 <div class="shell">
   <aside id="sidebar" class="sidebar" aria-label="القائمة الجانبية">
-    <div class="brand"><div class="brand-logo" aria-hidden="true">M</div><div><strong>MADAR</strong><small>✦ PRO</small></div></div>
+    <div class="brand"><div class="brand-logo" aria-hidden="true">M</div><div><strong>MADAR</strong><small>PRO</small></div></div>
     <button id="newChat" type="button" class="new-chat"><span>＋</span> محادثة جديدة</button>
     <div class="side-heading">محادثاتك <span id="chatCount">0</span></div>
     <input id="search" class="search" placeholder="⌕ ابحث في محادثاتك" aria-label="البحث في المحادثات">
     <div id="history" class="history"><div class="empty-history">محادثاتك هتظهر هنا</div></div>
-    <div class="side-footer"><div class="small-icon">✦</div><p><strong>MADAR — اختار خطتك</strong><span>المجاني شغّال · PRO بنجهزها</span></p><span aria-hidden="true">👑</span></div>
+    <div class="side-footer"><div class="small-icon">👑</div><p><strong>مدار PRO التجريبي</strong><span>سجل المحادثات على جهازك فقط</span></p></div>
   </aside>
   <main class="main">
     <header class="topbar">
@@ -50,16 +62,16 @@ html[data-theme=light]{color-scheme:light;--bg:#f7f7fc;--sidebar:#fff;--panel:#f
     </header>
     <div id="chatContainer" class="chat-container">
       <section id="welcome" class="welcome" aria-label="شاشة البداية">
-        <div class="eyebrow"><span>✦</span> MADAR PRO <span>👑</span></div>
+        <div class="eyebrow">MADAR PRO <span>👑</span></div>
         <div class="planet" aria-hidden="true"><div class="planet-halo"></div><div class="planet-core">M</div><div class="planet-ring"></div><div class="planet-ring two"></div><div class="satellite"></div></div>
         <h1>أهلًا بيك في <span>مدار PRO</span></h1>
         <p class="welcome-description">اسأل، اتعلم، وحلّل واشتغل على مشاريعك مع ذكاء مدار PRO التجريبي.<br>النسخة دي شغّالة حاليًا من غير اشتراك، والدفع هيتفعّل لاحقًا.</p>
-        <div class="starter-label"><span>✧</span> جرّب تبدأ بحاجة من دول</div>
+        <div class="starter-label">تقدر تبدأ بأي مهمة</div>
         <div class="starters">
-          <button class="starter" type="button" data-prompt="ابني لي موقع إلكتروني احترافي"><span class="starter-symbol violet">🌐</span><span class="starter-body"><strong>ابني موقع</strong><small>حوّل فكرتك لموقع</small></span><span class="starter-arrow">↖</span></button>
+          <button class="starter" type="button" data-prompt="صمم لي خطة كاملة لموقع إلكتروني مع هيكل الصفحات وخطوات البرمجة"><span class="starter-symbol violet">🌐</span><span class="starter-body"><strong>خطط لموقع</strong><small>هيكل وكود وخطة تنفيذ</small></span><span class="starter-arrow">↖</span></button>
           <button class="starter" type="button" data-prompt="اشرح لي درس بطريقة سهلة"><span class="starter-symbol gold">📚</span><span class="starter-body"><strong>اشرحلي درس</strong><small>تعليم واضح وخطوة بخطوة</small></span><span class="starter-arrow">↖</span></button>
           <button class="starter" type="button" data-prompt="ساعدني أكتب كود وأصلح الأخطاء"><span class="starter-symbol mint">💻</span><span class="starter-body"><strong>ساعدني في الكود</strong><small>برمجة ومشاريع</small></span><span class="starter-arrow">↖</span></button>
-          <button class="starter" type="button" data-prompt="ساعدني أبتكر هوية بصرية ومحتوى لبراند جديد"><span class="starter-symbol pink">🎨</span><span class="starter-body"><strong>صمّم صورة</strong><small>أفكار وتصميمات</small></span><span class="starter-arrow">↖</span></button>
+          <button class="starter" type="button" data-prompt="حلل فكرتي كمشروع وساعدني أطورها بخطة عملية"><span class="starter-symbol pink">🚀</span><span class="starter-body"><strong>حلل مشروع</strong><small>خطوات وأفكار عملية</small></span><span class="starter-arrow">↖</span></button>
         </div>
       </section>
       <div id="messages" class="messages" hidden role="log" aria-label="رسائل المحادثة" aria-live="polite"></div>
@@ -69,19 +81,21 @@ html[data-theme=light]{color-scheme:light;--bg:#f7f7fc;--sidebar:#fff;--panel:#f
         <div class="tools-row" aria-label="أدوات مدار">
           <button id="photoBtn" class="tool" type="button" title="اختيار صورة">＋ صورة</button>
           <button id="cameraBtn" class="tool camera" type="button" title="فتح كاميرا الجهاز">📷 كاميرا</button>
-          <button class="tool" data-demo-tool="بحث ويكيبيديا" type="button">⌕ بحث ويكيبيديا</button>
-          <button class="tool" data-demo-tool="بحث الويب" type="button">↗ بحث الويب</button>
-          <button class="tool" data-demo-tool="إنشاء صورة" type="button">✦ إنشاء صورة</button>
-          <button class="tool" data-demo-tool="صانع المشاريع" type="button">🛠 صانع المشاريع</button>
-          <button class="tool" data-demo-tool="ألعاب 3D" type="button">🎮 ألعاب 3D</button>
+          <button class="tool" data-prompt-tool="analyze" type="button" title="تحليل عميق للمشكلة">🧠 تحليل</button>
+          <button class="tool" data-prompt-tool="code" type="button" title="مساعدة في كتابة كود وتشخيص الأعطال">💻 برمجة</button>
+          <button class="tool" data-prompt-tool="study" type="button" title="شرح ودروس خطوة بخطوة">📚 تعليم</button>
+          <button class="tool" data-prompt-tool="write" type="button" title="صياغة احترافية للرسائل والمحتوى">📝 كتابة</button>
+          <button class="tool" data-prompt-tool="translate" type="button" title="ترجمة النص مع الاحتفاظ بالمعنى">🌍 ترجمة</button>
+          <button id="webSearchBtn" class="tool" type="button" title="ابحث على جوجل في تبويب جديد">⌕ بحث ويب</button>
+          <button id="exportBtn" class="tool" type="button" title="نزّل المحادثة الحالية كملف نصي">⬇ تصدير</button>
         </div>
         <input id="photoInput" type="file" accept="image/*" hidden>
         <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden>
         <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="الصورة المختارة"><span>الصورة جاهزة للعرض في المحادثة</span><button id="removePhoto" type="button" aria-label="إزالة الصورة">×</button></div>
         <textarea id="prompt" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني، اعمل صورة، أو ابني موقع..." aria-label="اكتب رسالتك"></textarea>
-        <div class="composer-bottom"><span class="composer-hint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="الميكروفون">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-label="الرد الصوتي">🔈</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
+        <div class="composer-bottom"><span class="composer-hint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="إملاء صوتي" title="تكلم مع مدار">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-pressed="false" aria-label="قراءة الردود صوتيًا" title="تشغيل النطق">🔈</button><button id="stopBtn" class="quick-btn" type="button" hidden aria-label="إيقاف الرد" title="إيقاف الرد">⏹</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
       </div>
-      <p class="disclaimer"><b>👑 MADAR PRO — نسخة تجريبية</b> · الشات متصل بخدمة الذكاء الاصطناعي الفعلية مع أولوية للنماذج الأقوى عند توافرها. مفيش دفع حاليًا، والحدود الحالية لا تزال سارية.</p>
+      <p class="disclaimer"><b>MADAR PRO — نسخة تجريبية</b> · تحليل أعمق وأدوات فعّالة، والحفظ بيكون على جهازك فقط. مفيش اشتراك أو دفع حاليًا.</p>
     </div>
   </main>
 </div>
@@ -104,7 +118,7 @@ function ensureChat(first){let chat=chats.find(c=>c.id===current);if(!chat){chat
 function drawHistory(){els.count.textContent=chats.length;els.history.replaceChildren();const q=$('search').value.trim().toLowerCase();const matches=chats.filter(c=>c.title.toLowerCase().includes(q));if(!matches.length){const empty=document.createElement('div');empty.className='empty-history';empty.textContent=chats.length?'مفيش نتائج مطابقة':'محادثاتك هتظهر هنا';els.history.append(empty);return;}matches.forEach(chat=>{let b=document.createElement('button');b.type='button';b.className='chat-tab'+(chat.id===current?' active':'');const icon=document.createElement('span');icon.textContent='☷';const title=document.createElement('span');title.className='tab-title';title.textContent=chat.title;b.append(icon,title);b.addEventListener('click',()=>{current=chat.id;render();closeSidebar()});els.history.append(b)})}
 function drawMessage(msg){
  const root=document.createElement('article');root.className='message '+msg.role;
- const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=msg.role==='user'?'👤':'✦';
+ const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=msg.role==='user'?'👤':'';
  const main=document.createElement('div');main.className='message-main';
  const heading=document.createElement('div');heading.className='message-head';heading.textContent=msg.role==='user'?'أنت':'مدار PRO';
  main.append(heading);
