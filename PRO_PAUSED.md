@@ -29,3 +29,21 @@ No pull request was opened for this checkpoint. The existing public site remains
 - Browser E2E tests: chat, photo/camera permissions, speech, tool prompts, local history and mobile layout.
 - Reliability and model capability measurements with real prompts.
 - Add verified paid entitlements + billing only after explicit approval.
+
+
+## Added while parked (bilingual PRO Studio)
+- PRO chat header lets visitors select `عربي + English` (Arabic-first, with natural English terminology) or `English`; selected language is passed to the PRO chat API and checked server-side.
+- Clear, well-organized answers are requested by server-side guidance, including avoidance of ornamental stars.
+- PRO Studio interface contains **Image AI** (professional prompting, several visual styles, browser-side Puter authentication and a premium-image model with fallback), **Platform Builder** (AI-assisted responsive single-file HTML frontends, preview, download), **Game Maker** (HTML5 single-file game generation), **Smart Tutor** (explanations/quiz), and **Design** (brief and image prompt).
+- Platforms resembling ChatGPT are explicitly **frontend prototypes**. They do not have a live database, payments, authentication, or an AI backend unless separately implemented and tested.
+- Generated website/game code is displayed in a sandboxed frame with an opaque origin and restrictive CSP. External network access from its preview is blocked.
+- The public website was **not changed** and no Vercel deployment was requested for this work.
+
+### Local offline visual preview
+A standalone HTML mockup was generated for user review at the conversation's downloadable file `MADAR_PRO_Studio_Offline_Preview.html`. Its Platform Builder is a local **template demonstration**, and the game is a small local example; it does not call AI. The branch's online implementation uses server endpoints and external providers only after explicit future deployment/authorization.
+
+### Validation
+- PRO HTML and PRO Studio scripts: JavaScript syntax clean.
+- No missing DOM element IDs accessed by PRO Studio, no duplicate DOM IDs, and no decorative star symbols in PRO HTML.
+- Offline preview tested in Chromium: studio opens, local platform preview works, download is available, demo game runs, and English switch updates copy. No browser JS errors observed in this local test.
+- **Real remote AI/image generation is untested in this paused branch. Do not claim otherwise.**
