@@ -305,6 +305,9 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 
 .madar-voice-btn{border:1px solid var(--line-strong);background:var(--control);color:var(--fg);padding:8px;border-radius:10px;font-size:13px;cursor:pointer;min-width:32px}
 .madar-voice-btn[aria-pressed=true]{background:var(--purple);color:white}
+.madar-camera-quick{display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;font-weight:750;background:var(--soft);color:var(--purple-light);border-color:var(--purple);min-width:78px}
+.madar-camera-quick:hover{background:var(--control);color:var(--fg)}
+@media(max-width:620px){.composer-bottom{justify-content:flex-end}.composer-hint{display:none}.madar-send-actions{gap:5px;min-width:0}.madar-camera-quick{min-width:35px;padding:7px;font-size:17px}.madar-camera-label{display:none}}
 .madar-voice-quick{max-width:91px;min-width:60px;border:1px solid var(--line-strong);border-radius:9px;color:var(--fg);background:var(--control);padding:6px 2px;font-size:11px}
 .studio-language-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .studio-language-grid select,.studio-lang-input{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line-strong);border-radius:10px;padding:12px;font:inherit;font-size:13px}
@@ -421,9 +424,9 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
           <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
           <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني إسباني، اعمل صورة، أو لعبة..." aria-label="Write your message"></textarea>
-          <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><select id="madarVoiceQuick" class="madar-voice-quick" aria-label="اختار لغة الميكروفون والنطق"><option value="auto">🌐 تلقائي</option></select><button id="madarMicQuick" class="madar-voice-btn" type="button" aria-label="تكلم مع مدار بالميكروفون" title="اتكلم مع مدار">🎙️</button><button id="madarSpeakQuick" class="madar-voice-btn" type="button" aria-pressed="false" aria-label="تشغيل نطق ردود مدار" title="تشغيل أو إيقاف الردود الصوتية">🔈</button><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
+          <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><select id="madarVoiceQuick" class="madar-voice-quick" aria-label="اختار لغة الميكروفون والنطق"><option value="auto">🌐 تلقائي</option></select><button id="madarCameraQuick" class="madar-voice-btn madar-camera-quick" type="button" aria-label="افتح الكاميرا وصوّر مع مدار" title="📷 افتح الكاميرا">📷 <span class="madar-camera-label">كاميرا</span></button><button id="madarMicQuick" class="madar-voice-btn" type="button" aria-label="تكلم مع مدار بالميكروفون" title="اتكلم مع مدار">🎙️</button><button id="madarSpeakQuick" class="madar-voice-btn" type="button" aria-pressed="false" aria-label="تشغيل نطق ردود مدار" title="تشغيل أو إيقاف الردود الصوتية">🔈</button><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
         </div>
-        <p class="disclaimer">اسأل أو اكتب طلبك مباشرة: «اعمل صورة»، «ابني موقع»، «امتحني»، «ارفع صورة». <span>✧</span> راجع المعلومات المهمة.</p>
+        <p class="disclaimer">جديد: 📷 كاميرا مدار جنب زر الإرسال. صوّر أي حاجة واسأل مدار عنها. كمان تقدر تطلب «اعمل صورة» أو «ابني موقع». <span>✧</span> راجع المعلومات المهمة.</p>
       </div>
     </main>
   </div>
@@ -1245,6 +1248,7 @@ function captureCameraPhoto(){
   },'image/jpeg',0.9);
 }
 el.cameraBtn.addEventListener('click',openCamera);
+$('madarCameraQuick').addEventListener('click',openCamera);
 $('cameraCapture').addEventListener('click',captureCameraPhoto);
 $('cameraFlip').addEventListener('click',()=>{cameraFacing=cameraFacing==='environment'?'user':'environment';startCamera();});
 $('cameraClose').addEventListener('click',closeCamera);
