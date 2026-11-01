@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0e0c17">
+<meta name="robots" content="noindex,nofollow">
+<title>MADAR PRO — تصميم تجريبي غير منشور</title>
+<style>
+:root{color-scheme:dark;--bg:#0c0a14;--surface:#151220;--surface2:#1b172a;--panel:#211c30;--fg:#f8f5ff;--muted:#aba4bc;--line:#ffffff18;--violet:#b492ff;--gold:#f0c17a;--gold-soft:#f0c17a20;--green:#8ff3c6}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font-family:Tahoma,"Segoe UI",system-ui,sans-serif;line-height:1.8;overflow-x:hidden}button,a{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:4px}button:disabled{opacity:.5;cursor:not-allowed}::selection{background:#8e67d88a}
+.bg-glow{pointer-events:none;position:absolute;inset:0 0 auto;height:850px;overflow:hidden;z-index:-1;background:radial-gradient(ellipse 45% 44% at 77% 20%,#7546cb46,transparent 80%),radial-gradient(ellipse 36% 37% at 27% 30%,#bd824326,transparent 77%)}.bg-glow:before{content:"";position:absolute;right:24%;top:135px;width:480px;height:480px;border:1px solid #ffffff08;border-radius:50%;box-shadow:0 0 0 100px #ffffff05,0 0 0 200px #ffffff04}
+.wrap{width:min(1180px,calc(100% - 48px));margin:auto}
+.preview-ribbon{background:linear-gradient(90deg,#2e2145,#403057,#2e2145);text-align:center;font-size:12px;color:#e8ddff;padding:7px 12px;border-bottom:1px solid #ffffff19;letter-spacing:.1px}.preview-ribbon strong{color:var(--gold)}
+header{position:relative;z-index:5;border-bottom:1px solid #ffffff0d;backdrop-filter:blur(12px);background:#0e0b1ab0}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:20px;min-height:82px}.brand{display:flex;align-items:center;gap:12px;white-space:nowrap}.logo{width:42px;height:42px;display:grid;place-items:center;background:linear-gradient(135deg,#a885ff,#5d369e);border-radius:13px;box-shadow:0 8px 25px #875ae140;position:relative;font:900 26px system-ui}.logo:after{content:"";position:absolute;width:37px;height:13px;border:1.5px solid #ffffff95;border-radius:50%;transform:rotate(-34deg)}.brand-text{display:flex;flex-direction:column;line-height:1.12}.brand-text b{font:900 22px system-ui;letter-spacing:1.4px}.brand-text small{color:var(--gold);font-size:9px;font-weight:900;letter-spacing:3px;margin-top:5px}
+nav{display:flex;align-items:center;gap:28px}nav a{color:#ccc5db;font-size:13px;transition:color .2s}nav a:hover{color:var(--gold)}.nav-pill{display:inline-flex;align-items:center;gap:9px;padding:10px 18px;background:var(--gold-soft);border:1px solid #e7bc8152;border-radius:30px;color:var(--gold);font-size:12px;font-weight:800}
+.hero{padding:94px 0 92px;display:grid;grid-template-columns:1fr 1.06fr;gap:45px;align-items:center}.eyebrow{display:inline-flex;align-items:center;gap:10px;background:#2b2240;color:#e2c7ff;border:1px solid #9b72e54d;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800}.eyebrow .dot{height:7px;width:7px;background:var(--gold);border-radius:50%;box-shadow:0 0 0 4px #f0c17a1c}h1{font-size:clamp(43px,5.5vw,76px);line-height:1.23;letter-spacing:-2.3px;margin:28px 0 21px;font-weight:900}h1 span{background:linear-gradient(100deg,#c7a8ff 5%,#e1ccfb 47%,#f2c17b 98%);color:transparent;background-clip:text;-webkit-background-clip:text}.lead{color:#c7c0d4;font-size:16px;line-height:2.1;max-width:560px;margin:0 0 32px}.hero-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.btn{border:0;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:13px 23px;font-weight:800;font-size:13px}.btn-primary{background:linear-gradient(125deg,#f1ce91,#ce9a55);color:#291a0e;box-shadow:0 10px 35px #e0a76132}.btn-primary:hover{filter:brightness(1.08)}.btn-secondary{border:1px solid #ffffff26;background:#ffffff0c;color:var(--fg)}.hero-foot{display:flex;gap:16px;align-items:center;color:#a9a2bb;font-size:11px;margin-top:27px}.hero-foot span{display:flex;gap:6px;align-items:center}.gold{color:var(--gold)}
+.demo-wrap{position:relative;isolation:isolate}.demo-wrap:before{position:absolute;content:"";inset:14% 3% 3%;background:#9764ff40;filter:blur(90px);z-index:-1}.demo{border:1px solid #ffffff27;border-radius:24px;background:linear-gradient(145deg,#262037,#14111f);box-shadow:0 30px 90px #0008;overflow:hidden;transform:rotate(-1deg)}.demo-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #ffffff17;gap:10px}.demo-title{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:900}.demo-title .spark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#b58cf7,#d49a56);color:#201426}.demo-badge{background:#efc17a1c;color:var(--gold);border:1px solid #f0c17a36;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:800}.window-dots{display:flex;gap:5px;direction:ltr}.window-dots i{width:7px;height:7px;border-radius:50%;background:#6b627f}.demo-switch{display:flex;gap:6px;padding:13px 19px 0;flex-wrap:wrap}.demo-switch button{background:transparent;border:1px solid transparent;padding:7px 14px;color:#a9a0bf;border-radius:9px;font-size:11px}.demo-switch button[aria-pressed=true]{background:#b28afc1b;border-color:#a477f95f;color:#dec6ff}.demo-body{padding:18px 20px 22px}.bubble-user{border:1px solid #9874e350;background:#8a60d32b;border-radius:14px 14px 4px 14px;padding:13px 15px;font-size:12px;color:#f1eaf9;max-width:92%;margin-bottom:16px}.response{background:#ffffff05;border:1px solid #ffffff12;border-radius:15px;padding:17px}.response-top{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--gold);font-weight:900}.response-top .pulse{width:7px;height:7px;background:var(--green);border-radius:50%}.response p{font-size:12px;color:#d3ccdf;margin:10px 0 13px;line-height:1.9}.steps{display:grid;gap:8px}.step{display:flex;align-items:flex-start;gap:10px;background:#ffffff07;border:1px solid #ffffff0b;padding:10px 12px;border-radius:9px;font-size:11px;color:#eee8f6}.step b{color:var(--gold);font-size:11px;direction:ltr}.demo-input{border:1px solid #ffffff20;background:#0b0a12;border-radius:11px;color:#878199;display:flex;justify-content:space-between;align-items:center;padding:10px 11px;font-size:11px;margin-top:14px}.send-dot{background:#8e63df;color:#fff;width:24px;height:24px;border-radius:8px;display:grid;place-items:center}.demo-label{display:flex;align-items:center;gap:7px;margin:10px 5px 0;color:#a9a0b6;font-size:10px}
+.floating{position:absolute;z-index:2;padding:10px 13px;background:#241d31;border:1px solid #efc17a58;border-radius:12px;box-shadow:0 18px 45px #0007;font-size:11px;font-weight:800;color:#f7e5c7}.floating b{color:var(--gold)}.floating-a{top:-23px;left:-16px}.floating-b{bottom:45px;right:-23px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,#ffffff2c,transparent)}section{scroll-margin-top:35px}.section-top{text-align:center;margin:0 auto 37px;max-width:690px}.kicker{color:var(--gold);font-weight:900;font-size:12px;letter-spacing:1px}.section-top h2,.compare-heading h2,.vision h2{font-size:clamp(27px,3.6vw,42px);letter-spacing:-1px;line-height:1.45;margin:10px 0 11px}.section-top p,.compare-heading p{color:var(--muted);font-size:13px;margin:0;line-height:2}
+.features{padding:91px 0}.filter{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:26px}.filter button{border:1px solid #ffffff1c;background:#ffffff09;color:#b9b0c7;padding:8px 19px;border-radius:100px;font-size:12px}.filter button[aria-pressed=true]{background:#f0c17a20;border-color:#f0c17a70;color:var(--gold)}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.feature-card{border:1px solid #ffffff16;background:linear-gradient(155deg,#1f192c,#14111e);padding:25px;border-radius:19px;min-height:240px;transition:transform .2s,border-color .2s}.feature-card:hover{transform:translateY(-4px);border-color:#f0c17a65}.feature-card[hidden]{display:none}.feature-icon{width:47px;height:47px;display:grid;place-items:center;border:1px solid #b28cf63d;border-radius:14px;background:#9573de22;font-size:23px}.feature-card h3{font-size:17px;margin:15px 0 8px}.feature-card p{font-size:12px;color:#bcb3cc;line-height:2;margin:0}.feature-footer{margin-top:16px;color:var(--gold);font-size:10px;font-weight:800}
+.compare-section{padding:90px 0;background:linear-gradient(180deg,#171120 0%,#110e19 100%);border-top:1px solid #ffffff08;border-bottom:1px solid #ffffff08}.compare-heading{text-align:center}.plans{display:grid;grid-template-columns:1fr 1fr;max-width:900px;margin:35px auto 0;gap:18px}.plan{border:1px solid #ffffff20;background:#1a1525;border-radius:22px;padding:26px}.plan.pro{border-color:#f0c17a86;background:linear-gradient(155deg,#282035,#1d1725);box-shadow:0 0 65px #dca65c16;position:relative}.plan-head{display:flex;justify-content:space-between;align-items:center}.plan-head h3{margin:0;font-size:20px}.plan-head span{font-size:11px;color:var(--muted)}.plan.pro .plan-head h3{color:var(--gold)}.price{font-size:30px;font-weight:900;letter-spacing:-1px;margin:19px 0 5px}.price small{font-size:13px;font-weight:600;color:var(--muted)}.plan-desc{font-size:12px;color:var(--muted);min-height:50px;margin:0}.plan ul{padding:0;margin:19px 0 23px;list-style:none;border-top:1px solid #ffffff16}.plan li{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #ffffff0e;color:#ded7e8;font-size:12px}.plan li .check{color:#9bf4c4;font-weight:900}.plan.pro li .check{color:var(--gold)}.plan .btn{width:100%;border:1px solid #ffffff1c}.compare-note{text-align:center;color:#a69caf;font-size:11px;margin:18px auto 0;max-width:730px;line-height:1.9}
+.vision{padding:92px 0}.vision-panel{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:34px;padding:42px;border:1px solid #a477fa4b;border-radius:24px;background:radial-gradient(circle at 75% 25%,#7854b638,transparent 45%),linear-gradient(120deg,#241c35,#17111f)}.vision h2{margin:8px 0 13px}.vision p{font-size:13px;color:#c8c0d6;margin:0 0 24px;max-width:540px}.vision-points{display:grid;gap:11px}.vision-points div{display:flex;align-items:center;gap:11px;border:1px solid #ffffff16;background:#ffffff09;border-radius:12px;padding:11px 14px;font-size:12px;color:#e7dff0}.vision-points span{color:var(--gold);font-size:18px}
+.faq{padding:0 0 95px}.faq-list{max-width:760px;margin:26px auto 0;display:grid;gap:10px}.faq details{background:#1c1727;border:1px solid #ffffff16;border-radius:14px;padding:16px 20px}.faq summary{cursor:pointer;font-weight:750;font-size:13px}.faq details p{color:var(--muted);font-size:12px;margin:12px 0 0;line-height:2}
+footer{border-top:1px solid #ffffff15;padding:26px 0 36px;color:#9990ac;font-size:11px}.footer-inner{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}.footer-inner a{color:var(--gold)}.copyright{color:#756d83}
+.toast{position:fixed;bottom:24px;left:24px;right:24px;max-width:460px;margin:auto;z-index:20;padding:15px 20px;background:#30243e;border:1px solid #f0c17a67;color:#f7e9d3;border-radius:14px;box-shadow:0 20px 40px #0007;font-size:12px;text-align:center;line-height:1.9}.toast[hidden]{display:none}
+@media(max-width:1030px){.hero{gap:26px}.floating-b{right:-9px}.floating-a{left:-8px}.hero h1{font-size:51px}.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.wrap{width:min(100% - 32px,630px)}nav{gap:13px}nav a{display:none}.nav{min-height:70px}.hero{padding:58px 0 70px;grid-template-columns:1fr}.hero h1{font-size:clamp(39px,9vw,62px)}.lead{font-size:14px}.demo-wrap{margin:32px 7px 0}.floating-a{left:-8px;top:-18px}.floating-b{right:-9px;bottom:25px}.section-top h2,.compare-heading h2,.vision h2{font-size:29px}.plans{grid-template-columns:1fr}.vision-panel{grid-template-columns:1fr;padding:26px}.features{padding:66px 0}.compare-section{padding:68px 0}.vision{padding:70px 0}.faq{padding-bottom:75px}}
+@media(max-width:480px){.wrap{width:calc(100% - 28px)}.brand-text b{font-size:18px}.nav-pill{padding:8px 11px;font-size:10px}.hero{padding-top:45px}.hero h1{font-size:40px}.hero-actions{align-items:stretch}.hero-actions .btn{flex:1 1 100%}.hero-foot{flex-wrap:wrap}.cards{grid-template-columns:1fr}.feature-card{min-height:unset}.demo{transform:none}.floating{font-size:9px}.floating-b{bottom:6px;right:-5px}.demo-body{padding:12px}.demo-head{padding:14px}.bubble-user{font-size:11px}.section-top p{font-size:12px}.plan{padding:22px}.footer-inner{flex-direction:column}.toast{max-width:calc(100% - 30px)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="preview-ribbon">🎨 <strong>تصميم تجريبي فقط</strong> — MADAR PRO غير متاحة للاشتراك حاليًا، ومش منشورة على موقع مدار الأساسي</div>
+<header>
+  <div class="wrap nav">
+    <a href="#top" class="brand" aria-label="مدار برو — أعلى الصفحة"><span class="logo" aria-hidden="true">M</span><span class="brand-text"><b>MADAR</b><small>PRO CONCEPT</small></span></a>
+    <nav aria-label="التنقل"><a href="#features">المميزات</a><a href="#compare">مقارنة الخطط</a><a href="#faq">أسئلة شائعة</a></nav>
+    <a href="#compare" class="nav-pill">✦ استكشف النسخة الاحترافية</a>
+  </div>
+</header>
+<main id="top">
+<div class="wrap">
+  <section class="hero" aria-labelledby="heroTitle">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="dot"></span> MADAR PRO — تحت التصميم</div>
+      <h1 id="heroTitle">فكّر أبعد.<br><span>أنجز من غير حدود الأفكار.</span></h1>
+      <p class="lead">بنصمّم مستوى جديد من مدار: ذكاء أقوى للمهام الصعبة، أدوات أعمق للمشاريع، وتجربة أسرع وأكثر تركيزًا — مع الاحتفاظ بروح مدار اللي تعرفها.</p>
+      <div class="hero-actions">
+        <a href="#features" class="btn btn-primary">اكتشف مميزات PRO <span aria-hidden="true">↙</span></a>
+        <a href="#compare" class="btn btn-secondary">شوف الفرق عن المجاني</a>
+      </div>
+      <div class="hero-foot"><span><span class="gold">✧</span> تجربة مُخطّط لها</span><span><span class="gold">✧</span> من غير دفع حاليًا</span><span><span class="gold">✧</span> المجاني يفضل موجود</span></div>
+    </div>
+    <div class="demo-wrap" aria-label="تصور تجريبي لشات مدار برو">
+      <div class="floating floating-a">✦ <b>PRO</b> تجربة أكثر ذكاءً</div>
+      <div class="demo">
+        <div class="demo-head"><div class="demo-title"><span class="spark">✦</span> MADAR <span class="demo-badge">PRO</span></div><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div></div>
+        <div class="demo-switch" role="group" aria-label="اختر نوع المهمة في العرض">
+          <button data-demo="coding" aria-pressed="true" type="button">💻 برمجة</button>
+          <button data-demo="thinking" aria-pressed="false" type="button">🧠 تحليل</button>
+          <button data-demo="creative" aria-pressed="false" type="button">🎨 إبداع</button>
+        </div>
+        <div class="demo-body">
+          <div class="bubble-user" id="demoQuestion">عايز أعمل متجر إلكتروني احترافي، أبدأ منين؟</div>
+          <div class="response">
+            <div class="response-top"><span class="pulse" aria-hidden="true"></span> مدار PRO · عرض توضيحي</div>
+            <p id="demoAnswer">هقسّم المشروع لخطة واضحة، وبعدها نقدر نحول كل مرحلة لكود قابل للتطوير.</p>
+            <div class="steps" id="demoSteps"><div class="step"><b>01</b> تصميم صفحات وتجربة شراء مناسبة</div><div class="step"><b>02</b> إضافة المنتجات والحسابات وقاعدة البيانات</div><div class="step"><b>03</b> اختبار الأمان والأداء قبل الإطلاق</div></div>
+          </div>
+          <div class="demo-input"><span>اسأل مدار PRO عن مشروعك…</span><span class="send-dot">↖</span></div>
+        </div>
+      </div>
+      <div class="floating floating-b">⚡ تجربة أسرع <b>مُخطّط لها</b></div>
+      <div class="demo-label">ⓘ المثال ده توضيح للشكل المتوقع، مش رد حي من نموذج ذكاء اصطناعي.</div>
+    </div>
+  </section>
+</div>
+<div class="divider" aria-hidden="true"></div>
+<section id="features" class="features">
+  <div class="wrap">
+    <div class="section-top"><span class="kicker">✦ قدرات جديدة</span><h2>مش مجرد علامة PRO.<br>فرق حقيقي في طريقة الشغل.</h2><p>دي المميزات اللي بنخطط لها. هنربط كل واحدة بخدمة حقيقية ونختبرها قبل إطلاق الاشتراك.</p></div>
+    <div class="filter" role="group" aria-label="تصفية مميزات برو"><button type="button" data-filter="all" aria-pressed="true">كل المميزات</button><button type="button" data-filter="intelligence" aria-pressed="false">الذكاء</button><button type="button" data-filter="coding" aria-pressed="false">البرمجة</button><button type="button" data-filter="creative" aria-pressed="false">الإبداع</button></div>
+    <div class="cards">
+      <article class="feature-card" data-category="intelligence"><div class="feature-icon">🧠</div><h3>ذكاء أعمق</h3><p>استخدام نماذج أقوى للمهام اللي محتاجة تحليل متعدد الخطوات، مع اختيار النموذج المناسب لكل مهمة.</p><div class="feature-footer">✧ قيد التخطيط</div></article>
+      <article class="feature-card" data-category="coding"><div class="feature-icon">💻</div><h3>مساعد برمجي متقدم</h3><p>التعامل مع مشروع من ملفات متعددة، ومراجعة التعديلات واكتشاف الأخطاء بدل الاكتفاء بكود منفصل.</p><div class="feature-footer">✧ قيد التخطيط</div></article>
+      <article class="feature-card" data-category="creative"><div class="feature-icon">🎨</div><h3>استوديو إبداع أوسع</h3><p>مهام تصميم وصور ومشاريع إبداعية بخيارات أعلى حسب الخدمات المتاحة فعلًا عند الإطلاق.</p><div class="feature-footer">✧ قيد التخطيط</div></article>
+      <article class="feature-card" data-category="intelligence"><div class="feature-icon">📷</div><h3>فهم بصري أفضل</h3><p>تحليل صور ولقطات شاشة وواجبات بشكل أكثر تفصيلًا مع الاستفادة من نماذج متعددة الوسائط أقوى.</p><div class="feature-footer">✧ قيد التخطيط</div></article>
+      <article class="feature-card" data-category="coding"><div class="feature-icon">🗂️</div><h3>سياق مشاريع أطول</h3><p>متابعة شغل أكبر في نفس الجلسة وتنظيم ملفات المشروع والخطوات السابقة بشكل أوضح.</p><div class="feature-footer">✧ قيد التخطيط</div></article>
+      <article class="feature-card" data-category="creative"><div class="feature-icon">⚡</div><h3>حدود استخدام أعلى</h3><p>مساحة أكبر للطلبات وإنشاء المحتوى، على أن تتحدد الحدود بشفافية حسب تكلفة الخدمة.</p><div class="feature-footer">✧ قيد التخطيط</div></article>
+    </div>
+  </div>
+</section>
+<section id="compare" class="compare-section">
+  <div class="wrap">
+    <div class="compare-heading"><span class="kicker">✦ الخطة المناسبة ليك</span><h2>ابدأ مجانًا. واطلع لمستوى أقوى لما تحتاج.</h2><p>النسخة المجانية هتفضل أساسية في مدار. PRO اختيار إضافي للناس اللي محتاجة قدرات أعلى.</p></div>
+    <div class="plans">
+      <article class="plan"><div class="plan-head"><h3>MADAR Free</h3><span>الخطة الحالية</span></div><div class="price">مجاني <small>دائمًا وفق سياسة الاستخدام</small></div><p class="plan-desc">مساعد يومي للدردشة والتعلم والتجارب الإبداعية.</p><ul><li><span class="check">✓</span> شات ذكاء اصطناعي</li><li><span class="check">✓</span> أدوات تعليم وبرمجة أساسية</li><li><span class="check">✓</span> رفع صور وتحليلها</li><li><span class="check">✓</span> حدود استخدام عادية</li></ul><a href="https://madar-ai-yousef.vercel.app/" class="btn btn-secondary" rel="noopener noreferrer" target="_blank">افتح مدار المجاني ↗</a></article>
+      <article class="plan pro"><div class="plan-head"><h3>✦ MADAR PRO</h3><span class="demo-badge">قريبًا</span></div><div class="price">السعر لاحقًا <small>لم يتحدد بعد</small></div><p class="plan-desc">للشغل الأعمق والمشاريع الكبيرة، بعد تطوير الخدمات واختبارها.</p><ul><li><span class="check">✦</span> نماذج ذكاء أقوى للمهام الصعبة</li><li><span class="check">✦</span> أدوات برمجة ومشاريع متقدمة</li><li><span class="check">✦</span> إمكانات صور وإبداع إضافية</li><li><span class="check">✦</span> حدود وأولوية أعلى حسب الخطة</li></ul><button id="notifyBtn" type="button" class="btn btn-primary">PRO تحت التطوير — اعرف التفاصيل</button></article>
+    </div>
+    <p class="compare-note">مهم: المقارنة دي تصور للمنتج المستقبلي. أسعار الاشتراك، النماذج، الحدود والمميزات النهائية لسه مش مُعتمدة. مفيش دفع أو إنشاء اشتراك من الصفحة دي.</p>
+  </div>
+</section>
+<section class="vision">
+  <div class="wrap"><div class="vision-panel"><div><span class="kicker">✦ خطة البناء</span><h2>هنبني الجودة الأول.<br>والاشتراك بعدين.</h2><p>مش هنقدّم النسخة المدفوعة على إنها أذكى لمجرد الاسم؛ لازم يبقى فيه تحسن واضح في النتائج والسرعة وحدود الاستخدام، ويتقاس باختبارات فعلية.</p><a href="#faq" class="btn btn-secondary">شوف طريقة الإطلاق</a></div><div class="vision-points"><div><span>01</span> تصميم التجربة وتحديد قدرات PRO</div><div><span>02</span> اختيار نماذج وخدمات أقوى وتجربتها</div><div><span>03</span> فصل صلاحيات المجاني والمدفوع بأمان</div><div><span>04</span> اختبار الأداء والتكلفة ثم الاشتراكات</div></div></div></div>
+</section>
+<section class="faq" id="faq"><div class="wrap"><div class="section-top"><span class="kicker">✦ أسئلة سريعة</span><h2>كل حاجة واضحة من البداية.</h2><p>التصميم ده قابل للتعديل قبل ما يتحوّل لميزة حقيقية.</p></div><div class="faq-list">
+  <details><summary>هل مدار PRO متاحة دلوقتي؟</summary><p>لأ. دي واجهة تصميم تجريبية، مش خدمة اشتراك أو دفع فعّالة.</p></details>
+  <details><summary>هل مدار المجاني هيتوقف؟</summary><p>الخطة الحالية هي الحفاظ على نسخة مجانية قوية، وتكون PRO اختيار إضافي بمميزات أعلى.</p></details>
+  <details><summary>إيه اللي هيخلي PRO أذكى فعلًا؟</summary><p>هنحتاج ربطها بنماذج وخدمات أقوى، وقياس جودة الإجابات، وتوفير مساحة سياق وحدود استخدام أكبر. التصميم لوحده مش كفاية.</p></details>
+  <details><summary>بكام الاشتراك وإمتى يتفتح؟</summary><p>لسه ما حددناش سعر أو موعد. هيتقرروا بعد ما نحسب تكلفة التشغيل ونتأكد من جودة النسخة.</p></details>
+</div></div></section>
+</main>
+<footer><div class="wrap footer-inner"><div>© MADAR AI · <span class="gold">PRO Concept</span> · تصميم داخلي للمراجعة</div><div class="copyright">غير منشور · مفيش مدفوعات أو بيانات بنجمعها هنا</div><a href="#top">↑ ارجع لفوق</a></div></footer>
+<div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+<script>
+(function(){
+  "use strict";
+  var examples={
+    coding:{q:"عايز أعمل متجر إلكتروني احترافي، أبدأ منين؟",a:"هقسّم المشروع لخطة واضحة، وبعدها نقدر نحول كل مرحلة لكود قابل للتطوير.",steps:["تصميم صفحات وتجربة شراء مناسبة","إضافة المنتجات والحسابات وقاعدة البيانات","اختبار الأمان والأداء قبل الإطلاق"]},
+    thinking:{q:"محتاج أقارن بين 3 طرق لتوسيع مشروعي، أنهي أنسب؟",a:"هنحدّد المعايير والافتراضات الأول، وبعدين نعمل مقارنة منظّمة توضّح المزايا والمخاطر.",steps:["تحديد الهدف والميزانية والقيود","مقارنة الخيارات على نفس المعايير","توصية مشروطة بالبيانات المتاحة"]},
+    creative:{q:"اعمل لي خطة هوية بصرية لبراند جديد.",a:"هنبدأ بشخصية البراند والجمهور، وبعدها نبني نظام ألوان ومحتوى قابل للتطبيق.",steps:["تحديد اتجاه الهوية ونبرة التواصل","اقتراح ألوان وتكوينات مناسبة","تحضير تطبيقات للمنشورات والواجهة"]}
+  };
+  var question=document.getElementById("demoQuestion"),answer=document.getElementById("demoAnswer"),steps=document.getElementById("demoSteps");
+  document.querySelectorAll("[data-demo]").forEach(function(button){
+    button.addEventListener("click",function(){
+      var d=examples[button.dataset.demo];if(!d)return;
+      document.querySelectorAll("[data-demo]").forEach(function(b){b.setAttribute("aria-pressed",String(b===button));});
+      question.textContent=d.q;answer.textContent=d.a;steps.replaceChildren();
+      d.steps.forEach(function(line,i){var row=document.createElement("div");row.className="step";var number=document.createElement("b");number.textContent=String(i+1).padStart(2,"0");row.append(number,document.createTextNode(" "+line));steps.append(row);});
+    });
+  });
+  document.querySelectorAll("[data-filter]").forEach(function(button){
+    button.addEventListener("click",function(){
+      var filter=button.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach(function(b){b.setAttribute("aria-pressed",String(b===button));});
+      document.querySelectorAll(".feature-card").forEach(function(card){card.hidden=filter!=="all"&&card.dataset.category!==filter;});
+    });
+  });
+  var toast=document.getElementById("toast");
+  document.getElementById("notifyBtn").addEventListener("click",function(){
+    toast.textContent="دي نسخة تجريبية للتصميم فقط. مفيش اشتراكات أو قائمة انتظار مفعلة دلوقتي — هنضيفها لما الخدمة تبقى جاهزة.";
+    toast.hidden=false;
+  });
+  toast.addEventListener("click",function(){toast.hidden=true;});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")toast.hidden=true;});
+})();
+</script>
+</body>
+</html>
