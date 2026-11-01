@@ -64,6 +64,19 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .feature-dialog a[hidden]{display:none}
 @media(max-width:550px){.tools-row{gap:5px}.tool{padding:7px 8px;font-size:10px}.account-btn{padding:8px}.compose-wrap{padding-top:5px}}
 
+/* Camera capture stays on-device until the user sends their photo. */
+.camera-dialog{width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;border:1px solid var(--line-strong);border-radius:20px;padding:18px;background:var(--panel);color:var(--fg);box-shadow:0 25px 80px rgba(0,0,0,.48)}
+.camera-dialog::backdrop{background:rgba(0,0,0,.72)}
+.camera-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.camera-head h2{font-size:18px;margin:0}.camera-note{font-size:12px;color:var(--text);line-height:1.8;margin:10px 0}
+.camera-preview{display:block;width:100%;max-height:min(55dvh,470px);aspect-ratio:4/3;object-fit:contain;background:#0b0b10;border-radius:13px;transform:none}
+.camera-status{font-size:12px;color:var(--text);min-height:21px;margin:12px 0}
+.camera-actions{display:flex;flex-wrap:wrap;gap:8px}
+.camera-actions button,.camera-close{border:1px solid var(--line-strong);border-radius:10px;background:var(--control);color:var(--fg);padding:10px 13px;font-size:12px;font-weight:700}
+.camera-actions .camera-capture{background:var(--purple);border-color:var(--purple);color:#fff}
+.camera-actions button:disabled{opacity:.5}
+@media(max-width:550px){.camera-dialog{padding:12px}.camera-actions button{flex:1 1 42%}}
+
 /* Secure MADAR accounts — uses the original dark/light theme colors. */
 .auth-dialog{background:var(--panel);border:1px solid var(--line-strong);border-radius:19px;color:var(--fg);width:min(440px,calc(100% - 28px));padding:25px;box-shadow:0 25px 70px rgba(0,0,0,.45)}
 .auth-dialog::backdrop{background:rgba(0,0,0,.62)}
@@ -396,6 +409,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           </div>
           <div class="tools-row" role="toolbar" aria-label="AI tools">
             <button id="photoBtn" type="button" class="tool" title="Upload a photo to ask questions about it">＋ Photo</button>
+             <button id="cameraBtn" type="button" class="tool" title="افتح الكاميرا وصوّر سؤال أو واجب">📷 كاميرا</button>
             <button id="wikiToggle" type="button" class="tool" aria-pressed="false" title="Look up Wikipedia sources and ask MADAR to use them">⌕ Wikipedia research</button>
             <button id="googleSearchBtn" type="button" class="tool" title="Open full web search in Google">↗ Web search</button>
             <button id="imageMakerBtn" type="button" class="tool" title="Create AI images">✦ Create image</button>
@@ -403,6 +417,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
             <button id="madarGameBtn" type="button" class="tool madar-game-trigger" title="Play MADAR Shadow Unit, a free 3D action game">🎮 Play 3D</button>
           </div>
           <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Select a photo">
+           <input id="cameraFallbackInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden aria-label="Take a photo using your phone camera">
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
           <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
           <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني إسباني، اعمل صورة، أو لعبة..." aria-label="Write your message"></textarea>
@@ -691,6 +706,18 @@ window.addEventListener('pagehide',cleanup);render();
     <p id="dialogMessage"></p>
     <div class="dialog-actions"><a id="dialogLink" href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" hidden>Open AI Studio ↗</a><button id="dialogClose">Close</button></div>
   </dialog>
+  <dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle" lang="ar" dir="rtl">
+    <div class="camera-head"><h2 id="cameraTitle">📷 كاميرا مدار</h2><button id="cameraClose" class="camera-close" type="button" aria-label="إغلاق الكاميرا">✕</button></div>
+    <video id="cameraPreview" class="camera-preview" autoplay muted playsinline aria-label="معاينة الكاميرا"></video>
+    <p id="cameraStatus" class="camera-status" role="status" aria-live="polite">بنجهّز الكاميرا…</p>
+    <div class="camera-actions">
+      <button id="cameraCapture" class="camera-capture" type="button" disabled>📸 التقاط صورة</button>
+      <button id="cameraFlip" type="button" disabled>🔄 تبديل الكاميرا</button>
+      <button id="cameraNative" type="button">📱 كاميرا الهاتف</button>
+      <button id="cameraCancel" type="button">إلغاء</button>
+    </div>
+    <p class="camera-note">الكاميرا بتشتغل بعد إذنك فقط. الصورة هتظهر في الشات للمراجعة، ومش هتتبعت لمدار إلا لما تضغط إرسال.</p>
+  </dialog>
   <dialog id="authDialog" class="auth-dialog" aria-labelledby="authTitle">
     <div class="auth-heading">
       <h2 id="authTitle">MADAR account</h2>
@@ -739,7 +766,7 @@ const el = {
   welcome: $('welcome'), messages: $('messages'), history: $('history'), status: $('status'),
   statusText: $('statusText'), chatCount: $('chatCount'), prompt: $('prompt'), send: $('send'),
   inlineError: $('inlineError'), sidebar: $('sidebar'), overlay: $('overlay'),
-  photoBtn:$('photoBtn'),photoInput:$('photoInput'),photoChip:$('photoChip'),photoThumb:$('photoThumb'),wikiToggle:$('wikiToggle'),
+  photoBtn:$('photoBtn'),cameraBtn:$('cameraBtn'),photoInput:$('photoInput'),photoChip:$('photoChip'),photoThumb:$('photoThumb'),wikiToggle:$('wikiToggle'),
   themeIcon: $('themeIcon'), chatContainer: $('chatContainer'), stop: $('madarStop'), search: $('madarHistorySearch'), editBar: $('madarEditBar'),
 };
 let chats = loadChats();
@@ -1145,6 +1172,86 @@ async function attachPhoto(file){
   el.photoInput.value='';
  }
 }
+// Camera access is requested only after a click; closing always stops every track.
+const cameraDialog=$('cameraDialog'),cameraPreview=$('cameraPreview'),cameraStatus=$('cameraStatus');
+let cameraStream=null,cameraFacing='environment',cameraRequest=0;
+function stopCamera(){
+  cameraRequest++;
+  if(cameraStream){cameraStream.getTracks().forEach(track=>track.stop());cameraStream=null;}
+  cameraPreview.pause();
+  cameraPreview.srcObject=null;
+  $('cameraCapture').disabled=true;
+  $('cameraFlip').disabled=true;
+}
+function closeCamera(){
+  stopCamera();
+  if(cameraDialog.open)cameraDialog.close();
+}
+async function startCamera(){
+  stopCamera();
+  const request=cameraRequest;
+  cameraStatus.textContent='بنجهّز الكاميرا…';
+  if(!navigator.mediaDevices?.getUserMedia){
+    cameraStatus.textContent='المتصفح مش بيدعم معاينة الكاميرا. جرّب زر كاميرا الهاتف.';
+    return;
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      audio:false,video:{facingMode:{ideal:cameraFacing},width:{ideal:1920},height:{ideal:1080}}
+    });
+    if(request!==cameraRequest||!cameraDialog.open){
+      stream.getTracks().forEach(track=>track.stop());
+      return;
+    }
+    cameraStream=stream;
+    cameraPreview.srcObject=stream;
+    try{await cameraPreview.play();}catch{}
+    if(request!==cameraRequest||!cameraDialog.open)return;
+    $('cameraCapture').disabled=false;
+    $('cameraFlip').disabled=false;
+    cameraStatus.textContent='وجّه الكاميرا للحاجة اللي عايز مدار يشوفها واضغط التقاط صورة.';
+  }catch(error){
+    if(request!==cameraRequest||!cameraDialog.open)return;
+    cameraStatus.textContent=error?.name==='NotAllowedError'
+      ?'لازم تسمح باستخدام الكاميرا من المتصفح، أو تستخدم كاميرا الهاتف.'
+      :'الكاميرا مش متاحة دلوقتي. جرّب كاميرا الهاتف أو رفع صورة.';
+  }
+}
+function openCamera(){
+  if(isWaiting)return showError('استنى لما مدار يخلص الرد الأول.');
+  if(!cameraDialog.open)cameraDialog.showModal();
+  cameraFacing='environment';
+  startCamera();
+}
+function captureCameraPhoto(){
+  if(!cameraStream||cameraPreview.readyState<2)return;
+  const canvas=document.createElement('canvas');
+  canvas.width=cameraPreview.videoWidth;
+  canvas.height=cameraPreview.videoHeight;
+  const ctx=canvas.getContext('2d');
+  if(!ctx||!canvas.width||!canvas.height){
+    cameraStatus.textContent='تعذر التقاط الصورة. جرّب مرة تانية.';
+    return;
+  }
+  ctx.drawImage(cameraPreview,0,0,canvas.width,canvas.height);
+  $('cameraCapture').disabled=true;
+  canvas.toBlob(blob=>{
+    if(!blob){$('cameraCapture').disabled=false;cameraStatus.textContent='تعذر حفظ الصورة. جرّب تاني.';return;}
+    const photo=new File([blob],`madar-camera-${Date.now()}.jpg`,{type:'image/jpeg'});
+    closeCamera();
+    attachPhoto(photo);
+  },'image/jpeg',0.9);
+}
+el.cameraBtn.addEventListener('click',openCamera);
+$('cameraCapture').addEventListener('click',captureCameraPhoto);
+$('cameraFlip').addEventListener('click',()=>{cameraFacing=cameraFacing==='environment'?'user':'environment';startCamera();});
+$('cameraClose').addEventListener('click',closeCamera);
+$('cameraCancel').addEventListener('click',closeCamera);
+$('cameraNative').addEventListener('click',()=>{closeCamera();$('cameraFallbackInput').click();});
+$('cameraFallbackInput').addEventListener('change',event=>attachPhoto(event.target.files?.[0]));
+cameraDialog.addEventListener('close',stopCamera);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&cameraDialog.open)closeCamera();});
+
 function showFeature(title,message,link){
  $('dialogTitle').textContent=title;$('dialogMessage').textContent=message;
  $('dialogLink').hidden=!link;
@@ -1303,7 +1410,7 @@ window.MADAR_APP={
         <button type="button" data-buddy-action="studio">✨ مدار ستوديو</button>
         <button type="button" data-buddy-action="study">📚 اشرحلي درس</button>
       </div>
-      <div class="madar-buddy-foot">مساعد داخل الموقع · مفيش كاميرا أو تتبُّع خارجي</div>
+      <div class="madar-buddy-foot">مساعد داخل الموقع · الروبوت مش بيستخدم الكاميرا، وكاميرا الصور بتشتغل بعد إذنك</div>
     </section>
   </div>
 
