@@ -276,6 +276,12 @@ module.exports = async function chat(req,res) {
     catch { return send(res,400,{error:'Invalid JSON request.'}); }
   }
   const mode=data?.mode===undefined?'chat':data.mode;
+  const language=data?.language===undefined?'ar-mixed':data.language;
+  if(!['ar-mixed','en'].includes(language))
+    return send(res,400,{error:'Invalid response language.'});
+  const languageGuide=mode==='pro'?(language==='en'
+    ?'PRO LANGUAGE: Respond in fluent English. Keep UI and response concepts clear, with concise headings and steps when useful. Do not insert Arabic unless the user directly requests it.'
+    :'PRO LANGUAGE: Use natural Egyptian Arabic as the MAIN language, while keeping important English technical names, product terms and labels in English when natural (e.g. AI, Design, Code, Tools, Studio, Prompt, Download, API). Do NOT translate absolutely every term into Arabic and do NOT switch whole paragraphs to English unnecessarily. It should feel balanced, Arabic-first with useful English words. Provide clear practical steps and well-organized explanations. Never insert ornamental star symbols in any answer.'):'';
   if(typeof mode!=='string'||!Object.prototype.hasOwnProperty.call(MODE_INSTRUCTIONS,mode))
     return send(res,400,{error:'Please select a valid MADAR mode.'});
   const messages=data?.messages;
@@ -360,7 +366,7 @@ module.exports = async function chat(req,res) {
           method:'POST',signal:controller.signal,
           headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
           body:JSON.stringify({
-            systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')+(image?'\n\n'+VISION_RULES:'')}]},
+            systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')+(languageGuide?'\n\n'+languageGuide:'')+(image?'\n\n'+VISION_RULES:'')}]},
             contents,
             generationConfig:{
               maxOutputTokens:mode==='pro'?4096:3072,
