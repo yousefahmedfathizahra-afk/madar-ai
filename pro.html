@@ -133,14 +133,61 @@ function closeSidebar(){els.sidebar.classList.remove('open');els.overlay.hidden=
 function openSidebar(){els.sidebar.classList.add('open');els.overlay.hidden=false}
 function ensureChat(first){let chat=chats.find(c=>c.id===current);if(!chat){chat={id:String(Date.now())+Math.random(),title:first.slice(0,30),messages:[]};chats.unshift(chat);current=chat.id;}return chat}
 function drawHistory(){els.count.textContent=chats.length;els.history.replaceChildren();const q=$('search').value.trim().toLowerCase();const matches=chats.filter(c=>c.title.toLowerCase().includes(q));if(!matches.length){const empty=document.createElement('div');empty.className='empty-history';empty.textContent=chats.length?'مفيش نتائج مطابقة':'محادثاتك هتظهر هنا';els.history.append(empty);return;}matches.forEach(chat=>{let b=document.createElement('button');b.type='button';b.className='chat-tab'+(chat.id===current?' active':'');const icon=document.createElement('span');icon.textContent='☷';const title=document.createElement('span');title.className='tab-title';title.textContent=chat.title;b.append(icon,title);b.addEventListener('click',()=>{current=chat.id;render();saveChats();closeSidebar()});els.history.append(b)})}
+function addInline(parent,text){
+ const pieces=String(text).split(/(\*\*[^*]+\*\*|\x60[^\x60]+\x60)/g);
+ pieces.forEach(part=>{
+  if(!part)return;
+  if(part.startsWith('**')&&part.endsWith('**')){const b=document.createElement('strong');b.textContent=part.slice(2,-2);parent.append(b)}
+  else if(part.charCodeAt(0)===96&&part.charCodeAt(part.length-1)===96){const code=document.createElement('code');code.textContent=part.slice(1,-1);parent.append(code)}
+  else parent.append(document.createTextNode(part));
+ });
+}
+function renderMarkdown(parent,raw){
+ const text=String(raw||''),fence=String.fromCharCode(96).repeat(3),chunks=text.split(fence);
+ chunks.forEach((chunk,index)=>{
+  if(index%2===1){
+   const newline=chunk.indexOf('\n'),language=newline>0&&newline<25&&/^[a-z\d+#._-]+$/i.test(chunk.slice(0,newline).trim())?chunk.slice(0,newline).trim():'';
+   const content=language?chunk.slice(newline+1):chunk;
+   const pre=document.createElement('pre'),copy=document.createElement('button'),code=document.createElement('code');
+   copy.type='button';copy.className='code-copy';copy.textContent='نسخ الكود';copy.addEventListener('click',()=>copyText(content));
+   code.textContent=content.trimEnd();if(language)code.dataset.language=language;
+   pre.append(copy,code);parent.append(pre);
+  }else{
+   chunk.split(/\n/).forEach(line=>{
+    const p=document.createElement('div');
+    if(/^\s*#{1,3}\s+/.test(line)){
+     const head=document.createElement('strong');addInline(head,line.replace(/^\s*#{1,3}\s+/,''));p.append(head);
+    }else if(/^\s*[-*]\s+/.test(line)){p.append(document.createTextNode('• '));addInline(p,line.replace(/^\s*[-*]\s+/,''))}
+    else addInline(p,line);
+    parent.append(p);
+   });
+  }
+ });
+}
+async function copyText(value){
+ try{
+  if(!navigator.clipboard?.writeText)throw Error('clipboard');
+  await navigator.clipboard.writeText(String(value));notify('اتنسخ بنجاح');
+ }catch(e){notify('النسخ غير متاح في المتصفح ده. حدّد النص وانسخه يدويًا.')}
+}
 function drawMessage(msg){
  const root=document.createElement('article');root.className='message '+msg.role;
- const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=msg.role==='user'?'👤':'';
+ const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=msg.role==='user'?'👤':'👑';
  const main=document.createElement('div');main.className='message-main';
  const heading=document.createElement('div');heading.className='message-head';heading.textContent=msg.role==='user'?'أنت':'مدار PRO';
  main.append(heading);
  if(msg.photo){const img=document.createElement('img');img.className='message-img';img.src=msg.photo;img.alt='صورة مرفقة';main.append(img)}
- const block=document.createElement('div');block.className='message-text';block.textContent=msg.text || (msg.pending?'مدار بيفكر...':'');if(msg.pending)block.classList.add('chat-busy');main.append(block);
+ const block=document.createElement('div');block.className='message-text';
+ if(msg.pending){block.textContent='مدار بيفكر...';block.classList.add('chat-busy')}
+ else if(msg.role==='assistant')renderMarkdown(block,msg.text);
+ else block.textContent=msg.text;
+ main.append(block);
+ if(msg.role==='assistant'&&!msg.pending&&msg.text){
+  const actions=document.createElement('div');actions.className='message-actions';
+  const copy=document.createElement('button');copy.type='button';copy.textContent='نسخ الرد';copy.addEventListener('click',()=>copyText(msg.text));actions.append(copy);
+  const speak=document.createElement('button');speak.type='button';speak.textContent='اقرأ الرد';speak.addEventListener('click',()=>speakText(msg.text));actions.append(speak);
+  main.append(actions);
+ }
  root.append(avatar,main);return root;
 }
 function render(){
