@@ -24,8 +24,6 @@ function preferredModels(question,mode){
  const challenging=['code','study','write'].includes(mode)
   ||text.length>=230
   ||/(?:برمج|كود|برنامج|شفرة|خطأ برمج|رياضيات|احسب|حل المعادل|خطة تفصيلي|حلل|قارن بالتفصيل|اشرح خطوة|بحث معمق|algorithm|debug|javascript|python|typescript|react|equation|proof|analy[sz]e|step by step|detailed plan)/i.test(text);
- // PRO is an open beta until billing/verified entitlements are launched.
- if(mode==='pro')return ['gemini-2.5-flash','gemini-3.6-flash','gemini-3.1-flash-lite','gemini-2.5-flash-lite','gemini-3.5-flash-lite'];
  return challenging?['gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite','gemini-3.6-flash']:MODELS;
 }
 
@@ -46,7 +44,6 @@ const SITE_CAPABILITIES = [
 // Modes change response behavior only; users still share the same safe Gemini backend.
 const MODE_INSTRUCTIONS = Object.freeze({
  chat: '',
- pro: 'MADAR PRO BETA: You are the enhanced reasoning and project assistant. Work carefully through multi-step tasks internally, deliver actionable and accurate answers, and check mathematical or programming details. When a request involves building a project, propose a practical structure and helpful working code if asked. Never claim tools or integrations that are not actually available. Explain uncertainty concisely; do not fabricate sources or results. The PRO beta is temporarily free and is not a billed subscription.',
  study: 'MADAR STUDY MODE: Be a patient, encouraging tutor. Explain concepts clearly with steps and examples, especially in Arabic when asked in Arabic. Help students learn rather than blindly copying homework. If the user asks for a quiz, create a five-question interactive quiz: ask ONE question at a time, wait for their answer, give short feedback and then the next question. When all five are done, summarize their score and what to review. If a photo shows homework, explain what you can actually see rather than inventing missing text. For language teaching, adapt to the explicitly selected target language and learner level, use short accurate dialogues with translations, vocabulary, pronunciation guidance where confident, correct learner mistakes, and give step-by-step interactive lessons. Ask one question at a time and wait for an answer. Teach languages beyond English and be honest about audio limitations.',
  code: 'MADAR CODING MODE: Be a precise software engineer. Give correct, runnable examples when helpful, state the language, explain key steps briefly, and point out security or setup requirements. Never claim untested code was executed.',
  translate: 'MADAR TRANSLATION MODE: Translate the supplied text faithfully in the direction the user requests. Translate between any two explicitly requested languages within your competence. Detect source language when clear and honor the specified target even when neither language is Arabic or English. If no target is specified, translate Arabic to English and English to Arabic; for other languages ask briefly for the target. Keep meaning, names and tone.',
@@ -350,7 +347,7 @@ module.exports = async function chat(req,res) {
   let sawBusy=false,sawEmpty=false,sawBadRequest=false,sawQuota=false;
   let emptyReason='';
   try {
-    for (const model of (mode==='pro' ? (image ? ['gemini-2.5-flash',...VISION_MODELS] : preferredModels(messages[messages.length-1].content,mode)) : (image ? VISION_MODELS : preferredModels(messages[messages.length-1].content,mode)))) {
+    for (const model of (image ? VISION_MODELS : preferredModels(messages[messages.length-1].content,mode))) {
       for (let attempt=0;attempt<2;attempt++) {
       const endpoint='https://generativelanguage.googleapis.com/v1beta/models/'
         +model+':generateContent';
@@ -363,12 +360,11 @@ module.exports = async function chat(req,res) {
             systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')+(image?'\n\n'+VISION_RULES:'')}]},
             contents,
             generationConfig:{
-              maxOutputTokens:mode==='pro'?4096:3072,
+              maxOutputTokens:3072,
               // Gemini 2.5 Flash/Lite supports disabled thinking, so all output
               // tokens are available for a visible answer. Gemini 3 uses levels.
-              thinkingConfig:mode==='pro'
-                ?(model.startsWith('gemini-2.5-')?{thinkingBudget:512}:{thinkingLevel:'low'})
-                :(model.startsWith('gemini-2.5-')?{thinkingBudget:0}:{thinkingLevel:'low'})
+              thinkingConfig:model.startsWith('gemini-2.5-')
+                ?{thinkingBudget:0}:{thinkingLevel:'low'}
             }
           })
         });
