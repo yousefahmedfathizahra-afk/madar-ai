@@ -106,7 +106,24 @@ pre .code-copy{display:block;margin-bottom:9px;direction:rtl}
 'use strict';
 const $=id=>document.getElementById(id);
 const els={sidebar:$('sidebar'),overlay:$('overlay'),history:$('history'),messages:$('messages'),welcome:$('welcome'),chatContainer:$('chatContainer'),prompt:$('prompt'),send:$('send'),count:$('chatCount'),notice:$('notice'),photoChip:$('photoChip'),photoThumb:$('photoThumb'),photoInput:$('photoInput'),cameraInput:$('cameraInput')};
-let chats=[],current=null,pendingPhoto=null,toastTimer=null,isWaiting=false,activeController=null;
+let chats=[],current=null,pendingPhoto=null,toastTimer=null,isWaiting=false,activeController=null,stopRequested=false,autoSpeak=false;
+const SAVE_KEY='madar-pro-chats-v1';
+function saveChats(){
+ try{
+  const safe=chats.slice(0,12).map(c=>({id:String(c.id).slice(0,60),title:String(c.title).slice(0,60),messages:c.messages.slice(-30).filter(m=>!m.pending).map(m=>({role:m.role,text:String(m.text||'').slice(0,5000)}))}));
+  localStorage.setItem(SAVE_KEY,JSON.stringify({current,chats:safe}));
+ }catch(e){/* Storage may be disabled; chat remains available until the tab closes. */}
+}
+function restoreChats(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(!saved||!Array.isArray(saved.chats))return;
+  chats=saved.chats.slice(0,12).filter(c=>c&&Array.isArray(c.messages)).map(c=>({
+   id:String(c.id||'').slice(0,60),title:String(c.title||'محادثة').slice(0,60),
+   messages:c.messages.slice(-30).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.text==='string').map(m=>({role:m.role,text:m.text.slice(0,5000)}))
+  }));
+  current=chats.some(c=>c.id===saved.current)?saved.current:null;
+ }catch(e){chats=[];current=null}
+}
 function notify(msg){els.notice.textContent=msg;els.notice.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>els.notice.hidden=true,4200)}
 function refreshSend(){els.send.disabled=isWaiting||(!els.prompt.value.trim()&&!pendingPhoto)}
 function resize(){els.prompt.style.height='auto';els.prompt.style.height=Math.min(135,els.prompt.scrollHeight)+'px';refreshSend()}
@@ -115,7 +132,7 @@ function attachPhoto(file){if(!file)return;if(!file.type.startsWith('image/'))re
 function closeSidebar(){els.sidebar.classList.remove('open');els.overlay.hidden=true}
 function openSidebar(){els.sidebar.classList.add('open');els.overlay.hidden=false}
 function ensureChat(first){let chat=chats.find(c=>c.id===current);if(!chat){chat={id:String(Date.now())+Math.random(),title:first.slice(0,30),messages:[]};chats.unshift(chat);current=chat.id;}return chat}
-function drawHistory(){els.count.textContent=chats.length;els.history.replaceChildren();const q=$('search').value.trim().toLowerCase();const matches=chats.filter(c=>c.title.toLowerCase().includes(q));if(!matches.length){const empty=document.createElement('div');empty.className='empty-history';empty.textContent=chats.length?'مفيش نتائج مطابقة':'محادثاتك هتظهر هنا';els.history.append(empty);return;}matches.forEach(chat=>{let b=document.createElement('button');b.type='button';b.className='chat-tab'+(chat.id===current?' active':'');const icon=document.createElement('span');icon.textContent='☷';const title=document.createElement('span');title.className='tab-title';title.textContent=chat.title;b.append(icon,title);b.addEventListener('click',()=>{current=chat.id;render();closeSidebar()});els.history.append(b)})}
+function drawHistory(){els.count.textContent=chats.length;els.history.replaceChildren();const q=$('search').value.trim().toLowerCase();const matches=chats.filter(c=>c.title.toLowerCase().includes(q));if(!matches.length){const empty=document.createElement('div');empty.className='empty-history';empty.textContent=chats.length?'مفيش نتائج مطابقة':'محادثاتك هتظهر هنا';els.history.append(empty);return;}matches.forEach(chat=>{let b=document.createElement('button');b.type='button';b.className='chat-tab'+(chat.id===current?' active':'');const icon=document.createElement('span');icon.textContent='☷';const title=document.createElement('span');title.className='tab-title';title.textContent=chat.title;b.append(icon,title);b.addEventListener('click',()=>{current=chat.id;render();saveChats();closeSidebar()});els.history.append(b)})}
 function drawMessage(msg){
  const root=document.createElement('article');root.className='message '+msg.role;
  const avatar=document.createElement('div');avatar.className='message-avatar';avatar.textContent=msg.role==='user'?'👤':'';
@@ -150,12 +167,12 @@ async function send(prefill){
  if(content.length>5000)return notify('الرسالة طويلة جدًا. الحد 5000 حرف.');
  let picture;
  try{picture=imagePayload(photo)}catch(e){return notify(e.message);}
- const chat=ensureChat(content);chat.messages.push({role:'user',text:content,photo});
+ const chat=ensureChat(content);chat.messages.push({role:'user',text:content,photo});saveChats();
  const assistant={role:'assistant',text:'',pending:true};chat.messages.push(assistant);
  els.prompt.value='';clearPhoto();isWaiting=true;resize();render();
  $('chatStatus').textContent='مدار بيرد...';
  const controller=new AbortController();activeController=controller;
- const timeout=setTimeout(()=>controller.abort(),34000);
+ stopRequested=false;$('stopBtn').hidden=false;const timeout=setTimeout(()=>controller.abort(),34000);
  try{
   if(location.protocol==='file:')throw Error('الذكاء الاصطناعي مش هيشتغل من ملف HTML مفتوح من الجهاز. افتح رابط المعاينة على Vercel لتجربته.');
   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -165,15 +182,16 @@ async function send(prefill){
   if(!data||typeof data.reply!=='string'||!data.reply.trim())throw Error('مدار رجّع رد فاضي. جرّب تاني.');
   assistant.text=data.reply; $('chatStatus').textContent='متصل';
  }catch(e){
-  assistant.text=(e?.name==='AbortError'?'الطلب أخد وقت أطول من المتوقع. جرّب تاني.':e?.message||'حصل خطأ في الاتصال بالشات.');
+  assistant.text=(e?.name==='AbortError'?(stopRequested?'تم إيقاف الرد.':'الطلب أخد وقت أطول من المتوقع. جرّب تاني.'):e?.message||'حصل خطأ في الاتصال بالشات.');
   $('chatStatus').textContent='في مشكلة اتصال';
   notify(assistant.text);
  }finally{
-  assistant.pending=false;clearTimeout(timeout);isWaiting=false;activeController=null;refreshSend();
+  assistant.pending=false;clearTimeout(timeout);isWaiting=false;activeController=null;$('stopBtn').hidden=true;refreshSend();
   if(current===chat.id)render();
+  saveChats();
  }
 }
-$('newChat').addEventListener('click',()=>{current=null;els.prompt.value='';clearPhoto();resize();render();closeSidebar();els.prompt.focus()});
+$('newChat').addEventListener('click',()=>{current=null;els.prompt.value='';clearPhoto();resize();render();saveChats();closeSidebar();els.prompt.focus()});
 $('openSidebar').addEventListener('click',openSidebar);els.overlay.addEventListener('click',closeSidebar);
 $('themeToggle').addEventListener('click',()=>{const newTheme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=newTheme;$('themeToggle').textContent=newTheme==='dark'?'☀':'☾'});
 $('search').addEventListener('input',drawHistory);
@@ -184,7 +202,7 @@ $('accountBtn').addEventListener('click',()=>notify('المجاني شغّال �
 $('micBtn').addEventListener('click',()=>notify('المايكروفون هيتوصل في النسخة النهائية. ده تصميم تجريبي.'));
 $('voiceBtn').addEventListener('click',()=>notify('الردود الصوتية هتشتغل بعد توصيل الخدمات.'));
 document.querySelectorAll('[data-demo-tool]').forEach(b=>b.addEventListener('click',()=>notify('أداة «'+b.dataset.demoTool+'» موجودة في التصميم، ولسه مش متصلة بخدمات فعلية.')));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});render();resize();
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});restoreChats();render();resize();
 })();
 </script>
 </body>
