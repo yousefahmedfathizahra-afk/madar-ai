@@ -1235,7 +1235,9 @@ function captureCameraPhoto(){
   }
   ctx.drawImage(cameraPreview,0,0,canvas.width,canvas.height);
   $('cameraCapture').disabled=true;
+  const captureRequest=cameraRequest;
   canvas.toBlob(blob=>{
+    if(captureRequest!==cameraRequest||!cameraDialog.open)return;
     if(!blob){$('cameraCapture').disabled=false;cameraStatus.textContent='تعذر حفظ الصورة. جرّب تاني.';return;}
     const photo=new File([blob],`madar-camera-${Date.now()}.jpg`,{type:'image/jpeg'});
     closeCamera();
@@ -1248,7 +1250,7 @@ $('cameraFlip').addEventListener('click',()=>{cameraFacing=cameraFacing==='envir
 $('cameraClose').addEventListener('click',closeCamera);
 $('cameraCancel').addEventListener('click',closeCamera);
 $('cameraNative').addEventListener('click',()=>{closeCamera();$('cameraFallbackInput').click();});
-$('cameraFallbackInput').addEventListener('change',event=>attachPhoto(event.target.files?.[0]));
+$('cameraFallbackInput').addEventListener('change',event=>{const file=event.target.files?.[0];event.target.value='';attachPhoto(file);});
 cameraDialog.addEventListener('close',stopCamera);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&cameraDialog.open)closeCamera();});
 
