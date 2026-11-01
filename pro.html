@@ -128,7 +128,7 @@ function notify(msg){els.notice.textContent=msg;els.notice.hidden=false;clearTim
 function refreshSend(){els.send.disabled=isWaiting||(!els.prompt.value.trim()&&!pendingPhoto)}
 function resize(){els.prompt.style.height='auto';els.prompt.style.height=Math.min(135,els.prompt.scrollHeight)+'px';refreshSend()}
 function clearPhoto(){pendingPhoto=null;els.photoInput.value='';els.cameraInput.value='';els.photoThumb.removeAttribute('src');els.photoChip.hidden=true;refreshSend()}
-function attachPhoto(file){if(!file)return;if(!file.type.startsWith('image/'))return notify('اختار صورة من الجهاز.');if(file.size>12*1024*1024)return notify('اختار صورة أقل من 12 ميجابايت.');const reader=new FileReader();reader.onload=()=>{pendingPhoto=String(reader.result||'');els.photoThumb.src=pendingPhoto;els.photoChip.hidden=false;refreshSend();};reader.readAsDataURL(file)}
+function attachPhoto(file){if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type))return notify('اختار صورة JPG أو PNG أو WebP.');if(file.size>1350000)return notify('اختار صورة أصغر من 1.3 ميجابايت عشان التحليل يشتغل.');const reader=new FileReader();reader.onerror=()=>notify('مش قادر أفتح الصورة دي.');reader.onload=()=>{pendingPhoto=String(reader.result||'');els.photoThumb.src=pendingPhoto;els.photoChip.hidden=false;refreshSend();};reader.readAsDataURL(file)}
 function closeSidebar(){els.sidebar.classList.remove('open');els.overlay.hidden=true}
 function openSidebar(){els.sidebar.classList.add('open');els.overlay.hidden=false}
 function ensureChat(first){let chat=chats.find(c=>c.id===current);if(!chat){chat={id:String(Date.now())+Math.random(),title:first.slice(0,30),messages:[]};chats.unshift(chat);current=chat.id;}return chat}
@@ -227,7 +227,7 @@ async function send(prefill){
   const data=await response.json().catch(()=>null);
   if(!response.ok)throw Error((data&&typeof data.error==='string'&&data.error)||(response.status===429?'حد الاستخدام اتملأ مؤقتًا. جرّب بعد شوية.':'خدمة مدار مش متاحة دلوقتي ('+response.status+').'));
   if(!data||typeof data.reply!=='string'||!data.reply.trim())throw Error('مدار رجّع رد فاضي. جرّب تاني.');
-  assistant.text=data.reply; $('chatStatus').textContent='متصل';
+  assistant.text=data.reply; $('chatStatus').textContent='متصل';if(autoSpeak)speakText(data.reply);
  }catch(e){
   assistant.text=(e?.name==='AbortError'?(stopRequested?'تم إيقاف الرد.':'الطلب أخد وقت أطول من المتوقع. جرّب تاني.'):e?.message||'حصل خطأ في الاتصال بالشات.');
   $('chatStatus').textContent='في مشكلة اتصال';
@@ -243,12 +243,70 @@ $('openSidebar').addEventListener('click',openSidebar);els.overlay.addEventListe
 $('themeToggle').addEventListener('click',()=>{const newTheme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=newTheme;$('themeToggle').textContent=newTheme==='dark'?'☀':'☾'});
 $('search').addEventListener('input',drawHistory);
 els.prompt.addEventListener('input',resize);els.prompt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});els.send.addEventListener('click',()=>send());
-document.querySelectorAll('.starter').forEach(b=>b.addEventListener('click',()=>{els.prompt.value=b.dataset.prompt;resize();els.prompt.focus();notify('اكتب أو غيّر رسالتك واضغط إرسال لتجربة شكل المحادثة.')}));
+document.querySelectorAll('.starter').forEach(b=>b.addEventListener('click',()=>{els.prompt.value=b.dataset.prompt;resize();els.prompt.focus()}));
 $('photoBtn').addEventListener('click',()=>els.photoInput.click());$('cameraBtn').addEventListener('click',()=>els.cameraInput.click());els.photoInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));els.cameraInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));$('removePhoto').addEventListener('click',clearPhoto);
-$('accountBtn').addEventListener('click',()=>notify('المجاني شغّال كضيف، وPRO والاشتراكات لسه بنجهّزهم.'));
-$('micBtn').addEventListener('click',()=>notify('المايكروفون هيتوصل في النسخة النهائية. ده تصميم تجريبي.'));
-$('voiceBtn').addEventListener('click',()=>notify('الردود الصوتية هتشتغل بعد توصيل الخدمات.'));
-document.querySelectorAll('[data-demo-tool]').forEach(b=>b.addEventListener('click',()=>notify('أداة «'+b.dataset.demoTool+'» موجودة في التصميم، ولسه مش متصلة بخدمات فعلية.')));
+$('accountBtn').addEventListener('click',()=>notify('نسخة PRO تجريبية مجانية الآن، ولسه مفيش حسابات مدفوعة أو اشتراكات.'));
+$('stopBtn').addEventListener('click',()=>{if(activeController){stopRequested=true;activeController.abort();}});
+const prompts={
+ analyze:'حلل الموضوع التالي بعناية، اذكر الافتراضات والخطوات والبدائل ونقاط الضعف:\n\n',
+ code:'ساعدني كمبرمج محترف: راجع المتطلبات، اكتب كودًا عمليًا عند الحاجة واشرح الاختبار والأمان:\n\n',
+ study:'اشرح لي هذا الموضوع خطوة بخطوة بأمثلة وتمرين قصير:\n\n',
+ write:'اكتب النص التالي بصياغة احترافية وواضحة وقابلة للاستخدام:\n\n',
+ translate:'ترجم النص التالي ترجمة دقيقة مع الحفاظ على المعنى والنبرة:\n\n'
+};
+document.querySelectorAll('[data-prompt-tool]').forEach(b=>b.addEventListener('click',()=>{
+ const prefix=prompts[b.dataset.promptTool];if(!prefix)return;
+ els.prompt.value=prefix+els.prompt.value.trim();resize();els.prompt.focus();
+ notify('جهزتلك طريقة السؤال، اكتب التفاصيل واضغط إرسال.');
+}));
+$('webSearchBtn').addEventListener('click',()=>{
+ const query=els.prompt.value.trim();
+ if(!query)return notify('اكتب اللي عايز تبحث عنه في مربع الرسالة الأول.');
+ const url='https://www.google.com/search?q='+encodeURIComponent(query);
+ window.open(url,'_blank','noopener,noreferrer');
+});
+$('exportBtn').addEventListener('click',()=>{
+ const chat=chats.find(c=>c.id===current);
+ if(!chat||!chat.messages.length)return notify('مفيش محادثة لتصديرها.');
+ const lines=['MADAR PRO - '+chat.title,'',...chat.messages.filter(m=>!m.pending).map(m=>(m.role==='user'?'أنت':'مدار PRO')+':\n'+m.text+'\n')];
+ const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='madar-pro-chat.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+ notify('تم تجهيز ملف المحادثة.');
+});
+function speakText(text){
+ if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return notify('المتصفح ده مش بيدعم قراءة الرد بصوت.');
+ const t=String(text||'').slice(0,2400);if(!t)return;
+ try{
+  speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(t);
+  utterance.lang=/[\u0600-\u06ff]/.test(t)?'ar-EG':'en-US';utterance.rate=1;utterance.pitch=1;
+  speechSynthesis.speak(utterance);
+ }catch(e){notify('تعذر تشغيل الصوت على الجهاز.')}
+}
+$('voiceBtn').addEventListener('click',()=>{
+ if(!('speechSynthesis' in window))return notify('المتصفح ده مش بيدعم نطق الردود.');
+ autoSpeak=!autoSpeak;$('voiceBtn').setAttribute('aria-pressed',String(autoSpeak));
+ $('voiceBtn').title=autoSpeak?'إيقاف النطق التلقائي':'تشغيل نطق الردود';
+ if(!autoSpeak){speechSynthesis.cancel();notify('اتوقف النطق التلقائي.');return}
+ const chat=chats.find(c=>c.id===current);
+ const last=chat?.messages.slice().reverse().find(m=>m.role==='assistant'&&!m.pending&&m.text);
+ if(last)speakText(last.text);
+ notify('النطق التلقائي اتفعّل للردود القادمة.');
+});
+$('micBtn').addEventListener('click',()=>{
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Recognition)return notify('المتصفح ده مش بيدعم الميكروفون للإملاء. جرّب Chrome.');
+ try{
+  const recognition=new Recognition();recognition.lang=/^[A-Za-z]/.test(els.prompt.value.trim())?'en-US':'ar-EG';
+  recognition.interimResults=false;recognition.maxAlternatives=1;
+  recognition.onresult=e=>{
+   const t=Array.from(e.results).map(r=>r[0]?.transcript||'').join(' ').trim();
+   if(t){els.prompt.value+=(els.prompt.value.trim()?' ':'')+t;resize();els.prompt.focus();}
+  };
+  recognition.onerror=e=>{if(e.error!=='no-speech')notify('في مشكلة في الميكروفون أو الإذن.');};
+  recognition.start();
+  notify('اتكلم دلوقتي، وهيتحول كلامك لرسالة.');
+ }catch(e){notify('الميكروفون مش متاح دلوقتي.')}
+});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});restoreChats();render();resize();
 })();
 </script>
