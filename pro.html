@@ -213,12 +213,8 @@ html,body{background:var(--bg)}
         <button id="themeToggle" class="pro-menu-action" type="button" aria-label="تبديل المظهر" title="تبديل المظهر">☾ Dark / Light</button>
         <button id="accountBtn" class="pro-menu-action" type="button" title="الحسابات غير مفعلة في المعاينة" aria-label="الحساب">♙ الحساب</button>
         <a class="change-plan pro-menu-action" href="/" data-i18n="plans" aria-label="رجوع لاختيار الخطة">← الخطط</a>
-        <div class="pro-ai-consent-panel">
-          <label class="pro-ai-consent"><input id="proAiCredit" type="checkbox"> أوافق على استخدام رصيد حسابي في طلبات شات PRO عند تفعيل الاتصال المباشر.</label>
-          <button id="proConnectAi" type="button" class="pro-menu-action">🔌 تفعيل شات PRO الحقيقي</button>
-          <small id="proAiStatus" class="pro-api-note" role="status" aria-live="polite">استخدم مفتاح PRO المستقل لو متوفر؛ أو فعّل اتصال حسابك الخاص بدون تغيير المجاني.</small>
-        </div>
-        <small class="pro-api-note">مدار يختار المحرك المناسب تلقائيًا. الخدمة منفصلة عن المجاني.</small>
+        <small class="pro-api-note">شات PRO يستخدم خادم المنصة ونموذجًا مجانيًا محدود الاستخدام. لا يحتاج المستخدم حسابًا إضافيًا أو رصيدًا.</small>
+        <small class="pro-api-note">التقنية تُختار تلقائيًا، والمجاني منفصل تمامًا.</small>
       </div>
     </div>
     </header>
@@ -273,7 +269,7 @@ html,body{background:var(--bg)}
   <header class="studio-header"><div><h2 id="studioTitle">🎨 MADAR PRO Studio</h2><p class="studio-sub">Images · Platforms · Games · Learning · Design</p></div><button id="studioClose" class="studio-close" type="button" aria-label="Close Studio">×</button></header>
   <div class="studio-body">
     <nav class="studio-tabs" aria-label="Studio tools" role="tablist">
-      <button type="button" class="studio-tab" role="tab" aria-selected="true" data-studio-tab="image">🖼️ Image AI</button>
+      <button type="button" class="studio-tab" role="tab" aria-selected="true" data-studio-tab="image">🖼️ بوستر مجاني</button>
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="platform">🌐 Platform Builder</button>
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="video">🎬 Video Studio</button>
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="game">🎮 Game Maker</button>
@@ -281,15 +277,15 @@ html,body{background:var(--bg)}
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="design">🧩 Design Assistant</button>
     </nav>
     <section class="studio-panel" data-studio-panel="image">
-      <h3>Professional AI Images</h3><p class="studio-help">اكتب وصف الصورة واختر Style. الخدمة بتحتاج ربط حساب Puter الخاص بيك، واستهلاك الصور بيكون حسب رصيد الحساب.</p>
+      <h3>🎨 تصميم بوسترات مجانية</h3><p class="studio-help">اكتب عنوان البوستر واختر الشكل والمقاس، ومدار يصمم ملف صورة PNG على جهازك من غير حساب أو رصيد. دي تصاميم رسومية، مش صور فوتوغرافية مولّدة بالذكاء الاصطناعي.</p>
       <div class="studio-field"><label for="studioImageIdea">Image Prompt</label><textarea id="studioImageIdea" rows="3" maxlength="900" placeholder="مثال: صورة إعلان براند قهوة فاخر، إضاءة سينمائية، خلفية بسيطة..."></textarea></div>
       <div class="studio-cols">
         <div class="studio-field"><label for="studioImageStyle">Style</label><select id="studioImageStyle"><option value="photorealistic">Photorealistic / تصوير حقيقي</option><option value="cinematic">Cinematic / سينمائي</option><option value="product">Product Photography / تصوير منتجات</option><option value="poster">Poster / بوستر</option><option value="3d">3D Render</option><option value="illustration">Illustration / رسم فني</option></select></div>
         <div class="studio-field"><label for="studioImageRatio">Composition</label><select id="studioImageRatio"><option value="square">Square 1:1</option><option value="landscape">Landscape 16:9</option><option value="portrait">Portrait 4:5</option></select></div>
       </div>
-      <div class="studio-action-row"><button id="studioConnect" class="studio-ghost-button" type="button">🔐 Connect Puter</button><button id="studioCreateImage" class="studio-main-button" type="button">🎨 Generate Image</button><a id="studioImageSave" class="studio-ghost-button" download="madar-pro-image.png" hidden>⬇ Download</a></div>
+      <div class="studio-action-row"><button id="studioCreateImage" class="studio-main-button" type="button">🎨 صمّم بوستر مجاني</button><a id="studioImageSave" class="studio-ghost-button" download="madar-pro-image.png" hidden>⬇ Download</a></div>
       <p id="studioImageStatus" class="studio-status" role="status"></p><img id="studioImageOutput" class="studio-image" alt="AI generated professional image" hidden>
-      <p class="studio-footnote">Image quality and availability depend on Puter and its models. Nothing is charged to MADAR automatically.</p>
+      <p class="studio-footnote">التصميم محلي داخل المتصفح، بدون اتصال بخدمة صور مدفوعة.</p>
     </section>
     <section class="studio-panel" data-studio-panel="platform" hidden>
       <h3>AI Platform Builder</h3><p class="studio-help">اكتب فكرتك، والمدار هيولد واجهة Website متعددة الأقسام شبيهة بالمنصات الحديثة. معاينة حية + ملف HTML. Login وPayment وDatabase الحقيقية محتاجة Backend منفصل.</p>
@@ -298,20 +294,21 @@ html,body{background:var(--bg)}
       <div class="studio-action-row"><button id="studioBuildPlatform" class="studio-main-button" type="button">🚀 Build Platform</button><button id="studioDownloadPlatform" class="studio-ghost-button" type="button" disabled>⬇ Download HTML</button></div><p id="studioPlatformStatus" class="studio-status" role="status"></p><iframe id="studioPlatformFrame" class="studio-frame" title="Platform preview" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
     </section>
     <section id="madarVideoRoot" data-video-tier="pro" class="studio-panel madar-video-panel" data-studio-panel="video" hidden>
-      <h3>🎬 MADAR PRO Video Studio</h3>
-      <p class="studio-help">اصنع فيديو سينمائي بجودة Full HD أو 4K. اختار المدة والصوت. التوليد الفعلي يحتاج رصيد حساب Puter، ومش هيبدأ من غير موافقتك.</p>
-      <div class="studio-field"><label for="madarVideoPrompt">وصف الفيديو</label><textarea id="madarVideoPrompt" maxlength="2000" rows="3" placeholder="مثال: إعلان سينمائي لمنتج فاخر، كاميرا متحركة ببطء، ألوان ذهبية، تفاصيل واقعية..."></textarea></div>
+      <h3>🎬 MADAR PRO — Motion Video Studio</h3>
+      <p class="studio-help">اعمل فيديو موشن جرافيك متحرك من عنوانك، بدقة Full HD أو 4K حسب جهازك، واحفظه مجانًا. <strong>ده موشن جرافيك من تصميم المتصفح، مش توليد مشاهد واقعية AI.</strong></p>
+      <div class="studio-field"><label for="madarVideoPrompt">عنوان ومحتوى الفيديو</label><textarea id="madarVideoPrompt" maxlength="300" rows="3" placeholder="مثال: إعلان افتتاح متجر جديد - عروض ذهبية مذهلة!"></textarea></div>
       <div class="studio-cols">
-        <div class="studio-field"><label for="madarVideoQuality">الجودة / Quality</label><select id="madarVideoQuality"><option value="1080p">Full HD · 1080p</option><option value="4k">Ultra HD · 4K (رصيد أعلى)</option></select></div>
+        <div class="studio-field"><label for="madarVideoQuality">جودة التصدير</label><select id="madarVideoQuality"><option value="1080p">Full HD · 1080p</option><option value="4k">4K · لو الجهاز بيدعم التسجيل</option></select></div>
         <div class="studio-field"><label for="madarVideoSeconds">المدة</label><select id="madarVideoSeconds"><option value="5">5 ثوانٍ</option><option value="10">10 ثوانٍ</option><option value="15">15 ثانية</option></select></div>
       </div>
-      <label class="madar-video-check"><input id="madarVideoAudio" type="checkbox"> توليد صوت ومؤثرات (قد يزيد استهلاك الرصيد)</label>
-      <label class="madar-video-check"><input id="madarVideoCredit" type="checkbox"> أوافق على استهلاك رصيد حساب Puter عند الضغط على «توليد فيديو حقيقي». العينة لا تستهلك رصيدًا.</label>
-      <button id="madarVideoConnect" class="studio-ghost-button" type="button">🔐 تسجيل الدخول لحساب الفيديو</button>
-      <div class="studio-action-row"><button id="madarVideoSample" class="studio-ghost-button" type="button">▶ جرّب عينة مجانية</button><button id="madarVideoGenerate" class="studio-main-button" type="button">🎬 توليد فيديو حقيقي</button><a id="madarVideoDownload" class="studio-ghost-button" hidden target="_blank" rel="noopener noreferrer">⬇ عرض / حفظ الفيديو</a></div>
+      <div class="studio-action-row">
+        <button id="madarVideoSample" class="studio-ghost-button" type="button">▶ عينة 3 ثوانٍ</button>
+        <button id="madarVideoGenerate" class="studio-main-button" type="button">🎬 إنشاء الفيديو مجانًا</button>
+        <a id="madarVideoDownload" class="studio-ghost-button" hidden>⬇ تحميل الفيديو</a>
+      </div>
       <p id="madarVideoStatus" class="studio-status" role="status" aria-live="polite"></p>
       <video id="madarVideoPreview" class="madar-pro-video-preview" controls playsinline preload="none" hidden></video>
-      <p class="studio-footnote">الموديل والجودة قد لا يتوفرا حسب الرصيد وحالة الخدمة؛ التوليد ممكن يستغرق دقائق. مفيش دفع تلقائي من مدار.</p>
+      <p class="studio-footnote">التسجيل بيحصل على جهازك من غير API أو رصيد. صيغة التنزيل WebM أو MP4 حسب دعم المتصفح، وبعض الموبايلات قد لا تدعم 4K.</p>
     </section>
     <section class="studio-panel" data-studio-panel="game" hidden>
       <h3>AI Game Maker</h3><p class="studio-help">اكتب فكرة Game بميكانيك لعب واضح؛ هتطلع لعبة HTML5 قابلة للمعاينة والتحميل. النتائج تجريبية وتحتاج اختبار.</p>
@@ -483,23 +480,13 @@ async function send(prefill){
  const controller=new AbortController();activeController=controller;
  stopRequested=false;$('stopBtn').hidden=false;const timeout=setTimeout(()=>controller.abort(),52000);
  try{
-  const client=window.MadarProAI;
-  if(client?.isConnected()){
-    const answer=await client.chat(buildRequestMessages(chat.messages),picture);
-    if(stopRequested)throw new DOMException('تم إيقاف عرض الرد. الطلب الخارجي قد يستهلك رصيدًا.','AbortError');
-    assistant.text=answer;
-    $('chatStatus').textContent='ردّ بنجاح';
-    if(autoSpeak)speakText(answer);
-  }else{
-  if(location.protocol==='file:')throw Error('لتشغيل PRO افتح النسخة من localhost أو من رابط آمن، ثم اضغط تفعيل الشات من •••.');
-
+  if(location.protocol==='file:')throw Error('دي معاينة HTML. الشات المجاني الحقيقي يحتاج تشغيل موقع PRO مع مفتاحه المجاني على السيرفر.');
   const response=await fetch('/api/pro-chat',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({messages:buildRequestMessages(chat.messages),provider:'auto',language:(window.MadarProLanguage?.()||'ar-mixed'),image:picture||undefined}),signal:controller.signal});
   const data=await response.json().catch(()=>null);
-  if(!response.ok)throw Error((response.status===404||response.status===503?'الخادم الخاص بـPRO مش متصل حاليًا. افتح ••• وفعّل شات PRO بحسابك عشان تقدر تسأل.':data&&typeof data.error==='string'&&data.error)||(response.status===429?'حد الاستخدام اتملأ مؤقتًا. جرّب بعد شوية.':'خدمة مدار مش متاحة دلوقتي ('+response.status+').'));
+  if(!response.ok)throw Error(data?.error||'الخدمة المجانية وصلت للحد المسموح مؤقتًا. جرب لاحقًا.');
   if(!data||typeof data.reply!=='string'||!data.reply.trim())throw Error('مدار رجّع رد فاضي. جرّب تاني.');
   assistant.text=data.reply; $('chatStatus').textContent='ردّ بنجاح';if(autoSpeak)speakText(data.reply);
-  }
  }catch(e){
   assistant.text=(e?.name==='AbortError'?(stopRequested?'تم إيقاف الرد.':'الطلب أخد وقت أطول من المتوقع. جرّب تاني.'):e?.message||'حصل خطأ في الاتصال بالشات.');
   $('chatStatus').textContent='في مشكلة اتصال';
@@ -593,24 +580,9 @@ toolsRow.append($('micBtn'),$('voiceBtn'));
 moreMenu.addEventListener('click',e=>{if(e.target.closest('button,a')&&e.target!==moreToggle&&!e.target.closest('#proConnectAi')){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');}});
 document.addEventListener('click',e=>{if(!e.target.closest('.topbar-end')){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');}});
 document.addEventListener('click',e=>{if(!e.target.closest('.composer')){attachMenu.hidden=true;toolsToggle.setAttribute('aria-expanded','false');}});
-const connectAi=$('proConnectAi'), aiStatus=$('proAiStatus'), creditConsent=$('proAiCredit');
-moreToggle.addEventListener('click',()=>window.MadarProAI?.warmup().catch(()=>{}));
-connectAi.addEventListener('click',()=>{
- if(!creditConsent.checked){aiStatus.textContent='علشان تستخدم اتصال حسابك، لازم توافق على استهلاك رصيدك أولًا.';return;}
- // Keep sign-in initiated by the actual click, so popup blockers do not interrupt.
- aiStatus.textContent='جارٍ تفعيل الشات...';
- const attempt=window.MadarProAI?.connect(true);
- if(!attempt){aiStatus.textContent='خدمة شات PRO لسه مش جاهزة.';return;}
- Promise.resolve(attempt).then(()=>{
-  aiStatus.textContent='الشات متصل بحسابك. الرصيد يُستخدم فقط عند إرسال رسالة.';
-  connectAi.textContent='✓ الشات متصل';
-  $('chatStatus').textContent='PRO متصل';
- }).catch(e=>{aiStatus.textContent=String(e?.message||'تعذر تفعيل الخدمة.');});
-});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();closeProMenus();}});restoreChats();render();resize();
 })();
 </script>
-<script src="/madar-pro-client-ai.js" defer></script>
 <script src="/pro-studio.js" defer></script>
 <script src="/madar-pro-video-studio.js" defer></script>
 <script src="/madar-document-reader.js" defer></script>
