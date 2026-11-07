@@ -49,9 +49,9 @@ async function run(testMode){
    // Never switch Free to the premium engine. Never spend automatically on a retry.
    const opts=isPro?
     {model:'kling-3.0',seconds,size:quality.value==='4k'?'4k':'1080p',width:quality.value==='4k'?3840:1920,height:quality.value==='4k'?2160:1080,generate_audio:!!$('madarVideoAudio')?.checked,test_mode:testMode}:
-    {model:'togetherai:wan-ai/wan2.7-t2v',seconds:5,size:'1280x720',test_mode:testMode};
-   const result=await puter.ai.txt2vid(idea,opts);
-   const src=typeof result?.src==='string'?result.src:result?.getAttribute?.('data-source');
+    {model:'kling-2.5-turbo',seconds:5,size:'720p',width:1280,height:720,test_mode:testMode};
+   const result=testMode?await puter.ai.txt2vid(idea,true):await puter.ai.txt2vid(idea,opts);
+   const src=[result?.src,result?.currentSrc,result?.querySelector?.('source')?.src,result?.getAttribute?.('data-source')].find(safeSrc);
    if(!safeSrc(src))throw new Error('خدمة الفيديو رجّعت نتيجة غير صالحة.');
    preview.src=src;preview.hidden=false;preview.controls=true;preview.load();
    save.href=src;save.hidden=false;
