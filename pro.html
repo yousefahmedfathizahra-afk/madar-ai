@@ -135,6 +135,19 @@ html,body{background:var(--bg)}
 .studio-body{max-height:calc(100dvh - 110px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:700px){.topbar{height:58px!important;min-height:58px!important;flex-basis:58px!important}.welcome{margin:18px auto 10px!important;padding:10px 14px 20px!important}.welcome h1{font-size:27px!important}.compose-wrap{padding:8px 10px 12px!important}}
 
+
+/* Plus attachment picker: camera and gallery up front, other tools on demand. */
+.composer{position:relative}
+.pro-attach-menu{position:absolute;z-index:35;bottom:calc(100% + 9px);right:12px;direction:rtl;text-align:right;width:min(310px,calc(100vw - 38px));max-height:min(70dvh,390px);overflow-y:auto;background:var(--panel);border:1px solid var(--line2);border-radius:17px;padding:10px;box-shadow:0 18px 46px rgba(0,0,0,.45)}
+.pro-attach-menu[hidden]{display:none!important}
+.pro-attach-title{font-size:11px;font-weight:800;color:var(--muted);padding:8px 9px 10px}
+.pro-attach-action{display:flex;align-items:center;text-align:right;gap:12px;width:100%;min-height:58px;background:transparent;border:1px solid transparent;border-radius:12px;color:var(--fg);padding:8px 9px}
+.pro-attach-action:hover,.pro-attach-action:focus-visible{background:var(--soft);border-color:var(--line2)}
+.pro-attach-action .attach-icon{font-size:23px;width:34px;text-align:center;flex:none}
+.pro-attach-action b{display:block;font-size:13px;line-height:1.6}
+.pro-attach-action small{display:block;font-size:10px;color:var(--muted);line-height:1.6}
+#photoChip{border-color:var(--gold);background:var(--goldsoft)}
+
 </style>
 </head>
 <body>
@@ -188,9 +201,13 @@ html,body{background:var(--bg)}
     </div>
     <div class="compose-wrap">
       <div class="composer">
+        <div id="proAttachMenu" class="pro-attach-menu" role="group" aria-label="إضافة صورة" hidden>
+          <div class="pro-attach-title">إضافة صورة إلى الشات</div>
+          <button id="photoBtn" class="pro-attach-action" type="button" title="اختار صورة محفوظة على الجهاز"><span class="attach-icon" aria-hidden="true">🖼️</span><span><b>اختيار صورة</b><small>من المعرض أو ملفات الجهاز</small></span></button>
+          <button id="cameraBtn" class="pro-attach-action" type="button" title="افتح الكاميرا للتصوير"><span class="attach-icon" aria-hidden="true">📷</span><span><b>فتح الكاميرا</b><small>صوّر حاجة وابعتها لمدار</small></span></button>
+          <button id="proMoreToolsBtn" class="pro-attach-action" type="button" title="كل أدوات مدار الأخرى"><span class="attach-icon" aria-hidden="true">⚙️</span><span><b>باقي الأدوات</b><small>تحليل وكود ودروس وبحث</small></span></button>
+        </div>
         <div id="proToolsRow" class="tools-row" aria-label="أدوات مدار" hidden>
-          <button id="photoBtn" class="tool" type="button" title="اختيار صورة">＋ Photo</button>
-          <button id="cameraBtn" class="tool camera" type="button" title="فتح كاميرا الجهاز">📷 Camera</button>
           <button class="tool" data-prompt-tool="analyze" type="button" title="تحليل عميق للمشكلة">🧠 Analysis</button>
           <button class="tool" data-prompt-tool="code" type="button" title="مساعدة في كتابة كود وتشخيص الأعطال">💻 Coding</button>
           <button class="tool" data-prompt-tool="study" type="button" title="شرح ودروس خطوة بخطوة">📚 Learning</button>
@@ -201,9 +218,9 @@ html,body{background:var(--bg)}
         </div>
         <input id="photoInput" type="file" accept="image/*" hidden>
         <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden>
-        <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="الصورة المختارة"><span>الصورة جاهزة للعرض في المحادثة</span><button id="removePhoto" type="button" aria-label="إزالة الصورة">×</button></div>
+        <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="الصورة المختارة"><span>معاينة الصورة — اضغط إرسال علشان مدار يشوفها</span><button id="removePhoto" type="button" aria-label="إزالة الصورة">×</button></div>
         <textarea id="prompt" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني، اعمل صورة، أو ابني موقع..." aria-label="اكتب رسالتك"></textarea>
-        <div class="composer-bottom"><button id="proToolsToggle" class="pro-minimal-tools" type="button" aria-label="إظهار الأدوات" title="الأدوات" aria-controls="proToolsRow" aria-expanded="false">＋</button><span class="composer-hint" data-i18n="composerHint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="إملاء صوتي" title="تكلم مع مدار">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-pressed="false" aria-label="قراءة الردود صوتيًا" title="تشغيل النطق">🔈</button><button id="stopBtn" class="quick-btn" type="button" hidden aria-label="إيقاف الرد" title="إيقاف الرد">⏹</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
+        <div class="composer-bottom"><button id="proToolsToggle" class="pro-minimal-tools" type="button" aria-label="إضافة صورة أو فتح الكاميرا" title="إضافة صورة" aria-controls="proAttachMenu" aria-expanded="false">＋</button><span class="composer-hint" data-i18n="composerHint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="إملاء صوتي" title="تكلم مع مدار">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-pressed="false" aria-label="قراءة الردود صوتيًا" title="تشغيل النطق">🔈</button><button id="stopBtn" class="quick-btn" type="button" hidden aria-label="إيقاف الرد" title="إيقاف الرد">⏹</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
       </div>
       <p class="disclaimer" data-i18n="disclaimer"><b>MADAR PRO Beta</b> · شات أوضح وTools أكتر، Chat History بيتحفظ على جهازك. مفيش اشتراك أو دفع دلوقتي.</p>
     </div>
@@ -398,7 +415,7 @@ $('themeToggle').addEventListener('click',()=>{const newTheme=document.documentE
 $('search').addEventListener('input',drawHistory);
 els.prompt.addEventListener('input',resize);els.prompt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}});els.send.addEventListener('click',()=>send());
 document.querySelectorAll('.starter').forEach(b=>b.addEventListener('click',()=>{els.prompt.value=b.dataset.prompt;resize();els.prompt.focus()}));
-$('photoBtn').addEventListener('click',()=>els.photoInput.click());$('cameraBtn').addEventListener('click',()=>els.cameraInput.click());els.photoInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));els.cameraInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));$('removePhoto').addEventListener('click',clearPhoto);
+$('photoBtn').addEventListener('click',()=>{attachMenu.hidden=true;toolsToggle.setAttribute('aria-expanded','false');els.photoInput.click()});$('cameraBtn').addEventListener('click',()=>{attachMenu.hidden=true;toolsToggle.setAttribute('aria-expanded','false');els.cameraInput.click()});els.photoInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));els.cameraInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));$('removePhoto').addEventListener('click',clearPhoto);
 $('accountBtn').addEventListener('click',()=>notify('نسخة PRO تجريبية مجانية الآن، ولسه مفيش حسابات مدفوعة أو اشتراكات.'));
 $('stopBtn').addEventListener('click',()=>{if(activeController){stopRequested=true;activeController.abort();}});
 const prompts={
@@ -462,14 +479,16 @@ $('micBtn').addEventListener('click',()=>{
  }catch(e){notify('الميكروفون مش متاح دلوقتي.')}
 });
 // Minimal UI: features remain available inside contextual menus.
-const moreToggle=$('proMoreToggle'),moreMenu=$('proMoreMenu'),toolsToggle=$('proToolsToggle'),toolsRow=$('proToolsRow');
-function closeProMenus(){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');toolsRow.hidden=true;toolsToggle.setAttribute('aria-expanded','false');}
+const moreToggle=$('proMoreToggle'),moreMenu=$('proMoreMenu'),toolsToggle=$('proToolsToggle'),toolsRow=$('proToolsRow'),attachMenu=$('proAttachMenu');
+function closeProMenus(){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');toolsRow.hidden=true;attachMenu.hidden=true;toolsToggle.setAttribute('aria-expanded','false');}
 moreToggle.addEventListener('click',()=>{const next=moreMenu.hidden;closeProMenus();moreMenu.hidden=!next;moreToggle.setAttribute('aria-expanded',String(next));});
-toolsToggle.addEventListener('click',()=>{const next=toolsRow.hidden;closeProMenus();toolsRow.hidden=!next;toolsToggle.setAttribute('aria-expanded',String(next));});
+toolsToggle.addEventListener('click',()=>{const next=attachMenu.hidden;closeProMenus();attachMenu.hidden=!next;toolsToggle.setAttribute('aria-expanded',String(next));});
+$('proMoreToolsBtn').addEventListener('click',()=>{attachMenu.hidden=true;toolsToggle.setAttribute('aria-expanded','false');toolsRow.hidden=!toolsRow.hidden;});
 // Preserve voice features without crowding the composer.
 toolsRow.append($('micBtn'),$('voiceBtn'));
 moreMenu.addEventListener('click',e=>{if(e.target.closest('button,a')&&e.target!==moreToggle){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');}});
 document.addEventListener('click',e=>{if(!e.target.closest('.topbar-end')){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');}});
+document.addEventListener('click',e=>{if(!e.target.closest('.composer')){attachMenu.hidden=true;toolsToggle.setAttribute('aria-expanded','false');}});
 const modelSel=$('proModel');try{const saved=localStorage.getItem('madar-pro-model-v1');if(['auto','gemini','deepseek'].includes(saved))modelSel.value=saved;}catch(e){}
 modelSel.addEventListener('change',()=>{try{localStorage.setItem('madar-pro-model-v1',modelSel.value);}catch(e){}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();closeProMenus();}});restoreChats();render();resize();
