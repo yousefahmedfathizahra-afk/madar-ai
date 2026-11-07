@@ -37,68 +37,66 @@ function tab(name){
  document.querySelectorAll('[data-studio-panel]').forEach(el=>el.hidden=el.dataset.studioPanel!==name);
 }
 document.querySelectorAll('[data-studio-tab]').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.studioTab)));
-$('openStudio').addEventListener('click',()=>{dialog.showModal();tab('image');loadPuter().catch(()=>{})});
+$('openStudio').addEventListener('click',()=>{dialog.showModal();tab('image')});
 $('studioClose').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
-let sdkPromise=null,busyImage=false;
-function signedIn(){try{return !!window.puter?.auth?.isSignedIn?.()}catch{return false}}
-function loadPuter(){
- if(window.puter?.ai?.txt2img)return Promise.resolve(window.puter);
- if(sdkPromise)return sdkPromise;
- sdkPromise=new Promise((resolve,reject)=>{
-  const script=document.createElement('script');script.src='https://js.puter.com/v2/';script.async=true;
-  let done=false;const finish=error=>{
-   if(done)return;done=true;clearTimeout(timeout);
-   if(error){sdkPromise=null;status('studioImageStatus','Puter SDK unavailable. Check your connection or content blockers.',true);reject(error)}
-   else{status('studioImageStatus','Puter ready. Connect your own account to generate images.');resolve(window.puter)}
-  };
-  const timeout=setTimeout(()=>finish(Error('Puter timeout')),15000);
-  script.onload=()=>window.puter?.ai?.txt2img?finish():finish(Error('Puter image API missing'));
-  script.onerror=()=>finish(Error('Puter SDK load failed'));
-  document.head.append(script);
- });
- return sdkPromise;
-}
-$('studioConnect').addEventListener('click',()=>{
- if(signedIn())return status('studioImageStatus','Puter account already connected.');
- if(!window.puter?.auth?.signIn){loadPuter().catch(()=>{});return status('studioImageStatus','Loading Puter. Press Connect again shortly.',true)}
- let request;try{request=window.puter.auth.signIn()}catch(e){return status('studioImageStatus',e.message,true)}
- status('studioImageStatus','Complete sign-in in the Puter popup.');
- Promise.resolve(request).then(()=>status('studioImageStatus',signedIn()?'Puter connected.':'Sign-in not complete.',!signedIn())).catch(e=>status('studioImageStatus',e.message,true));
-});
-$('studioCreateImage').addEventListener('click',async()=>{
+
+let busyImage=false;
+$('studioCreateImage').addEventListener('click',()=>{
  if(busyImage)return;
- const idea=$('studioImageIdea').value.trim();
- if(idea.length<5)return status('studioImageStatus','اكتب Image Prompt بالتفاصيل الأول.',true);
- if(!window.puter?.ai?.txt2img){try{await loadPuter()}catch{return}}
- if(!signedIn())return status('studioImageStatus','اربط Puter account بتاعك الأول. رصيد واستهلاك الصور حسب حسابك.',true);
- const styles={photorealistic:'photorealistic luxury photography',cinematic:'cinematic film-grade lighting',product:'premium product photography',poster:'professional marketing poster', '3d':'polished 3D CGI render',illustration:'editorial illustration'};
- const ratios={square:'square 1:1',landscape:'wide 16:9',portrait:'portrait 4:5'};
- const prompt=idea+'\nProfessional art direction: '+styles[$('studioImageStyle').value]+', '+ratios[$('studioImageRatio').value]+', precise details, thoughtful composition, no random misspelled text. Respect the exact subject.';
- busyImage=true;$('studioCreateImage').disabled=true;$('studioImageOutput').hidden=true;$('studioImageSave').hidden=true;
- status('studioImageStatus','Generating premium image...');
+ const description=$('studioImageIdea').value.trim();
+ if(description.length<4)return status('studioImageStatus','اكتب عنوان أو وصف للبوستر الأول.',true);
+ const ratio=$('studioImageRatio').value;
+ const [w,h]=ratio==='landscape'?[1600,900]:ratio==='portrait'?[1080,1350]:[1200,1200];
+ busyImage=true;$('studioCreateImage').disabled=true;
  try{
-  let img;
-  try{img=await window.puter.ai.txt2img(prompt,{model:'gemini-3.1-flash-image',provider:'gemini',quality:'1K'})}
-  catch{status('studioImageStatus','Premium model unavailable. Trying an alternate model...');img=await window.puter.ai.txt2img(prompt,{model:'@cf/black-forest-labs/flux-1-schnell',provider:'cloudflare',steps:4})}
-  const src=typeof img?.src==='string'?img.src:'';
-  if(!/^(data:image\/|blob:|https:\/\/)/.test(src))throw Error('Image provider returned no valid image.');
-  $('studioImageOutput').src=src;$('studioImageOutput').hidden=false;
-  const link=$('studioImageSave');link.href=src;link.hidden=false;
-  if(src.startsWith('https://')){link.removeAttribute('download');link.target='_blank';link.rel='noopener noreferrer';link.textContent='Open image to save'}
-  else{link.setAttribute('download','madar-pro-image.png');link.removeAttribute('target');link.textContent='Download image'}
-  status('studioImageStatus','Image ready. Save it before leaving the page.');
- }catch(e){status('studioImageStatus',e.message,true)}
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw Error('متصفحك مش قادر يرسم الصورة.');
+  const style=$('studioImageStyle').value,dim=Math.min(w,h);
+  const colors=style==='poster'?['#17110d','#4b2918']:style==='illustration'?['#171823','#342d3b']:style==='cinematic'?['#091019','#292018']:['#0b0d12','#27201a'];
+  const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,colors[0]);bg.addColorStop(1,colors[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  const glow=ctx.createRadialGradient(w*.6,h*.45,0,w*.5,h*.5,w*.7);
+  glow.addColorStop(0,'rgba(232,183,96,.32)');glow.addColorStop(1,'rgba(232,183,96,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
+  ctx.save();ctx.translate(w*.5,h*.5);ctx.rotate(-.18);
+  ctx.strokeStyle='rgba(240,201,120,.27)';ctx.lineWidth=Math.max(2,dim*.0015);
+  for(let i=0;i<13;i++){ctx.beginPath();ctx.ellipse(0,0,w*(.15+i*.019),h*(.15+i*.021),.5,0,Math.PI*2);ctx.stroke();}
+  ctx.restore();
+  for(let i=0;i<70;i++){
+   const seed=(i*139+23)%997;
+   ctx.fillStyle='rgba(255,227,183,'+(.15+.5*Math.abs(Math.sin(i*2.3))).toFixed(2)+')';
+   const z=Math.max(2,dim*(.001+i%4*.0003));
+   ctx.fillRect((seed*.019%1)*w,(seed*.037%1)*h,z,z);
+  }
+  ctx.direction='rtl';ctx.textAlign='center';
+  ctx.fillStyle='#f0c978';ctx.font='700 '+Math.round(dim*.029)+'px system-ui';
+  ctx.fillText('MADAR PRO  •  DESIGN',w*.5,h*.22,w*.85);
+  ctx.fillStyle='#fff6ea';ctx.font='800 '+Math.round(dim*.063)+'px system-ui';
+  const chunks=description.replace(/\s+/g,' ').split(' ').slice(0,25),lines=[];let line='';
+  for(const word of chunks){
+   const next=line?line+' '+word:word;
+   if(line&&ctx.measureText(next).width>w*.8){lines.push(line);line=word;if(lines.length>=2)break;}else line=next;
+  }
+  if(line)lines.push(line);
+  let y=h*.47-(lines.length-1)*dim*.076/2;
+  for(const text of lines.slice(0,3)){ctx.fillText(text,w*.5,y,w*.85);y+=dim*.076;}
+  ctx.font='500 '+Math.round(dim*.019)+'px system-ui';ctx.fillStyle='rgba(249,220,174,.75)';
+  ctx.fillText('تصميم رسومي مجاني من مدار — بدون رسوم أو حساب',w*.5,h*.83,w*.85);
+  const data=canvas.toDataURL('image/png');
+  const output=$('studioImageOutput'),link=$('studioImageSave');
+  output.src=data;output.hidden=false;link.href=data;link.setAttribute('download','madar-pro-poster.png');
+  link.removeAttribute('target');link.hidden=false;link.textContent='⬇ تحميل البوستر PNG';
+  status('studioImageStatus','البوستر جاهز. ده تصميم رسومي محلي، مش صورة فوتوغرافية مولّدة بالذكاء الاصطناعي.');
+ }catch(e){status('studioImageStatus','تعذر تصميم البوستر: '+String(e?.message||e),true)}
  finally{busyImage=false;$('studioCreateImage').disabled=false}
 });
 async function ai(question){
- if(window.MadarProAI?.isConnected())return window.MadarProAI.chat([{role:'user',content:question.slice(0,5000)}]);
- if(location.protocol==='file:')throw Error('شات PRO الحقيقي يحتاج التشغيل على localhost أو دومين آمن، وبعدها تفعيله من قائمة الإعدادات.');
+ if(location.protocol==='file:')throw Error('شات PRO المجاني يحتاج سيرفر ومفتاحًا خاصًا بالمنصة، مش حسابًا من المستخدم.');
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),52000);
  try{
   const response=await fetch('/api/pro-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:'auto',language,messages:[{role:'user',content:question.slice(0,5000)}]}),signal:controller.signal});
   const data=await response.json().catch(()=>null);
-  if(!response.ok)throw Error(response.status===404||response.status===503?'خادم PRO غير متصل. ارجع للإعدادات ••• وفعل شات PRO بحسابك.':(data?.error||'AI unavailable ('+response.status+').'));
+  if(!response.ok)throw Error(data?.error||'خادم PRO المجاني غير متصل حاليًا.');
   if(typeof data?.reply!=='string'||!data.reply.trim())throw Error('Empty AI answer.');
   return data.reply;
  }catch(e){if(e.name==='AbortError')throw Error('Request timed out. Try a shorter task.');throw e}
