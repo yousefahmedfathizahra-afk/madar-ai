@@ -91,7 +91,7 @@ async function fromGemini(key,model,ctx){
     body:JSON.stringify({
       systemInstruction:{parts:[{text:systemPrompt(ctx.language)}]},
       contents,
-      generationConfig:{maxOutputTokens:MAX_OUTPUT,temperature:0.55,thinkingConfig:{thinkingLevel:model==='gemini-3.1-pro-preview'?'high':'medium'}}
+      generationConfig:{maxOutputTokens:MAX_OUTPUT,thinkingConfig:{thinkingLevel:model==='gemini-3.1-pro-preview'?'high':'medium'}}
     })
   });
   const data=await response.json().catch(()=>null);
