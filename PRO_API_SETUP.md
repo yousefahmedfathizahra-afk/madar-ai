@@ -1,5 +1,24 @@
 # MADAR PRO — isolated AI integration (NOT DEPLOYED)
 
+## Live PRO chat without a separate API key (user-credit route)
+- The PRO chat now supports an **optional** user-authorized direct AI connection. It is deliberately **not** available to MADAR Free and never uses the Free `GEMINI_API_KEY`.
+- Open PRO over **HTTPS or http://127.0.0.1** (not via `file://`). Open **•••**, check the credit consent checkbox, and click **تفعيل شات PRO الحقيقي**. A Puter sign-in window may open. If the SDK was loading at first click, click again after the ready message.
+- This mode uses the **user's Puter account credits**. It is not equivalent to a free, unlimited PRO API. No user credit is used unless an authenticated user initiates a request, and the app does not silently retry with a paid model.
+- Once connected, the chat and PRO Studio tasks use a real client-side AI call. If no user consent is given, the normal dedicated PRO server route remains the preferred route; it requires its own PRO key.
+- The actual model name is intentionally absent from the public UI and reply payload, but a sophisticated user can inspect network requests. Do not treat a client-side model identifier as a secret.
+- AI output is not fabricated. Testing using mocked SDK calls is distinct from a real provider-backed result, which requires the user's authenticated account and credits.
+
+## Video Studio
+- PRO offers 1080p or 4K, 5/10/15 seconds using a premium video provider through the user's Puter account.
+- Click **🔐 تسجيل الدخول لحساب الفيديو** inside the Video Studio before generating real video.
+- **▶ جرّب عينة مجانية** passes the selected video model, duration and resolution plus `test_mode: true`. It returns a generic demonstration clip, **not** a generated clip based on the prompt, and does not spend credits.
+- **🎬 توليد فيديو حقيقي** requires explicit checked consent to consuming the user's credits. Generating actual video has not been tested against a personal paid account, and insufficient credit must produce a clear error.
+- Tested at code level with mocked provider replies to ensure the 4K option and credit gate are wired; no PRO deployment, paid call or account sign-in was performed by this change.
+
+### Local dev (no web deployment)
+From the repository root containing `pro.html` and the JS files, run `python -m http.server 8765 --bind 127.0.0.1`, then open `http://127.0.0.1:8765/pro.html`. A raw downloaded `pro.html` opened directly from disk cannot authenticate with Puter or invoke PRO server APIs. Do not expose the local server to the internet.
+
+
 This branch is **development only**. Never publish, merge, or deploy changes without the owner's fresh, explicit approval. The production MADAR Free site and `api/chat.js` must remain untouched.
 
 ## What is wired
