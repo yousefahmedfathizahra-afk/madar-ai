@@ -20,7 +20,7 @@ test('Gemini returns an actual reply on PRO-only route',async()=>{
   return {ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:'4'}]}}]})};
  };
  const r=await invoke(sample('gemini'));
- assert.equal(r.status,200);assert.equal(r.reply,'4');assert.equal(r.model,'gemini-3.8-flash');
+ assert.equal(r.status,200);assert.equal(r.reply,'4');assert.equal('model' in r,false);assert.equal('provider' in r,false);
 });
 test('DeepSeek R1 uses free OpenRouter model and returns a real reply',async()=>{
  process.env.MADAR_PRO_OPENROUTER_API_KEY='mock-openrouter-key';
@@ -30,7 +30,7 @@ test('DeepSeek R1 uses free OpenRouter model and returns a real reply',async()=>
   return {ok:true,status:200,json:async()=>({choices:[{message:{content:'4'}}]})};
  };
  const r=await invoke(sample('deepseek'));
- assert.equal(r.status,200);assert.equal(r.reply,'4');assert.equal(r.model,'deepseek/deepseek-r1:free');
+ assert.equal(r.status,200);assert.equal(r.reply,'4');assert.equal('model' in r,false);assert.equal('provider' in r,false);
 });
 test('Paid Gemini Pro is blocked by default',async()=>{
  delete process.env.MADAR_PRO_ALLOW_PAID_MODELS;
@@ -50,4 +50,25 @@ test('No provider keys returns honest error without touching Free key',async()=>
  process.env.GEMINI_API_KEY='free-key-MUST-NOT-USE';
  global.fetch=async()=>{throw new Error('Free should not be called');};
  const r=await invoke(sample('auto'));assert.equal(r.status,503);assert.match(r.error,/PRO/);
+});
+
+test('Auto uses vision route for an attached photo',async()=>{
+ process.env.MADAR_PRO_GEMINI_API_KEY='mock-gemini-key';
+ process.env.MADAR_PRO_OPENROUTER_API_KEY='mock-openrouter-key';
+ global.fetch=async(url,opts)=>{
+  assert.match(url,/generativelanguage\.googleapis\.com/);
+  const req=JSON.parse(opts.body);
+  assert.equal(req.contents.at(-1).parts[1].inline_data.mime_type,'image/png');
+  assert.equal(req.generationConfig.thinkingConfig.thinkingLevel,'medium');
+  assert.equal(req.generationConfig.temperature,undefined);
+  return {ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:'الصورة واضحة'}]}}]})};
+ };
+ const r=await invoke({provider:'auto',messages:[{role:'user',content:'اشرح الصورة'}],image:{mimeType:'image/png',data:'YWJjZA=='}});
+ assert.equal(r.status,200);assert.equal(r.reply,'الصورة واضحة');
+});
+test('Automatic routing hides the provider name from the reply payload',async()=>{
+ process.env.MADAR_PRO_GEMINI_API_KEY='mock-gemini-key';
+ global.fetch=async()=>({ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:'نجح'}]}}]})});
+ const r=await invoke(sample('auto'));
+ assert.equal(r.status,200);assert.deepEqual(Object.keys(r).sort(),['reply','status']);
 });
