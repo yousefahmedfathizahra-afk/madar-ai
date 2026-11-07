@@ -148,6 +148,13 @@ html,body{background:var(--bg)}
 .pro-attach-action small{display:block;font-size:10px;color:var(--muted);line-height:1.6}
 #photoChip{border-color:var(--gold);background:var(--goldsoft)}
 
+
+/* Isolated premium video panel, responsive and scrollable. */
+.madar-video-panel .madar-video-check{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:var(--text);line-height:1.8;padding:9px 3px;cursor:pointer}
+.madar-video-panel .madar-video-check input{width:17px;height:17px;flex:none;accent-color:var(--gold);margin-top:3px}
+.madar-pro-video-preview{width:100%;max-height:340px;border-radius:14px;background:#050506;border:1px solid var(--line2);margin-top:12px}
+@media(max-width:620px){.madar-video-panel .studio-action-row{flex-wrap:wrap}.madar-video-panel .studio-action-row>*{flex:1;min-width:145px}}
+
 </style>
 </head>
 <body>
@@ -228,6 +235,7 @@ html,body{background:var(--bg)}
     <nav class="studio-tabs" aria-label="Studio tools" role="tablist">
       <button type="button" class="studio-tab" role="tab" aria-selected="true" data-studio-tab="image">🖼️ Image AI</button>
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="platform">🌐 Platform Builder</button>
+      <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="video">🎬 Video Studio</button>
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="game">🎮 Game Maker</button>
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="learn">📚 Smart Tutor</button>
       <button type="button" class="studio-tab" role="tab" aria-selected="false" data-studio-tab="design">🧩 Design Assistant</button>
@@ -248,6 +256,21 @@ html,body{background:var(--bg)}
       <div class="studio-field"><label for="studioPlatformIdea">Platform Idea</label><textarea id="studioPlatformIdea" maxlength="2600" rows="3" placeholder="مثال: منصة ذكاء اصطناعي بشات وقائمة جانبية وحساب مستخدم وصفحة أسعار، RTL وتعمل على الموبايل..."></textarea></div>
       <div class="studio-cols"><div class="studio-field"><label for="studioPlatformType">Project Type</label><select id="studioPlatformType"><option value="ai-chat">AI Chat Platform</option><option value="education">Education Platform</option><option value="shop">Store / Shop</option><option value="dashboard">Dashboard / Admin</option><option value="business">Business Website</option></select></div><div class="studio-field"><label for="studioPlatformTheme">Design Theme</label><select id="studioPlatformTheme"><option value="premium dark violet with gold details">Premium Dark</option><option value="minimal light white navy">Minimal Light</option><option value="modern colorful gradients">Modern Colorful</option></select></div></div>
       <div class="studio-action-row"><button id="studioBuildPlatform" class="studio-main-button" type="button">🚀 Build Platform</button><button id="studioDownloadPlatform" class="studio-ghost-button" type="button" disabled>⬇ Download HTML</button></div><p id="studioPlatformStatus" class="studio-status" role="status"></p><iframe id="studioPlatformFrame" class="studio-frame" title="Platform preview" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
+    </section>
+    <section id="madarVideoRoot" data-video-tier="pro" class="studio-panel madar-video-panel" data-studio-panel="video" hidden>
+      <h3>🎬 MADAR PRO Video Studio</h3>
+      <p class="studio-help">اصنع فيديو سينمائي بجودة Full HD أو 4K. اختار المدة والصوت. التوليد الفعلي يحتاج رصيد حساب Puter، ومش هيبدأ من غير موافقتك.</p>
+      <div class="studio-field"><label for="madarVideoPrompt">وصف الفيديو</label><textarea id="madarVideoPrompt" maxlength="2000" rows="3" placeholder="مثال: إعلان سينمائي لمنتج فاخر، كاميرا متحركة ببطء، ألوان ذهبية، تفاصيل واقعية..."></textarea></div>
+      <div class="studio-cols">
+        <div class="studio-field"><label for="madarVideoQuality">الجودة / Quality</label><select id="madarVideoQuality"><option value="1080p">Full HD · 1080p</option><option value="4k">Ultra HD · 4K (رصيد أعلى)</option></select></div>
+        <div class="studio-field"><label for="madarVideoSeconds">المدة</label><select id="madarVideoSeconds"><option value="5">5 ثوانٍ</option><option value="10">10 ثوانٍ</option><option value="15">15 ثانية</option></select></div>
+      </div>
+      <label class="madar-video-check"><input id="madarVideoAudio" type="checkbox"> توليد صوت ومؤثرات (قد يزيد استهلاك الرصيد)</label>
+      <label class="madar-video-check"><input id="madarVideoCredit" type="checkbox"> أوافق على استهلاك رصيد حساب Puter عند الضغط على «توليد فيديو حقيقي». العينة لا تستهلك رصيدًا.</label>
+      <div class="studio-action-row"><button id="madarVideoSample" class="studio-ghost-button" type="button">▶ جرّب عينة مجانية</button><button id="madarVideoGenerate" class="studio-main-button" type="button">🎬 توليد فيديو حقيقي</button><a id="madarVideoDownload" class="studio-ghost-button" hidden target="_blank" rel="noopener noreferrer">⬇ عرض / حفظ الفيديو</a></div>
+      <p id="madarVideoStatus" class="studio-status" role="status" aria-live="polite"></p>
+      <video id="madarVideoPreview" class="madar-pro-video-preview" controls playsinline preload="none" hidden></video>
+      <p class="studio-footnote">الموديل والجودة قد لا يتوفرا حسب الرصيد وحالة الخدمة؛ التوليد ممكن يستغرق دقائق. مفيش دفع تلقائي من مدار.</p>
     </section>
     <section class="studio-panel" data-studio-panel="game" hidden>
       <h3>AI Game Maker</h3><p class="studio-help">اكتب فكرة Game بميكانيك لعب واضح؛ هتطلع لعبة HTML5 قابلة للمعاينة والتحميل. النتائج تجريبية وتحتاج اختبار.</p>
@@ -488,5 +511,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();clos
 })();
 </script>
 <script src="/pro-studio.js" defer></script>
+<script src="/madar-video-studio.js" defer></script>
 </body>
 </html>
