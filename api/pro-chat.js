@@ -5,9 +5,8 @@
  * Requires separate MADAR_PRO_* secrets configured only when deploying PRO.
  *
  * Providers:
- *   gemini  : Google Gemini 3.8 Flash (Free Tier may be available, subject to quota)
- *   deepseek: DeepSeek R1 via OpenRouter free route (limited and may be unavailable)
- *   pro    : Google Gemini 3.1 Pro Preview (PAID and opt-in only)
+ *   openrouter/free: randomly routes to a $0 text/vision model; hard free-only.
+ *   No pay-as-you-go providers or credit-consuming fallbacks are invoked.
  */
 const MAX_BODY = 1900000; // allows bounded image attachments; text remains capped
 const MAX_OUTPUT = 5500;
@@ -41,7 +40,7 @@ function parseRequest(data) {
   const language=data.language==='en'?'en':'ar-mixed';
   if(data.language!==undefined&&!['en','ar-mixed'].includes(data.language))throw fail(400,'اختيار اللغة غير صحيح.');
   const provider=data.provider||'auto';
-  if(!['auto','gemini','deepseek','pro'].includes(provider))throw fail(400,'الموديل غير مدعوم.');
+  if(provider!=='auto')throw fail(400,'مدار PRO في الوضع المجاني التلقائي فقط.');
   if(!Array.isArray(data.messages)||data.messages.length<1||data.messages.length>40)throw fail(400,'محتوى المحادثة غير صحيح.');
   const messages=[];
   for(const m of data.messages.slice(-20)){
@@ -80,39 +79,21 @@ async function callProvider(url,options){
   catch(e){if(e?.name==='AbortError')throw fail(504,'خدمة النموذج تأخرت في الرد. جرّب تاني.');throw fail(502,'تعذر الاتصال بمزود الذكاء الاصطناعي.');}
   finally{clearTimeout(timeout);}
 }
-async function fromGemini(key,model,ctx){
-  const contents=ctx.messages.map((m,i)=>{
-    const parts=[{text:m.content}];
-    if(ctx.image&&i===ctx.messages.length-1)parts.push({inline_data:{mime_type:ctx.image.mimeType,data:ctx.image.data}});
-    return {role:m.role==='assistant'?'model':'user',parts};
-  });
-  const response=await callProvider('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{
-    method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
-    body:JSON.stringify({
-      systemInstruction:{parts:[{text:systemPrompt(ctx.language)}]},
-      contents,
-      generationConfig:{maxOutputTokens:MAX_OUTPUT,thinkingConfig:{thinkingLevel:model==='gemini-3.1-pro-preview'?'high':'medium'}}
-    })
-  });
-  const data=await response.json().catch(()=>null);
-  if(!response.ok){
-    if(response.status===429)throw fail(429,'رصيد أو عدد طلبات مدار PRO وصل للحد المتاح. جرّب لاحقًا.');
-    if(response.status===401||response.status===403)throw fail(503,'إعدادات خدمة مدار PRO تحتاج مراجعة الصلاحيات.');
-    throw fail(502,'MADAR PRO لم يتمكن من معالجة الطلب ('+response.status+').');
-  }
-  const answer=(data?.candidates?.[0]?.content?.parts||[]).filter(p=>typeof p.text==='string'&&!p.thought).map(p=>p.text).join('\n').trim();
-  if(!answer)throw fail(502,'مدار PRO رجّع رد فاضي. جرّب مرة تانية.');
-  return answer;
-}
 async function fromOpenRouter(key,ctx){
-  if(ctx.image)throw fail(400,'خدمة تحليل الصور مش متاحة في الإعداد الحالي. جرّب لاحقًا.');
+  // Free router can select a vision-capable free model when an image is attached.
   const response=await callProvider('https://openrouter.ai/api/v1/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'X-Title':'MADAR PRO'},
     body:JSON.stringify({
-      model:'deepseek/deepseek-r1:free',
-      messages:[{role:'system',content:systemPrompt(ctx.language)},...ctx.messages.map(m=>({role:m.role,content:m.content}))],
-      max_tokens:MAX_OUTPUT,temperature:0.45,stream:false
+      model:'openrouter/free', // hard-pinned to free-only router, no paid fallback
+      messages:[{role:'system',content:systemPrompt(ctx.language)},...ctx.messages.map((m,i)=>{
+        const parts=(ctx.image&&i===ctx.messages.length-1)?[
+          {type:'text',text:m.content},
+          {type:'image_url',image_url:{url:'data:'+ctx.image.mimeType+';base64,'+ctx.image.data}}
+        ]:m.content;
+        return {role:m.role,content:parts};
+      })],
+      max_tokens:Math.min(MAX_OUTPUT,3500),stream:false
     })
   });
   const data=await response.json().catch(()=>null);
@@ -139,22 +120,11 @@ module.exports=async function handler(req,res){
     if(!String(req.headers['content-type']||'').toLowerCase().startsWith('application/json'))throw fail(415,'Content-Type must be application/json.');
     if(!permitRequest(req))throw fail(429,'طلبات كثيرة من نفس الاتصال. جرّب بعد دقيقة.');
     const data=parseRequest(req.body);
-    const geminiKey=process.env.MADAR_PRO_GEMINI_API_KEY;
-    const routerKey=process.env.MADAR_PRO_OPENROUTER_API_KEY;
-    let provider=data.provider;
-    if(provider==='auto'){
-      // Vision requires multimodal Gemini. For difficult code/math use R1 when configured.
-      // Otherwise prefer the responsive Gemini route.
-      const last=data.messages[data.messages.length-1]?.content||'';
-      const complex=last.length>140 && /(debug|refactor|algorithm|reasoning|prove|theorem|code|bug|typescript|python|java|البرمجة|الاخطاء|الأخطاء|خوارزم|مسألة رياض|برهان)/i.test(last);
-      provider=data.image?'gemini':complex&&routerKey?'deepseek':geminiKey?'gemini':routerKey?'deepseek':'none';
-    }
-    if(provider==='none')throw fail(503,'PRO غير متصل بعد: يحتاج مفتاح API مستقل خاص ببرو. مدار المجاني لم يتغير.');
-    if(provider==='pro'&&process.env.MADAR_PRO_ALLOW_PAID_MODELS!=='true')throw fail(403,'خيار الأداء المدفوع غير مفعل حاليًا لتجنب التكاليف.');
-    if((provider==='gemini'||provider==='pro')&&!geminiKey)throw fail(503,'خدمة مدار PRO محتاجة إعداد اتصال خاص بها.');
-    if(provider==='deepseek'&&!routerKey)throw fail(503,'خدمة مدار PRO محتاجة إعداد اتصال خاص بها.');
-    const model=provider==='pro'?'gemini-3.1-pro-preview':provider==='gemini'?'gemini-3.8-flash':'deepseek/deepseek-r1:free';
-    const answer=provider==='deepseek'?await fromOpenRouter(routerKey,data):await fromGemini(geminiKey,model,data);
+    // Strict no-payment rule: only OpenRouter's documented zero-price free router.
+    // A dedicated PRO key is required; never read the Free site's keys.
+    const key=process.env.MADAR_PRO_OPENROUTER_API_KEY;
+    if(!key)throw fail(503,'شات PRO المجاني محتاج توصيل مفتاح الخدمة المستقل من صاحب المنصة. مش مطلوب أي حاجة من المستخدم.');
+    const answer=await fromOpenRouter(key,data);
     return reply(res,200,{reply:answer});
   }catch(e){return reply(res,e?.statusCode||500,{error:e?.statusCode?e.message:'حصل خطأ غير متوقع في PRO. جرّب تاني.'});}
 };
