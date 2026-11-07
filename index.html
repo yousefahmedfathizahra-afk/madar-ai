@@ -331,6 +331,26 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .composer-bottom{gap:7px}
 @media(max-width:620px){.madar-attach-menu{right:9px}.madar-attach-toggle{width:35px;height:35px;flex-basis:35px}}
 
+
+/* Free video: standard 720p / 5s; never silently upgrade to PRO. */
+.madar-video-dialog{width:min(680px,calc(100vw - 22px));max-height:calc(100dvh - 28px);overflow-y:auto;direction:rtl;background:var(--panel);color:var(--fg);border:1px solid var(--line-strong);border-radius:19px;padding:18px;box-shadow:0 22px 70px rgba(0,0,0,.4)}
+.madar-video-dialog::backdrop{background:rgba(0,0,0,.66)}
+.madar-video-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.madar-video-header h2{font-size:19px;margin:0 0 3px}
+.madar-video-header small,.madar-video-footnote{color:var(--muted);font-size:11px;line-height:1.8}
+#madarVideoClose{width:36px;height:36px;border-radius:9px;border:1px solid var(--line-strong);background:var(--control);color:var(--fg);font-size:23px}
+.madar-video-info{font-size:12px;line-height:1.8;color:var(--text)}
+.madar-video-label{display:block;font-size:12px;font-weight:750;margin:10px 0 6px}
+#madarVideoPrompt{font:inherit;color:var(--fg);background:var(--control);width:100%;min-height:100px;resize:vertical;padding:12px;border:1px solid var(--line-strong);border-radius:12px}
+.madar-video-approval{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.7;margin:15px 0;color:var(--text)}
+.madar-video-approval input{accent-color:var(--purple);margin-top:4px;width:17px;height:17px;flex:none}
+.madar-video-buttons{display:flex;gap:9px;flex-wrap:wrap}
+.madar-video-buttons>*{color:var(--fg);background:var(--soft);border:1px solid var(--line-strong);padding:10px 13px;border-radius:10px;text-decoration:none;font-size:12px;cursor:pointer}
+#madarVideoGenerate{background:var(--purple);color:white}
+#madarVideoStatus{min-height:21px;margin:12px 0 8px;color:var(--text);font-size:12px}
+#madarVideoPreview{width:100%;max-height:320px;border-radius:12px;background:#000}
+.madar-video-footnote{display:block;margin-top:8px}
+
 </style>
   <title>مدار AI | ستوديو المشاريع ومدرس اللغات والتصميم والألعاب</title>
 </head>
@@ -435,6 +455,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <div class="tools-row" role="toolbar" aria-label="AI tools">
             <button id="wikiToggle" type="button" class="tool" aria-pressed="false" title="Look up Wikipedia sources and ask MADAR to use them">⌕ Wikipedia research</button>
             <button id="googleSearchBtn" type="button" class="tool" title="Open full web search in Google">↗ Web search</button>
+            <button id="madarVideoOpen" type="button" class="tool" title="اصنع فيديو قصير بجودة قياسية">🎬 فيديو</button>
             <button id="imageMakerBtn" type="button" class="tool" title="Create AI images">✦ Create image</button>
             <button id="madarBuilderBtn" type="button" class="tool madar-builder-trigger" title="MADAR AI builds a working game or website from your idea">🛠 Builder</button>
             <button id="madarGameBtn" type="button" class="tool madar-game-trigger" title="Play MADAR Shadow Unit, a free 3D action game">🎮 Play 3D</button>
@@ -728,6 +749,20 @@ window.addEventListener('pagehide',cleanup);render();
     <h2 id="dialogTitle"></h2>
     <p id="dialogMessage"></p>
     <div class="dialog-actions"><a id="dialogLink" href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" hidden>Open AI Studio ↗</a><button id="dialogClose">Close</button></div>
+  </dialog>
+  <dialog id="madarVideoDialog" class="madar-video-dialog" aria-labelledby="madarVideoTitle" lang="ar" dir="rtl">
+    <section id="madarVideoRoot" data-video-tier="free">
+      <div class="madar-video-header"><div><h2 id="madarVideoTitle">🎬 مدار Video Maker</h2><small>نسخة مجانية · فيديو قصير بجودة قياسية 720p</small></div><button id="madarVideoClose" type="button" aria-label="إغلاق الفيديو">×</button></div>
+      <p class="madar-video-info">اعمل فيديو قصير من وصفك. الخدمة تعمل عبر Puter ولا تحتاج API Key جديدة لمدار، لكن الفيديو الحقيقي يستهلك رصيد حساب Puter الخاص بك.</p>
+      <label class="madar-video-label" for="madarVideoPrompt">وصف الفيديو</label>
+      <textarea id="madarVideoPrompt" rows="3" maxlength="2000" placeholder="مثال: منظر غروب هادي على البحر، موج خفيف، حركة كاميرا سينمائية..."></textarea>
+      <input id="madarVideoQuality" type="hidden" value="720p">
+      <input id="madarVideoSeconds" type="hidden" value="5">
+      <label class="madar-video-approval"><input id="madarVideoCredit" type="checkbox"> أوافق على استخدام رصيد حساب Puter عند توليد فيديو حقيقي. زر العينة لا يستهلك رصيدًا.</label>
+      <div class="madar-video-buttons"><button id="madarVideoSample" type="button">▶ عينة بدون خصم</button><button id="madarVideoGenerate" type="button">🎬 توليد فيديو حقيقي</button><a id="madarVideoDownload" hidden target="_blank" rel="noopener noreferrer">⬇ عرض / حفظ</a></div>
+      <p id="madarVideoStatus" role="status" aria-live="polite"></p><video id="madarVideoPreview" controls playsinline preload="none" hidden></video>
+      <small class="madar-video-footnote">المدة 5 ثوانٍ والجودة 720p؛ PRO بيوفر دقة أعلى ومدد أطول. توفر الخدمة يعتمد على الرصيد والموديل.</small>
+    </section>
   </dialog>
   <dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle" lang="ar" dir="rtl">
     <div class="camera-head"><h2 id="cameraTitle">📷 كاميرا مدار</h2><button id="cameraClose" class="camera-close" type="button" aria-label="إغلاق الكاميرا">✕</button></div>
@@ -1459,6 +1494,7 @@ window.MADAR_APP={
   <script src="/madar-chat-tools.js" defer></script>
   <script src="/madar-studio.js" defer></script>
   <script src="/madar-robot.js" defer></script>
+<script src="/madar-video-studio.js" defer></script>
 </body>
 </html>
 
