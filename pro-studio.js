@@ -92,12 +92,13 @@ $('studioCreateImage').addEventListener('click',async()=>{
  finally{busyImage=false;$('studioCreateImage').disabled=false}
 });
 async function ai(question){
- if(location.protocol==='file:')throw Error('Real PRO AI needs its separate server route and PRO-only API key. The HTML file is a preview, and the free MADAR API has not changed.');
+ if(window.MadarProAI?.isConnected())return window.MadarProAI.chat([{role:'user',content:question.slice(0,5000)}]);
+ if(location.protocol==='file:')throw Error('شات PRO الحقيقي يحتاج التشغيل على localhost أو دومين آمن، وبعدها تفعيله من قائمة الإعدادات.');
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),52000);
  try{
   const response=await fetch('/api/pro-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:'auto',language,messages:[{role:'user',content:question.slice(0,5000)}]}),signal:controller.signal});
   const data=await response.json().catch(()=>null);
-  if(!response.ok)throw Error(data?.error||'AI unavailable ('+response.status+').');
+  if(!response.ok)throw Error(response.status===404||response.status===503?'خادم PRO غير متصل. ارجع للإعدادات ••• وفعل شات PRO بحسابك.':(data?.error||'AI unavailable ('+response.status+').'));
   if(typeof data?.reply!=='string'||!data.reply.trim())throw Error('Empty AI answer.');
   return data.reply;
  }catch(e){if(e.name==='AbortError')throw Error('Request timed out. Try a shorter task.');throw e}
