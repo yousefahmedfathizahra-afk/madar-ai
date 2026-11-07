@@ -314,6 +314,75 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .studio-language-voice{padding:13px 15px;border-radius:12px;border:1px solid var(--line-strong);margin:17px 0}
 .studio-language-voice small{font-size:11px;color:var(--muted);line-height:1.9;display:block}
 @media(max-width:620px){.studio-language-grid{grid-template-columns:1fr}.madar-voice-quick{max-width:62px}.madar-voice-btn{font-size:12px;padding:7px 5px;min-width:28px}.composer-hint{font-size:9px}}
+
+/* Unpublished camera & photo picker; existing image pipeline and Free API unchanged. */
+.composer{position:relative}
+.madar-attach-toggle{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border:1px solid var(--line-strong);border-radius:12px;background:var(--control);color:var(--fg);font-size:24px;line-height:1}
+.madar-attach-toggle:hover,.madar-attach-toggle[aria-expanded="true"]{border-color:var(--purple);color:var(--purple-light);background:var(--soft)}
+.madar-attach-menu{display:flex;flex-direction:column;gap:5px;position:absolute;z-index:45;right:12px;bottom:calc(100% + 9px);direction:rtl;text-align:right;width:min(315px,calc(100vw - 34px));max-height:min(60dvh,350px);overflow-y:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:15px;padding:9px;box-shadow:0 18px 44px rgba(0,0,0,.35)}
+.madar-attach-menu[hidden]{display:none!important}
+.madar-attach-heading{font-size:12px;font-weight:800;color:var(--muted);padding:7px 10px 8px}
+.madar-attach-choice{border:1px solid transparent;border-radius:12px;background:transparent;color:var(--fg);display:flex;align-items:center;gap:11px;text-align:right;padding:9px 11px;width:100%;min-height:62px}
+.madar-attach-choice:hover,.madar-attach-choice:focus-visible{border-color:var(--line-strong);background:var(--soft)}
+.madar-attach-icon{font-size:23px;width:33px;text-align:center;flex:none}
+.madar-attach-choice strong{font-size:13px;line-height:1.6;display:block}
+.madar-attach-choice small{font-size:10px;color:var(--muted);display:block;line-height:1.6}
+#madarCameraQuick{display:none!important}
+.composer-bottom{gap:7px}
+@media(max-width:620px){.madar-attach-menu{right:9px}.madar-attach-toggle{width:35px;height:35px;flex-basis:35px}}
+
+
+/* Free video: standard 720p / 5s; never silently upgrade to PRO. */
+.madar-video-dialog{width:min(680px,calc(100vw - 22px));max-height:calc(100dvh - 28px);overflow-y:auto;direction:rtl;background:var(--panel);color:var(--fg);border:1px solid var(--line-strong);border-radius:19px;padding:18px;box-shadow:0 22px 70px rgba(0,0,0,.4)}
+.madar-video-dialog::backdrop{background:rgba(0,0,0,.66)}
+.madar-video-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.madar-video-header h2{font-size:19px;margin:0 0 3px}
+.madar-video-header small,.madar-video-footnote{color:var(--muted);font-size:11px;line-height:1.8}
+#madarVideoClose{width:36px;height:36px;border-radius:9px;border:1px solid var(--line-strong);background:var(--control);color:var(--fg);font-size:23px}
+.madar-video-info{font-size:12px;line-height:1.8;color:var(--text)}
+.madar-video-label{display:block;font-size:12px;font-weight:750;margin:10px 0 6px}
+#madarVideoPrompt{font:inherit;color:var(--fg);background:var(--control);width:100%;min-height:100px;resize:vertical;padding:12px;border:1px solid var(--line-strong);border-radius:12px}
+.madar-video-approval{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.7;margin:15px 0;color:var(--text)}
+.madar-video-approval input{accent-color:var(--purple);margin-top:4px;width:17px;height:17px;flex:none}
+.madar-video-buttons{display:flex;gap:9px;flex-wrap:wrap}
+.madar-video-buttons>*{color:var(--fg);background:var(--soft);border:1px solid var(--line-strong);padding:10px 13px;border-radius:10px;text-decoration:none;font-size:12px;cursor:pointer}
+#madarVideoGenerate{background:var(--purple);color:white}
+#madarVideoStatus{min-height:21px;margin:12px 0 8px;color:var(--text);font-size:12px}
+#madarVideoPreview{width:100%;max-height:320px;border-radius:12px;background:#000}
+.madar-video-footnote{display:block;margin-top:8px}
+
+
+.madar-document-chip{display:flex;gap:9px;align-items:center;background:var(--soft);border:1px solid var(--line-strong);border-radius:12px;padding:9px;margin-bottom:9px;font-size:12px;color:var(--fg)}
+.madar-document-chip>span{font-size:20px}
+.madar-document-chip>div{flex:1;min-width:0}
+.madar-document-chip strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.madar-document-chip small{color:var(--muted);font-size:10px}
+.madar-document-chip button{border:0;background:transparent;color:var(--fg);font-size:20px}
+.madar-attached-file{font-size:11px;border:1px solid var(--line-strong);background:var(--soft);color:var(--text);border-radius:9px;padding:5px 9px;display:inline-block;margin:5px 0;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+
+/* ChatGPT-like start screen; only structural layout, reuse the unchanged MADAR theme. */
+.main.madar-home{display:grid;grid-template-rows:77px minmax(min-content,1fr) auto minmax(20px,.8fr);overflow-y:auto;overflow-x:hidden;align-content:stretch}
+.main.madar-home>.topbar{grid-row:1;min-height:0}
+.main.madar-home>.chat-container{grid-row:2;display:flex;flex:none;min-height:0;overflow:visible;justify-content:flex-end}
+.main.madar-home #welcome{margin:0 auto;padding:14px 18px 20px;max-width:740px}
+.main.madar-home #welcome .planet,.main.madar-home #welcome .eyebrow,.main.madar-home #welcome .studio-welcome-note,.main.madar-home #welcome .starter-label{display:none!important}
+.main.madar-home #welcome h1{font-size:clamp(26px,3.7vw,40px);letter-spacing:normal;line-height:1.45;margin:6px 0 8px}
+.main.madar-home #welcome .welcome-description{font-size:clamp(13px,1.5vw,16px);line-height:1.8;margin:0 auto;max-width:550px}
+.main.madar-home>.compose-wrap{grid-row:3;margin:0 auto;width:min(860px,100%);padding-top:5px;padding-bottom:14px}
+.main.madar-home::after{content:"";grid-row:4;pointer-events:none}
+.madar-home-ideas{margin:11px auto 0;max-width:650px;text-align:center}
+.madar-home-ideas summary{display:inline-block;cursor:pointer;color:var(--muted);font-size:12px;line-height:2;padding:3px 12px;border:1px solid var(--line-strong);border-radius:999px}
+.madar-home-ideas[open]>.starters{margin:10px auto 0}
+#composer:not(.madar-advanced-open)>.madar-extras,#composer:not(.madar-advanced-open)>.madar-study-actions,#composer:not(.madar-advanced-open)>.tools-row{display:none!important}
+#composer.madar-advanced-open>.madar-extras,#composer.madar-advanced-open>.tools-row{display:flex}
+@media(max-width:700px){.main.madar-home{grid-template-rows:65px minmax(min-content,1fr) auto minmax(16px,.7fr)}.main.madar-home #welcome{padding:8px 12px 10px}.main.madar-home #welcome h1{font-size:26px}.main.madar-home>.compose-wrap{padding:4px 10px 12px}.madar-home-ideas[open]>.starters{grid-template-columns:1fr 1fr;gap:7px}}
+@media(max-height:530px){.main.madar-home{grid-template-rows:57px minmax(min-content,1fr) auto 12px}}
+
+/* Remove bottom-left information card without hiding sharing and export controls. */
+.side-quick-actions{display:flex;align-items:center;gap:10px;justify-content:flex-start;padding:10px 5px 3px;margin-top:auto;background:transparent;border:0;box-shadow:none}
+.side-quick-actions .export-button{font-size:18px;border:1px solid var(--line-strong);border-radius:10px;width:36px;height:36px;display:grid;place-items:center}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 </style>
   <title>مدار AI | ستوديو المشاريع ومدرس اللغات والتصميم والألعاب</title>
 </head>
@@ -330,12 +399,11 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       <div class="side-heading">Conversations <span id="chatCount">0</span></div>
       <input id="madarHistorySearch" class="madar-history-search" type="search" placeholder="🔎 ابحث في المحادثات" maxlength="120" aria-label="Search saved conversations">
       <div id="history" class="history" role="list"></div>
-      <div class="side-footer">
-        <div class="privacy-icon">✧</div>
-        <p><strong>Your private space</strong><span id="sidePrivacyText">Chats are stored on this device only.</span></p>
-        <button id="shareChatBtn" type="button" class="export-button" title="Share this chat (text only)" aria-label="Share current chat">↗</button>
-        <button id="exportChats" class="export-button" title="Export conversations">↧</button>
+      <div class="side-quick-actions" aria-label="خيارات المحادثة">
+        <button id="shareChatBtn" type="button" class="export-button" title="مشاركة المحادثة الحالية" aria-label="مشاركة المحادثة الحالية">↗</button>
+        <button id="exportChats" type="button" class="export-button" title="تصدير المحادثات" aria-label="تصدير المحادثات">↧</button>
       </div>
+      <span id="sidePrivacyText" class="visually-hidden" aria-live="off">Chats are stored on this device only.</span>
     </aside>
     <div id="overlay" class="overlay" hidden></div>
     <main class="main">
@@ -355,18 +423,16 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
       </header>
       <div class="chat-container" id="chatContainer">
         <section id="welcome" class="welcome">
-          <div class="eyebrow"><span>✦</span> A new space to think</div>
-          <div class="planet" aria-hidden="true"><div class="planet-halo"></div><div class="planet-ring one"></div><div class="planet-ring two"></div><div class="planet-core">M</div><div class="satellite"></div></div>
-          <h1>Welcome to <span>MADAR</span><span class="title-star">✳</span></h1>
-          <p class="welcome-description">اسأل مدار، أو اكتب وصف موقع أو متجر أو منصة تعليمية — هتقدر تعاين وتحمّل الكود من الشات.</p>
-          <p class="studio-welcome-note">مدار ستوديو: صانع المشاريع · المدرس الذكي · مدرس اللغات · صانع الألعاب · استوديو التصميم · مصلّح الأكواد.</p>
-          <div class="starter-label">Get started <span>↙</span></div>
-          <div class="starters">
+          <h1>أهلًا بيك في <span>MADAR</span></h1>
+          <p class="welcome-description">أقدر أساعدك في إيه النهارده؟ اكتب سؤالك وابدأ.</p>
+          <details class="madar-home-ideas"><summary>أفكار تبدأ بيها</summary>
+            <div class="starters">
             <button class="starter" data-prompt="Help me make a simple, realistic study plan for this week."><span class="starter-symbol violet">✎</span><span><strong>Plan your day</strong><small>A plan to help you begin</small></span><span class="starter-arrow">↗</span></button>
             <button class="starter" data-prompt="Explain AI in simple terms with examples."><span class="starter-symbol sky">✧</span><span><strong>Learn something</strong><small>Make the hard things easier</small></span><span class="starter-arrow">↗</span></button>
             <button class="starter" data-prompt="اعمل متجر إلكتروني عربي اسمه مدار ستور فيه الرئيسية والمنتجات والبحث والفلترة وسلة المشتريات التجريبية"><span class="starter-symbol pink">🌐</span><span><strong>ابني موقع دلوقتي</strong><small>متجر أو موقع من وصفك</small></span><span class="starter-arrow">↗</span></button>
             <button class="starter" data-prompt="Can you help me write a kind, clear message?"><span class="starter-symbol mint">♢</span><span><strong>Write with confidence</strong><small>Find the right words</small></span><span class="starter-arrow">↗</span></button>
           </div>
+          </details>
         </section>
         <section id="messages" class="messages" role="log" aria-label="Conversation" aria-live="polite" hidden></section>
       </div>
@@ -410,21 +476,29 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
             <button type="button" id="madarCheck" class="tool">✅ Check answer</button>
             <small>Type a topic or attach a homework photo</small>
           </div>
+<div id="madarAttachMenu" class="madar-attach-menu" role="group" aria-label="إضافة صور أو ملفات إلى مدار" hidden>
+            <div class="madar-attach-heading">إضافة مرفق إلى المحادثة</div>
+            <button id="cameraBtn" type="button" class="madar-attach-choice" title="فتح كاميرا مدار"><span class="madar-attach-icon" aria-hidden="true">📷</span><span><strong>تصوير بالكاميرا</strong><small>صوّر سؤال أو أي حاجة وابعته لمدار</small></span></button>
+            <button id="photoBtn" type="button" class="madar-attach-choice" title="اختيار صورة من المعرض أو الجهاز"><span class="madar-attach-icon" aria-hidden="true">🖼️</span><span><strong>إرسال صورة</strong><small>من المعرض أو ملفات الجهاز</small></span></button>
+            <button id="documentBtn" type="button" class="madar-attach-choice" title="إرسال مستند إلى مدار"><span class="madar-attach-icon" aria-hidden="true">📎</span><span><strong>إضافة ملفات</strong><small>PDF · Word · Excel · PowerPoint · TXT · Code</small></span></button>
+            <button id="madarShowTools" type="button" class="madar-attach-choice" aria-expanded="false" title="إظهار أو إخفاء أدوات مدار الأخرى"><span class="madar-attach-icon" aria-hidden="true">⚙️</span><span><strong>باقي الأدوات</strong><small>فيديو · بحث · تصميم · تعليم · ميكروفون</small></span></button>
+          </div>
           <div class="tools-row" role="toolbar" aria-label="AI tools">
-            <button id="photoBtn" type="button" class="tool" title="Upload a photo to ask questions about it">＋ Photo</button>
-             <button id="cameraBtn" type="button" class="tool" title="افتح الكاميرا وصوّر سؤال أو واجب">📷 كاميرا</button>
             <button id="wikiToggle" type="button" class="tool" aria-pressed="false" title="Look up Wikipedia sources and ask MADAR to use them">⌕ Wikipedia research</button>
             <button id="googleSearchBtn" type="button" class="tool" title="Open full web search in Google">↗ Web search</button>
+            <button id="madarVideoOpen" type="button" class="tool" title="اصنع فيديو قصير بجودة قياسية">🎬 فيديو</button>
             <button id="imageMakerBtn" type="button" class="tool" title="Create AI images">✦ Create image</button>
             <button id="madarBuilderBtn" type="button" class="tool madar-builder-trigger" title="MADAR AI builds a working game or website from your idea">🛠 Builder</button>
             <button id="madarGameBtn" type="button" class="tool madar-game-trigger" title="Play MADAR Shadow Unit, a free 3D action game">🎮 Play 3D</button>
           </div>
+          <input id="documentInput" type="file" accept=".pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json,.js,.jsx,.ts,.tsx,.html,.css,.py,.java,.sql,.xml,.yml,.yaml,.log,.sh,.bat,.svg" multiple hidden aria-label="Select documents">
           <input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Select a photo">
            <input id="cameraFallbackInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden aria-label="Take a photo using your phone camera">
-          <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>Photo ready — ask MADAR about it</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
+          <div id="documentChip" class="madar-document-chip" hidden><span>📎</span><div><strong id="documentNames"></strong><small id="documentNote">الملفات جاهزة</small></div><button id="removeDocuments" type="button" title="إزالة الملفات" aria-label="إزالة الملفات">×</button></div>
+          <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>الصورة جاهزة — اكتب سؤالك واضغط إرسال</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
           <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
           <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني إسباني، اعمل صورة، أو لعبة..." aria-label="Write your message"></textarea>
-          <div class="composer-bottom"><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><select id="madarVoiceQuick" class="madar-voice-quick" aria-label="اختار لغة الميكروفون والنطق"><option value="auto">🌐 تلقائي</option></select><button id="madarCameraQuick" class="madar-voice-btn madar-camera-quick" type="button" aria-label="افتح الكاميرا وصوّر مع مدار" title="📷 افتح الكاميرا">📷 <span class="madar-camera-label">كاميرا</span></button><button id="madarMicQuick" class="madar-voice-btn" type="button" aria-label="تكلم مع مدار بالميكروفون" title="اتكلم مع مدار">🎙️</button><button id="madarSpeakQuick" class="madar-voice-btn" type="button" aria-pressed="false" aria-label="تشغيل نطق ردود مدار" title="تشغيل أو إيقاف الردود الصوتية">🔈</button><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
+          <div class="composer-bottom"><button id="madarAttachToggle" type="button" class="madar-attach-toggle" aria-controls="madarAttachMenu" aria-expanded="false" aria-label="الكاميرا والصور والملفات" title="إضافة مرفق">＋</button><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><select id="madarVoiceQuick" class="madar-voice-quick" aria-label="اختار لغة الميكروفون والنطق"><option value="auto">🌐 تلقائي</option></select><button id="madarCameraQuick" class="madar-voice-btn madar-camera-quick" type="button" aria-label="افتح الكاميرا وصوّر مع مدار" title="📷 افتح الكاميرا">📷 <span class="madar-camera-label">كاميرا</span></button><button id="madarMicQuick" class="madar-voice-btn" type="button" aria-label="تكلم مع مدار بالميكروفون" title="اتكلم مع مدار">🎙️</button><button id="madarSpeakQuick" class="madar-voice-btn" type="button" aria-pressed="false" aria-label="تشغيل نطق ردود مدار" title="تشغيل أو إيقاف الردود الصوتية">🔈</button><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
         </div>
         <p class="disclaimer">جديد: 📷 كاميرا مدار جنب زر الإرسال. صوّر أي حاجة واسأل مدار عنها. كمان تقدر تطلب «اعمل صورة» أو «ابني موقع». <span>✧</span> راجع المعلومات المهمة.</p>
       </div>
@@ -709,6 +783,20 @@ window.addEventListener('pagehide',cleanup);render();
     <p id="dialogMessage"></p>
     <div class="dialog-actions"><a id="dialogLink" href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" hidden>Open AI Studio ↗</a><button id="dialogClose">Close</button></div>
   </dialog>
+  <dialog id="madarVideoDialog" class="madar-video-dialog" aria-labelledby="madarVideoTitle" lang="ar" dir="rtl">
+    <section id="madarVideoRoot" data-video-tier="free">
+      <div class="madar-video-header"><div><h2 id="madarVideoTitle">🎬 مدار Video Maker</h2><small>نسخة مجانية · فيديو قصير بجودة قياسية 720p</small></div><button id="madarVideoClose" type="button" aria-label="إغلاق الفيديو">×</button></div>
+      <p class="madar-video-info">اعمل فيديو قصير من وصفك. الخدمة تعمل عبر Puter ولا تحتاج API Key جديدة لمدار، لكن الفيديو الحقيقي يستهلك رصيد حساب Puter الخاص بك.</p>
+      <label class="madar-video-label" for="madarVideoPrompt">وصف الفيديو</label>
+      <textarea id="madarVideoPrompt" rows="3" maxlength="2000" placeholder="مثال: منظر غروب هادي على البحر، موج خفيف، حركة كاميرا سينمائية..."></textarea>
+      <input id="madarVideoQuality" type="hidden" value="720p">
+      <input id="madarVideoSeconds" type="hidden" value="5">
+      <label class="madar-video-approval"><input id="madarVideoCredit" type="checkbox"> أوافق على استخدام رصيد حساب Puter عند توليد فيديو حقيقي. زر العينة لا يستهلك رصيدًا.</label>
+      <div class="madar-video-buttons"><button id="madarVideoSample" type="button">▶ عينة بدون خصم</button><button id="madarVideoGenerate" type="button">🎬 توليد فيديو حقيقي</button><a id="madarVideoDownload" hidden target="_blank" rel="noopener noreferrer">⬇ عرض / حفظ</a></div>
+      <p id="madarVideoStatus" role="status" aria-live="polite"></p><video id="madarVideoPreview" controls playsinline preload="none" hidden></video>
+      <small class="madar-video-footnote">المدة 5 ثوانٍ والجودة 720p؛ PRO بيوفر دقة أعلى ومدد أطول. توفر الخدمة يعتمد على الرصيد والموديل.</small>
+    </section>
+  </dialog>
   <dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle" lang="ar" dir="rtl">
     <div class="camera-head"><h2 id="cameraTitle">📷 كاميرا مدار</h2><button id="cameraClose" class="camera-close" type="button" aria-label="إغلاق الكاميرا">✕</button></div>
     <video id="cameraPreview" class="camera-preview" autoplay muted playsinline aria-label="معاينة الكاميرا"></video>
@@ -781,6 +869,7 @@ let stoppedByUser=false;
 let pendingEditIndex=null;
 let authActiveUser=null;
 let pendingImage=null;
+let pendingDocuments=[],readingDocument=false;
 let wikiResearch=false;
 const temporaryPhotos=new Map();
 function safeSourceLink(source){
@@ -797,7 +886,7 @@ function escapeState(input) {
   return input.filter(c => typeof c?.id === 'string' && Array.isArray(c.messages)).slice(0,MAX_CONVERSATIONS).map(c => ({
     id: c.id, title: String(c.title ?? 'New chat').slice(0, 70),
     updatedAt: Number(c.updatedAt) || Date.now(),
-    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>safeSourceLink(s)).slice(0,3):[],toolType:['builder','image'].includes(m.toolType)?m.toolType:undefined,toolKey:typeof m.toolKey==='string'&&m.toolKey.length<110?m.toolKey:undefined}))
+    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),documentName:String(m.documentName||'').slice(0,250),documentText:String(m.documentText||'').slice(0,3900),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>safeSourceLink(s)).slice(0,3):[],toolType:['builder','image'].includes(m.toolType)?m.toolType:undefined,toolKey:typeof m.toolKey==='string'&&m.toolKey.length<110?m.toolKey:undefined}))
   }));
 }
 function loadChats(){try{return escapeState(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'));}catch{return []}}
@@ -806,7 +895,7 @@ function createId(){return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-$
 function activeChat(){return chats.find(c=>c.id===currentId)}
 function showError(message){el.inlineError.textContent=message;el.inlineError.hidden=false}
 function hideError(){el.inlineError.hidden=true;el.inlineError.textContent=''}
-function newChat(){if(isWaiting)return; cancelEdit(); currentId=null; hideError(); el.prompt.value=''; clearPendingPhoto();resizePrompt(); render(); el.prompt.focus(); closeSidebar()}
+function newChat(){if(isWaiting)return; cancelEdit(); currentId=null; hideError(); el.prompt.value=''; clearPendingPhoto();clearPendingDocuments();resizePrompt(); render(); el.prompt.focus(); closeSidebar()}
 function selectChat(id){if(isWaiting)return;cancelEdit();currentId=id; hideError();render();closeSidebar();el.prompt.focus()}
 function deleteChat(id){if(isWaiting)return;cancelEdit();const chat=chats.find(c=>c.id===id);if(!chat)return;if(!confirm(`Delete the conversation “${chat.title}”?`))return;chats=chats.filter(c=>c.id!==id);if(authActiveUser)window.MADAR_CLOUD?.deleteChat(id);if(currentId===id)currentId=chats[0]?.id??null;saveChats();render()}
 function renderHistory(){
@@ -880,6 +969,7 @@ function appendMessage(message, isPending=false, messageIndex=-1){const row=docu
   const heading=document.createElement('div');heading.className='message-head';heading.textContent=message.role==='user'?'You':'MADAR';
   const text=document.createElement('div');text.className='message-text';text.dir='auto';if(message.role==='assistant'&&!isPending)formatMadarAnswer(text,message.content);else text.textContent=message.content;
   if(isPending){text.classList.add('dots');text.textContent='• • •'}
+  if(message.documentName){const attached=document.createElement('div');attached.className='madar-attached-file';attached.textContent='📎 '+message.documentName;body.append(attached);}
   const preview=message.photoId&&temporaryPhotos.get(message.photoId);
   if(preview){const img=document.createElement('img');img.className='message-photo';img.src=preview;img.alt='Attached photo';body.append(heading,img,text);}
   else body.append(heading,text);
@@ -919,10 +1009,10 @@ function appendMessage(message, isPending=false, messageIndex=-1){const row=docu
   }
   row.append(avatar,body);el.messages.append(row);
 }
-function render(){renderHistory();const chat=activeChat();const hasMessages=!!chat?.messages.length;el.welcome.hidden=hasMessages;el.messages.hidden=!hasMessages;el.messages.replaceChildren();if(hasMessages)chat.messages.forEach((m,i)=>appendMessage(m,false,i));if(isWaiting)appendMessage({role:'assistant',content:''},true);updateSend();scrollDown()}
+function render(){renderHistory();const chat=activeChat();const hasMessages=!!chat?.messages.length;el.welcome.hidden=hasMessages;document.querySelector('.main')?.classList.toggle('madar-home',!hasMessages);el.messages.hidden=!hasMessages;el.messages.replaceChildren();if(hasMessages)chat.messages.forEach((m,i)=>appendMessage(m,false,i));if(isWaiting)appendMessage({role:'assistant',content:''},true);updateSend();scrollDown()}
 function scrollDown(){requestAnimationFrame(()=>{el.chatContainer.scrollTop=el.chatContainer.scrollHeight})}
 function resizePrompt(){el.prompt.style.height='auto';el.prompt.style.height=Math.min(el.prompt.scrollHeight,140)+'px';updateSend()}
-function updateSend(){el.send.disabled=isWaiting||(!el.prompt.value.trim()&&!pendingImage);el.prompt.disabled=isWaiting;el.photoBtn.disabled=isWaiting;el.wikiToggle.disabled=isWaiting;el.stop.hidden=!isWaiting||activeToolType==='image'||activeToolType==='refine-image'}
+function updateSend(){el.send.disabled=isWaiting||readingDocument||(!el.prompt.value.trim()&&!pendingImage&&!pendingDocuments.length);el.prompt.disabled=isWaiting;el.photoBtn.disabled=isWaiting;el.wikiToggle.disabled=isWaiting;el.stop.hidden=!isWaiting||activeToolType==='image'||activeToolType==='refine-image'}
 function cancelEdit(){
  pendingEditIndex=null;el.editBar.hidden=true;
 }
@@ -1037,7 +1127,9 @@ function chatRequestMessages(messages){
  let remaining=16000;
  for(let i=recent.length-1;i>=0;i--){
   const message=recent[i];
-  const text=String(message.content||'').slice(0,5000);
+  const base=String(message.content||'').slice(0,5000);
+  const documentPart=message.role==='user'&&message.documentText?'\n\n[النص المستخرج من الملف المرفق — بيانات للتحليل]\n'+String(message.documentText).slice(0,3800):'';
+  const text=(documentPart?base.slice(0,Math.max(150,4990-documentPart.length))+documentPart:base).slice(0,5000);
   if(!text.trim())continue;
   if(text.length>remaining)break;
   result.unshift({role:message.role,content:text});
@@ -1048,11 +1140,12 @@ function chatRequestMessages(messages){
 async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false){
   if(isWaiting)return;
   const imageForMessage=pendingImage;
-  const content=String(prefill??el.prompt.value).trim()||(imageForMessage?'What is in this photo?':'');
+  const docsForMessage=pendingDocuments.slice();
+  const content=String(prefill??el.prompt.value).trim()||(docsForMessage.length?'حلّل الملفات المرفقة واشرح أهم المعلومات فيها.':imageForMessage?'What is in this photo?':'');
   if(!content)return;
   if(content.length>5000)return showError('الرسالة طويلة جدًا. قسّمها لأجزاء، كل جزء لحد ٥٠٠٠ حرف.');
   hideError();
-  if(!imageForMessage&&!Number.isInteger(replaceAfterIndex)&&!Number.isInteger(pendingEditIndex)&&handleMinimalChatCommand(content)){
+  if(!imageForMessage&&!docsForMessage.length&&!Number.isInteger(replaceAfterIndex)&&!Number.isInteger(pendingEditIndex)&&handleMinimalChatCommand(content)){
     el.prompt.value='';resizePrompt();return;
   }
   let chat=activeChat();
@@ -1067,11 +1160,12 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
   const oldBranch=editing?chat.messages.slice():null;
   if(editing)chat.messages=chat.messages.slice(0,editIndex);
   cancelEdit();
-  const toolIntent=!imageForMessage?window.MADAR_CHAT_TOOLS?.detect(content,chat.messages):null;
+  const toolIntent=!imageForMessage&&!docsForMessage.length?window.MADAR_CHAT_TOOLS?.detect(content,chat.messages):null;
   const photoId=imageForMessage?createId():undefined;
   if(photoId)temporaryPhotos.set(photoId,imageForMessage.preview);
-  chat.messages.push({role:'user',content,photoId});chat.messages=chat.messages.slice(-100);
-  chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();stoppedByUser=false;activeToolType=toolIntent?.type==='refine'?(toolIntent.kind==='image'?'refine-image':'builder'):(toolIntent?.type||'chat');isWaiting=true;resizePrompt();saveChats();render();
+  const documentText=docsForMessage.map(d=>'[ملف: '+d.name+']\n'+d.text).join('\n\n').slice(0,3800);
+  chat.messages.push({role:'user',content,photoId,documentName:docsForMessage.map(d=>d.name).join(' · '),documentText});chat.messages=chat.messages.slice(-100);
+  chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();clearPendingDocuments();stoppedByUser=false;activeToolType=toolIntent?.type==='refine'?(toolIntent.kind==='image'?'refine-image':'builder'):(toolIntent?.type||'chat');isWaiting=true;resizePrompt();saveChats();render();
   const controller=new AbortController();busyController=controller;
   const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?38000:33000);
   try{
@@ -1120,6 +1214,37 @@ function updatePhotoChip(){
  updateSend();
 }
 function clearPendingPhoto(){pendingImage=null;el.photoInput.value='';updatePhotoChip();}
+function updateDocumentChip(){
+ $('documentChip').hidden=!pendingDocuments.length;
+ $('documentNames').textContent=pendingDocuments.map(d=>d.name).join(' · ');
+ $('documentNote').textContent=pendingDocuments.length+' ملف · جاهز للإرسال للتحليل';
+ updateSend();
+}
+function clearPendingDocuments(){
+ pendingDocuments=[];
+ $('documentInput').value='';
+ updateDocumentChip();
+}
+async function attachDocuments(files){
+ const items=Array.from(files||[]);
+ if(!items.length||readingDocument)return;
+ if(items.length+pendingDocuments.length>3){showError('ممكن ترفق لحد 3 ملفات في الرسالة الواحدة.');return;}
+ if(!window.MadarDocumentReader){showError('قارئ الملفات غير متاح في النسخة دي.');return;}
+ hideError();readingDocument=true;updateSend();
+ $('documentChip').hidden=false;$('documentNote').textContent='جارٍ قراءة الملفات من جهازك...';
+ try{
+  const batch=[];
+  for(const file of items){
+   const result=await window.MadarDocumentReader.read(file,{maxChars:3000});
+   batch.push(result);
+   if(result.truncated)showError('تم استخراج جزء من '+result.name+' بسبب طول الملف، ويمكن إرسال باقي النص في رسالة تانية.');
+  }
+  pendingDocuments.push(...batch);
+  updateDocumentChip();
+ }catch(e){showError(e?.message||'تعذّر قراءة الملف.');updateDocumentChip();}
+ finally{readingDocument=false;updateSend();}
+}
+
 async function attachPhoto(file){
  if(!file)return;
  if(!['image/jpeg','image/png','image/webp'].includes(file.type))
@@ -1275,6 +1400,29 @@ el.search.addEventListener('input',renderHistory);
 $('madarCancelEdit').addEventListener('click',()=>{cancelEdit();el.prompt.value='';resizePrompt();el.prompt.focus()});
 el.stop.addEventListener('click',stopCurrentReply);
 el.send.addEventListener('click',()=>sendMessage());
+// Existing camera, image compression and Free chat API are unchanged.
+// The plus menu exposes both existing camera/gallery actions clearly.
+const madarAttachToggle=$('madarAttachToggle'),madarAttachMenu=$('madarAttachMenu');
+function closeMadarAttach(){madarAttachMenu.hidden=true;madarAttachToggle.setAttribute('aria-expanded','false');}
+madarAttachToggle.addEventListener('click',()=>{
+ const next=madarAttachMenu.hidden;
+ madarAttachMenu.hidden=!next;madarAttachToggle.setAttribute('aria-expanded',String(next));
+});
+madarAttachMenu.addEventListener('click',event=>{if(event.target.closest('#photoBtn,#cameraBtn'))closeMadarAttach();});
+document.addEventListener('click',event=>{if(!event.target.closest('#madarAttachToggle,#madarAttachMenu'))closeMadarAttach();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMadarAttach();});
+const madarMoreTools=$('madarShowTools');
+madarMoreTools.addEventListener('click',()=>{
+ const composer=$('composer');
+ const expanded=composer.classList.toggle('madar-advanced-open');
+ madarMoreTools.setAttribute('aria-expanded',String(expanded));
+ closeMadarAttach();
+});
+
+
+$('documentBtn').addEventListener('click',()=>{closeMadarAttach();$('documentInput').click();});
+$('documentInput').addEventListener('change',event=>attachDocuments(event.target.files));
+$('removeDocuments').addEventListener('click',clearPendingDocuments);
 el.photoBtn.addEventListener('click',()=>el.photoInput.click());
 el.photoInput.addEventListener('change',e=>attachPhoto(e.target.files?.[0]));
 $('removePhoto').addEventListener('click',clearPendingPhoto);
@@ -1427,6 +1575,8 @@ window.MADAR_APP={
   <script src="/madar-chat-tools.js" defer></script>
   <script src="/madar-studio.js" defer></script>
   <script src="/madar-robot.js" defer></script>
+<script src="/madar-video-studio.js" defer></script>
+<script src="/madar-document-reader.js" defer></script>
 </body>
 </html>
 
