@@ -62,3 +62,19 @@ test('Graceful free-tier quota failure',async()=>{
  assert.equal(r.status,429);
  assert.match(r.error,/حد استخدام/);
 });
+
+test('Invalid OpenRouter key 401 explains next step without leaking credentials',async()=>{
+ process.env.MADAR_PRO_OPENROUTER_API_KEY='mock-pro-key';
+ global.fetch=async()=>({ok:false,status:401,json:async()=>({error:'secret provider detail'})});
+ const r=await invoke(req);
+ assert.equal(r.status,503);
+ assert.match(r.error,/401/);
+ assert.ok(!r.error.includes('secret provider detail'));
+});
+test('Account permissions 403 are distinct from invalid key 401',async()=>{
+ process.env.MADAR_PRO_OPENROUTER_API_KEY='mock-pro-key';
+ global.fetch=async()=>({ok:false,status:403,json:async()=>({error:'provider detail'})});
+ const r=await invoke(req);
+ assert.equal(r.status,503);
+ assert.match(r.error,/403/);
+});
