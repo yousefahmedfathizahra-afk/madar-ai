@@ -123,7 +123,7 @@ module.exports=async function handler(req,res){
     // Strict no-payment rule: only OpenRouter's documented zero-price free router.
     // A dedicated PRO key is required; never read the Free site's keys.
     const key=process.env.MADAR_PRO_OPENROUTER_API_KEY;
-    if(!key)throw fail(503,'شات PRO المجاني محتاج توصيل مفتاح الخدمة المستقل من صاحب المنصة. مش مطلوب أي حاجة من المستخدم.');
+    if(!key||key==='REPLACE_WITH_YOUR_OPENROUTER_API_KEY')throw fail(503,'مفتاح شات PRO لسه ما اتحطش. صاحب المنصة بيجهز الربط، ومش مطلوب أي حاجة من المستخدم.');
     const answer=await fromOpenRouter(key,data);
     return reply(res,200,{reply:answer});
   }catch(e){return reply(res,e?.statusCode||500,{error:e?.statusCode?e.message:'حصل خطأ غير متوقع في PRO. جرّب تاني.'});}
