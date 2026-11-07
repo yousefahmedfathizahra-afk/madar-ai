@@ -95,7 +95,7 @@ async function ai(question){
  if(location.protocol==='file:')throw Error('Real PRO AI needs its separate server route and PRO-only API key. The HTML file is a preview, and the free MADAR API has not changed.');
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),52000);
  try{
-  const response=await fetch('/api/pro-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:($('proModel')?.value||'auto'),language,messages:[{role:'user',content:question.slice(0,5000)}]}),signal:controller.signal});
+  const response=await fetch('/api/pro-chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:'auto',language,messages:[{role:'user',content:question.slice(0,5000)}]}),signal:controller.signal});
   const data=await response.json().catch(()=>null);
   if(!response.ok)throw Error(data?.error||'AI unavailable ('+response.status+').');
   if(typeof data?.reply!=='string'||!data.reply.trim())throw Error('Empty AI answer.');
