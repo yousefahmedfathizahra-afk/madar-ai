@@ -108,6 +108,33 @@ html[data-theme=dark],html:not([data-theme]){color-scheme:dark}
 .composer-bottom>.composer-hint{flex:1}
 @media(max-width:600px){.topbar-end .status{display:flex!important;font-size:10px}.pro-minimal-trigger{width:36px;height:35px}.pro-more-menu{left:0;right:auto}.composer-bottom>.composer-hint{display:none}#proToolsRow{max-height:160px}}
 
+
+/* MADAR PRO: Gold + Dark on entry, ivory + gold in Light; compact scrollable app. */
+:root,html[data-theme="dark"]{color-scheme:dark;--bg:#0b0c0f;--sidebar:#101113;--panel:#17191e;--panel2:#1e2025;--line:rgba(234,194,112,.10);--line2:rgba(234,194,112,.25);--fg:#f8f5ed;--text:#dad3c5;--muted:#a8a08f;--purple:#d8ae61;--purple2:#f3cf89;--soft:rgba(218,173,90,.12);--control:#242427;--gold:#f0c978;--goldsoft:rgba(237,190,100,.14);--shadow:rgba(0,0,0,.38);--glow:rgba(216,160,74,.055);--user:#403223}
+html[data-theme="light"]{color-scheme:light;--bg:#fffdfa;--sidebar:#faf7ef;--panel:#fff;--panel2:#fff9ed;--line:rgba(154,104,35,.1);--line2:rgba(158,106,35,.25);--fg:#2b241b;--text:#625342;--muted:#817365;--purple:#a77831;--purple2:#a16b25;--soft:rgba(206,153,64,.10);--control:#faf5eb;--gold:#a97326;--goldsoft:rgba(213,156,54,.12);--shadow:rgba(96,70,30,.09);--glow:rgba(209,155,71,.07);--user:#f7ebd5}
+html,body{background:var(--bg)}
+.shell{display:block!important;height:100dvh!important;max-height:100dvh;overflow:hidden}
+.sidebar{position:fixed!important;inset:0 auto 0 0!important;width:min(300px,85vw);height:100dvh!important;z-index:70;overflow-y:auto;transform:translateX(-105%)}
+.sidebar.open{transform:translateX(0)!important}
+.overlay{z-index:65}
+.hamburger{display:grid!important}
+.main{height:100dvh!important;width:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.topbar{height:62px!important;min-height:62px;flex:0 0 62px!important;padding:0 clamp(12px,3vw,30px);z-index:10}
+.chat-container{display:block!important;flex:1 1 0!important;min-height:0;overflow-y:auto!important;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;touch-action:pan-y}
+.welcome{margin:20px auto 12px!important;max-width:660px!important;width:100%;padding:10px 16px 24px!important}
+.welcome .planet{display:none!important}
+.welcome h1{font-size:clamp(25px,3.4vw,37px);line-height:1.4;margin:20px 0 8px}
+.welcome .eyebrow{color:var(--gold);background:var(--goldsoft);border-color:var(--line2)}
+.compose-wrap{flex:0 0 auto!important;margin:0 auto!important;position:relative;z-index:10}
+.composer{border-color:var(--line2)}
+.composer:focus-within{border-color:var(--gold)}
+.pro-minimal-trigger,.pro-minimal-tools{color:var(--gold)}
+#proMoreMenu{z-index:90}
+.brand-logo{background:linear-gradient(145deg,#d8ae61,#67461b)!important}
+.studio-dialog{max-height:calc(100dvh - 28px)!important;overflow:auto}
+.studio-body{max-height:calc(100dvh - 110px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:700px){.topbar{height:58px!important;min-height:58px!important;flex-basis:58px!important}.welcome{margin:18px auto 10px!important;padding:10px 14px 20px!important}.welcome h1{font-size:27px!important}.compose-wrap{padding:8px 10px 12px!important}}
+
 </style>
 </head>
 <body>
