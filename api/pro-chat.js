@@ -142,13 +142,19 @@ module.exports=async function handler(req,res){
     const geminiKey=process.env.MADAR_PRO_GEMINI_API_KEY;
     const routerKey=process.env.MADAR_PRO_OPENROUTER_API_KEY;
     let provider=data.provider;
-    if(provider==='auto')provider=geminiKey?'gemini':routerKey?'deepseek':'none';
+    if(provider==='auto'){
+      // Vision requires multimodal Gemini. For difficult code/math use R1 when configured.
+      // Otherwise prefer the responsive Gemini route.
+      const last=data.messages[data.messages.length-1]?.content||'';
+      const complex=last.length>140 && /(debug|refactor|algorithm|reasoning|prove|theorem|code|bug|typescript|python|java|البرمجة|الاخطاء|الأخطاء|خوارزم|مسألة رياض|برهان)/i.test(last);
+      provider=data.image?'gemini':complex&&routerKey?'deepseek':geminiKey?'gemini':routerKey?'deepseek':'none';
+    }
     if(provider==='none')throw fail(503,'PRO غير متصل بعد: يحتاج مفتاح API مستقل خاص ببرو. مدار المجاني لم يتغير.');
     if(provider==='pro'&&process.env.MADAR_PRO_ALLOW_PAID_MODELS!=='true')throw fail(403,'Gemini Pro المدفوع معطل افتراضيًا لتجنب أي تكلفة.');
     if((provider==='gemini'||provider==='pro')&&!geminiKey)throw fail(503,'مفتاح Gemini المستقل لمدار PRO غير مضبوط.');
     if(provider==='deepseek'&&!routerKey)throw fail(503,'مفتاح OpenRouter المستقل لمدار PRO غير مضبوط.');
     const model=provider==='pro'?'gemini-3.1-pro-preview':provider==='gemini'?'gemini-3.8-flash':'deepseek/deepseek-r1:free';
     const answer=provider==='deepseek'?await fromOpenRouter(routerKey,data):await fromGemini(geminiKey,model,data);
-    return reply(res,200,{reply:answer,provider,model});
+    return reply(res,200,{reply:answer});
   }catch(e){return reply(res,e?.statusCode||500,{error:e?.statusCode?e.message:'حصل خطأ غير متوقع في PRO. جرّب تاني.'});}
 };
