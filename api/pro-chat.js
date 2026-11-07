@@ -99,7 +99,9 @@ async function fromOpenRouter(key,ctx){
   const data=await response.json().catch(()=>null);
   if(!response.ok){
     if(response.status===429)throw fail(429,'حد استخدام مدار PRO اتملأ مؤقتًا. جرّب لاحقًا.');
-    if(response.status===401||response.status===403)throw fail(503,'خدمة مدار PRO تحتاج إعداد صلاحيات الاتصال.');
+    if(response.status===401)throw fail(503,'مفتاح OpenRouter الخاص بـPRO مرفوض (401). صاحب المنصة يحتاج يستبدله بمفتاح API صالح من OpenRouter ثم يعيد نشر المعاينة.');
+    if(response.status===403)throw fail(503,'اتصال OpenRouter مرفوض بصلاحيات 403. راجع أذونات المفتاح وقيود الحساب.');
+    if(response.status===402)throw fail(503,'حساب OpenRouter لا يسمح بهذا الطلب بدون رصيد؛ MADAR PRO أوقفه للحفاظ على الوضع المجاني.');
     throw fail(502,'محرك مدار PRO غير متاح مؤقتًا ('+response.status+').');
   }
   const answer=data?.choices?.[0]?.message?.content;
