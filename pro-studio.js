@@ -5,13 +5,13 @@ if(!dialog||!select)return;
 const textByLang={
  'ar-mixed':{
   plans:'← الخطط',newChat:'محادثة جديدة',composerHint:'Enter للإرسال · Shift + Enter لسطر جديد',
-  starterLabel:'ابدأ بأي Task تحبها',welcomeDesc:'اسأل، اتعلم، وصمّم Websites وGames وImages مع MADAR PRO AI. دي نسخة Beta مجانية دلوقتي من غير اشتراك أو دفع.',
+  starterLabel:'أفكار تبدأ بيها',welcomeDesc:'تقدر تبدأ بسؤال، صورة، ملف، أو مشروع كامل.',
   disclaimer:'MADAR PRO Beta · ردود أوضح وTools أكتر، Chat History بيتحفظ على جهازك. مفيش دفع أو اشتراك دلوقتي.',
   placeholder:'اسأل MADAR PRO أو افتح Pro Studio لعمل Websites وGames وImages...'
  },
  en:{
   plans:'← Plans',newChat:'New Chat',composerHint:'Enter to send · Shift + Enter for a new line',
-  starterLabel:'Start with any task',welcomeDesc:'Create websites, games and images, study, code and receive clearer answers. Free beta. No payment required.',
+  starterLabel:'Ideas to get started',welcomeDesc:'Start with a question, image, document, or complete project.',
   disclaimer:'MADAR PRO Beta · Clearer answers and advanced tools. Chat history stays on your device. No billing.',
   placeholder:'Ask MADAR PRO or open Pro Studio for websites, games and images...'
  }};
@@ -25,7 +25,7 @@ function setLanguage(value){
   const el=document.querySelector('[data-i18n="'+key+'"]');if(el)el.textContent=t[key];
  }
  const welcome=document.querySelector('[data-i18n="welcome"]');
- if(welcome){welcome.textContent=language==='en'?'Welcome to MADAR PRO':'أهلًا بيك في مدار PRO'}
+ if(welcome){welcome.innerHTML=language==='en'?'Welcome to <span>MADAR PRO</span>':'أهلًا بيك في <span>مدار PRO</span>'}
  $('prompt').placeholder=t.placeholder;
  try{localStorage.setItem(KEY,language)}catch{}
 }
