@@ -187,6 +187,29 @@ html,body{background:var(--bg)}
 .pro-ai-consent input{flex:none;margin:4px 0 0;accent-color:var(--gold);width:16px;height:16px}
 .pro-ai-consent-panel #proAiStatus{display:block;line-height:1.7}
 
+
+/* MADAR PRO mascot: an original black-and-gold robot that tracks the cursor. */
+.madar-mascot-shell{position:fixed;z-index:18;right:clamp(8px,2vw,28px);bottom:115px;direction:rtl;pointer-events:none;display:flex;align-items:end;filter:drop-shadow(0 13px 25px rgba(0,0,0,.45))}
+.madar-bot-button{pointer-events:auto;position:relative;display:grid;place-items:center;width:142px;height:160px;padding:0;background:none;border:0;color:var(--gold);cursor:pointer;transition:filter .24s}
+.madar-bot-button:focus-visible{outline:2px solid #f8ce52;outline-offset:3px;border-radius:30px}
+.madar-bot-button:hover{filter:brightness(1.14)}
+.madar-bot-spark{position:absolute;inset:20px 2px 4px;border-radius:50%;background:radial-gradient(ellipse at 52% 48%,rgba(255,198,49,.19),rgba(255,191,0,0) 68%);animation:madarBotPulse 3.5s ease-in-out infinite;pointer-events:none}
+.madar-bot-svg{width:142px;height:150px;overflow:visible;animation:madarBotFloat 4.4s ease-in-out infinite}
+.madar-bot-head{transform-origin:50% 48%;transition:transform .085s linear}
+.madar-bot-eye{transform-box:fill-box;transform-origin:center;animation:madarBotBlink 8s infinite}
+.madar-bot-pupil{transition:transform .08s linear}
+.madar-bot-signal{animation:madarBotPulse 2.6s ease-in-out infinite;transform-origin:center}
+.madar-mascot-bubble{pointer-events:auto;position:absolute;right:115px;bottom:97px;width:min(265px,calc(100vw - 138px));border:1px solid rgba(252,197,63,.58);border-radius:17px 17px 5px 17px;background:linear-gradient(152deg,rgba(23,23,28,.98),rgba(7,8,10,.98));color:#ffedbf;padding:12px 13px;text-align:right;box-shadow:0 10px 30px rgba(0,0,0,.4);font-size:12px;line-height:1.75;backdrop-filter:blur(10px)}
+.madar-mascot-bubble strong{display:block;color:#ffcf49;margin-bottom:3px;font-size:13px}
+.madar-mascot-bubble p{margin:0 0 8px;color:#f9ead6}
+.madar-mascot-bubble button{border:1px solid rgba(255,210,88,.35);border-radius:8px;background:rgba(252,197,63,.13);color:#ffdc80;padding:6px 12px;font-weight:700}
+.madar-mascot-bubble button:hover{background:rgba(252,197,63,.24)}
+@keyframes madarBotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes madarBotPulse{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes madarBotBlink{0%,43%,46%,96%,100%{transform:scaleY(1)}44%{transform:scaleY(.07)}}
+@media(max-width:650px){.madar-mascot-shell{right:4px;bottom:88px}.madar-bot-button{width:89px;height:101px}.madar-bot-svg{width:89px;height:96px}.madar-bot-spark{inset:12px 0 4px}.madar-mascot-bubble{right:78px;bottom:65px;width:min(235px,calc(100vw - 101px));font-size:11px}}
+@media(prefers-reduced-motion:reduce){.madar-bot-svg,.madar-bot-spark,.madar-bot-eye,.madar-bot-signal{animation:none!important}.madar-bot-head,.madar-bot-pupil{transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -586,5 +609,49 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();clos
 <script src="/pro-studio.js" defer></script>
 <script src="/madar-pro-video-studio.js" defer></script>
 <script src="/madar-document-reader.js" defer></script>
+
+<!-- MADAR PRO companion: inline SVG, no external image/model or tracker. -->
+<aside id="madarMascot" class="madar-mascot-shell" aria-label="مساعد مدار التفاعلي">
+  <div id="madarMascotBubble" class="madar-mascot-bubble" hidden>
+    <strong>🤖 أنا مساعد مدار</strong>
+    <p>أنا هنا معاك! عيني بتتابع الماوس. اضغط واسأل مدار PRO أي حاجة.</p>
+    <button type="button" id="madarMascotAsk">ابدأ سؤال ✨</button>
+  </div>
+  <button type="button" id="madarMascotButton" class="madar-bot-button" aria-label="افتح رسالة مساعد مدار الروبوت" aria-expanded="false" aria-controls="madarMascotBubble" title="أنا مساعد مدار 👋">
+    <span class="madar-bot-spark" aria-hidden="true"></span>
+    <svg class="madar-bot-svg" viewBox="0 0 186 190" role="img" aria-label="روبوت مدار الأسود والذهبي">
+      <defs>
+        <linearGradient id="madarBotShell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#31343a"/><stop offset=".46" stop-color="#101216"/><stop offset="1" stop-color="#050608"/></linearGradient>
+        <linearGradient id="madarBotGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3a7"/><stop offset=".48" stop-color="#f7bd26"/><stop offset="1" stop-color="#c77e0f"/></linearGradient>
+        <linearGradient id="madarBotVisor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#171d24"/><stop offset="1" stop-color="#050809"/></linearGradient>
+      </defs>
+      <g class="madar-bot-head">
+        <path d="M91 40 L91 23" stroke="#d89c24" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="91" cy="17" r="10" fill="url(#madarBotGold)" stroke="#8b5b0e" stroke-width="2" class="madar-bot-signal"/>
+        <rect x="20" y="59" width="146" height="111" rx="44" fill="url(#madarBotShell)" stroke="#ffcb45" stroke-width="5"/>
+        <rect x="14" y="99" width="17" height="37" rx="8" fill="#101316" stroke="#eaa92a" stroke-width="3"/>
+        <rect x="155" y="99" width="17" height="37" rx="8" fill="#101316" stroke="#eaa92a" stroke-width="3"/>
+        <rect x="33" y="77" width="120" height="72" rx="29" fill="url(#madarBotVisor)" stroke="#755b2a" stroke-width="2"/>
+        <path d="M42 87 Q88 67 144 88" fill="none" stroke="#fff3ba" stroke-width="2" opacity=".25"/>
+        <g class="madar-bot-eye">
+          <ellipse cx="68" cy="110" rx="23" ry="20" fill="#ffe8a0" stroke="#d9a12b" stroke-width="3"/>
+          <ellipse class="madar-bot-pupil" cx="68" cy="111" rx="9" ry="12" fill="#141518"/>
+          <circle cx="63" cy="105" r="4" fill="#fffaf0"/>
+        </g>
+        <g class="madar-bot-eye">
+          <ellipse cx="119" cy="110" rx="23" ry="20" fill="#ffe8a0" stroke="#d9a12b" stroke-width="3"/>
+          <ellipse class="madar-bot-pupil" cx="119" cy="111" rx="9" ry="12" fill="#141518"/>
+          <circle cx="114" cy="105" r="4" fill="#fffaf0"/>
+        </g>
+        <path d="M81 137 Q93 147 106 137" stroke="#ffce51" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M56 163 C50 180 66 188 88 183 M130 163 C138 180 118 188 96 183" fill="#171819" stroke="#db9d25" stroke-width="4"/>
+        <path d="M51 59 Q91 36 135 59" fill="none" stroke="#fff3af" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+        <circle cx="42" cy="157" r="4" fill="#ffc334"/><circle cx="143" cy="157" r="4" fill="#ffc334"/>
+      </g>
+    </svg>
+  </button>
+</aside>
+
+<script src="/madar-pro-mascot.js" defer></script>
 </body>
 </html>
