@@ -80,6 +80,32 @@ pre .code-copy{display:block;margin-bottom:9px;direction:rtl}
 html[lang=en] .studio-dialog{direction:ltr}
 @media(max-width:850px){.topbar-end{gap:5px}.language-choice{padding:5px}.language-choice span{display:none}.language-choice select{max-width:105px;font-size:10px}.studio-launch{padding:7px 8px;font-size:10px}.topbar .change-plan{padding:6px;font-size:10px}.studio-cols{grid-template-columns:1fr}.studio-body{padding:13px}.studio-panel{padding:14px}}
 @media(max-width:420px){.top-brand{font-size:13px}.language-choice select{max-width:75px}.studio-launch{padding:6px}.topbar-end .status{display:none}.change-plan{font-size:9px}}
+
+/* MADAR PRO minimalist dark-first controls; all functions remain reachable via menus. */
+html,body{background:#0f0f18}
+html[data-theme=dark],html:not([data-theme]){color-scheme:dark}
+.topbar-end{position:relative}
+.pro-minimal-trigger{width:41px;height:37px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);font-size:20px;line-height:1;letter-spacing:1px;flex:none}
+.pro-minimal-trigger:hover,.pro-minimal-trigger[aria-expanded=true]{background:var(--soft);color:var(--fg);border-color:var(--line2)}
+.pro-more-menu{position:absolute;z-index:80;top:calc(100% + 13px);left:0;width:min(300px,calc(100vw - 24px));max-height:calc(100dvh - 85px);overflow:auto;border:1px solid var(--line2);border-radius:16px;background:var(--panel);box-shadow:0 22px 70px rgba(0,0,0,.5);padding:12px;display:flex;flex-direction:column;gap:8px;text-align:right;direction:rtl}
+.pro-more-menu[hidden]{display:none!important}
+.pro-menu-title{color:var(--muted);padding:4px 5px 7px;font-size:11px;font-weight:700}
+.pro-menu-line,.pro-menu-action{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:11px 10px;background:var(--control);color:var(--fg);text-decoration:none;font-size:12px}
+.pro-menu-line select{width:140px;max-width:60%;color:var(--fg);border:1px solid var(--line2);background:var(--panel);border-radius:8px;padding:6px}
+.pro-more-menu .language-choice{min-height:45px}
+.pro-more-menu .studio-launch,.pro-more-menu .change-plan{display:flex;font:600 12px system-ui;white-space:normal;box-shadow:none;min-height:39px;padding:11px}
+.pro-menu-action:hover{border-color:var(--purple);background:var(--soft)}
+.pro-api-note{font-size:10px;color:var(--muted);line-height:1.6;padding:6px}
+.pro-minimal-tools{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line2);background:var(--control);color:var(--fg);border-radius:11px;font-size:22px;line-height:1;flex:none}
+.pro-minimal-tools[aria-expanded=true]{border-color:var(--purple);color:var(--gold)}
+.pro-tools-row{min-width:0}
+#proToolsRow{display:flex;gap:7px;flex-wrap:wrap;max-height:240px;overflow:auto;padding:10px 2px 13px}
+#proToolsRow[hidden]{display:none!important}
+#proToolsRow .quick-btn{display:inline-flex;align-items:center;justify-content:center;width:auto;height:auto;min-height:34px;padding:7px 12px;border:1px solid var(--line2);border-radius:9px;background:var(--control);font-size:12px}
+.composer-bottom{justify-content:space-between;gap:10px}
+.composer-bottom>.composer-hint{flex:1}
+@media(max-width:600px){.topbar-end .status{display:flex!important;font-size:10px}.pro-minimal-trigger{width:36px;height:35px}.pro-more-menu{left:0;right:auto}.composer-bottom>.composer-hint{display:none}#proToolsRow{max-height:160px}}
+
 </style>
 </head>
 <body>
@@ -95,7 +121,25 @@ html[lang=en] .studio-dialog{direction:ltr}
   <main class="main">
     <header class="topbar">
       <div class="topbar-start"><button id="openSidebar" type="button" class="icon-btn hamburger" aria-label="افتح القائمة">☰</button><div class="top-brand">مدار <span class="pro-pill">PRO</span></div><span class="top-divider"></span><span class="top-subtitle">مساعدك الذكي</span></div>
-      <div class="topbar-end"><label class="language-choice" for="languageSelect"><span>اللغة / Language</span><select id="languageSelect" aria-label="Choose language"><option value="ar-mixed">عربي + English</option><option value="en">English</option></select></label><button id="openStudio" class="studio-launch" type="button" aria-label="Open PRO Studio">🎨 Pro Studio</button><a class="change-plan" href="/" data-i18n="plans" aria-label="رجوع لاختيار الخطة">← الخطط</a><div class="status"><span class="status-dot"></span><span id="chatStatus">PRO تجريبي</span></div><button id="themeToggle" class="icon-btn" type="button" aria-label="تبديل المظهر" title="تبديل المظهر">☀</button><button id="accountBtn" type="button" class="icon-btn" title="الحسابات غير مفعلة في المعاينة" aria-label="الحساب">♙</button></div>
+      <div class="topbar-end">
+      <div class="status"><span class="status-dot"></span><span id="chatStatus">PRO تجريبي</span></div>
+      <button id="proMoreToggle" class="pro-minimal-trigger" type="button" aria-label="الأدوات والإعدادات" aria-controls="proMoreMenu" aria-expanded="false" title="الإعدادات">•••</button>
+      <div id="proMoreMenu" class="pro-more-menu" hidden>
+        <div class="pro-menu-title">إعدادات MADAR PRO</div>
+        <label class="language-choice pro-menu-line" for="languageSelect"><span>اللغة / Language</span><select id="languageSelect" aria-label="Choose language"><option value="ar-mixed">عربي + English</option><option value="en">English</option></select></label>
+        <label class="pro-menu-line pro-model-line" for="proModel"><span>AI Model</span><select id="proModel" aria-label="PRO AI model">
+          <option value="auto">Auto / تلقائي</option>
+          <option value="gemini">Gemini 3.8 Flash</option>
+          <option value="deepseek">DeepSeek R1 Free</option>
+          <option value="pro" disabled>Gemini Pro · مدفوع - غير مفعّل</option>
+        </select></label>
+        <button id="openStudio" class="studio-launch pro-menu-action" type="button" aria-label="Open PRO Studio">◈ Pro Studio</button>
+        <button id="themeToggle" class="pro-menu-action" type="button" aria-label="تبديل المظهر" title="تبديل المظهر">☾ Dark / Light</button>
+        <button id="accountBtn" class="pro-menu-action" type="button" title="الحسابات غير مفعلة في المعاينة" aria-label="الحساب">♙ الحساب</button>
+        <a class="change-plan pro-menu-action" href="/" data-i18n="plans" aria-label="رجوع لاختيار الخطة">← الخطط</a>
+        <small class="pro-api-note">مفتاح PRO مستقل على الخادم فقط. المجاني منفصل تمامًا.</small>
+      </div>
+    </div>
     </header>
     <div id="chatContainer" class="chat-container">
       <section id="welcome" class="welcome" aria-label="شاشة البداية">
@@ -115,7 +159,7 @@ html[lang=en] .studio-dialog{direction:ltr}
     </div>
     <div class="compose-wrap">
       <div class="composer">
-        <div class="tools-row" aria-label="أدوات مدار">
+        <div id="proToolsRow" class="tools-row" aria-label="أدوات مدار" hidden>
           <button id="photoBtn" class="tool" type="button" title="اختيار صورة">＋ Photo</button>
           <button id="cameraBtn" class="tool camera" type="button" title="فتح كاميرا الجهاز">📷 Camera</button>
           <button class="tool" data-prompt-tool="analyze" type="button" title="تحليل عميق للمشكلة">🧠 Analysis</button>
@@ -130,7 +174,7 @@ html[lang=en] .studio-dialog{direction:ltr}
         <input id="cameraInput" type="file" accept="image/*" capture="environment" hidden>
         <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="الصورة المختارة"><span>الصورة جاهزة للعرض في المحادثة</span><button id="removePhoto" type="button" aria-label="إزالة الصورة">×</button></div>
         <textarea id="prompt" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني، اعمل صورة، أو ابني موقع..." aria-label="اكتب رسالتك"></textarea>
-        <div class="composer-bottom"><span class="composer-hint" data-i18n="composerHint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="إملاء صوتي" title="تكلم مع مدار">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-pressed="false" aria-label="قراءة الردود صوتيًا" title="تشغيل النطق">🔈</button><button id="stopBtn" class="quick-btn" type="button" hidden aria-label="إيقاف الرد" title="إيقاف الرد">⏹</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
+        <div class="composer-bottom"><button id="proToolsToggle" class="pro-minimal-tools" type="button" aria-label="إظهار الأدوات" title="الأدوات" aria-controls="proToolsRow" aria-expanded="false">＋</button><span class="composer-hint" data-i18n="composerHint">Enter للإرسال · Shift + Enter لسطر جديد</span><div class="send-actions"><button id="micBtn" class="quick-btn" type="button" aria-label="إملاء صوتي" title="تكلم مع مدار">🎙️</button><button id="voiceBtn" class="quick-btn" type="button" aria-pressed="false" aria-label="قراءة الردود صوتيًا" title="تشغيل النطق">🔈</button><button id="stopBtn" class="quick-btn" type="button" hidden aria-label="إيقاف الرد" title="إيقاف الرد">⏹</button><button id="send" class="send" type="button" aria-label="إرسال الرسالة" disabled>➜</button></div></div>
       </div>
       <p class="disclaimer" data-i18n="disclaimer"><b>MADAR PRO Beta</b> · شات أوضح وTools أكتر، Chat History بيتحفظ على جهازك. مفيش اشتراك أو دفع دلوقتي.</p>
     </div>
@@ -300,15 +344,15 @@ async function send(prefill){
  els.prompt.value='';clearPhoto();isWaiting=true;resize();render();
  $('chatStatus').textContent='مدار بيرد...';
  const controller=new AbortController();activeController=controller;
- stopRequested=false;$('stopBtn').hidden=false;const timeout=setTimeout(()=>controller.abort(),34000);
+ stopRequested=false;$('stopBtn').hidden=false;const timeout=setTimeout(()=>controller.abort(),52000);
  try{
-  if(location.protocol==='file:')throw Error('الذكاء الاصطناعي مش هيشتغل من ملف HTML مفتوح من الجهاز. افتح رابط المعاينة على Vercel لتجربته.');
-  const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:buildRequestMessages(chat.messages),mode:'pro',language:(window.MadarProLanguage?.()||'ar-mixed'),image:picture||undefined}),signal:controller.signal});
+  if(location.protocol==='file:')throw Error('دي معاينة HTML. الشات الحقيقي يحتاج خادم PRO مستقل بمفتاح API خاص به، من غير تغيير مدار المجاني.');
+  const response=await fetch('/api/pro-chat',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:buildRequestMessages(chat.messages),provider:$('proModel').value,language:(window.MadarProLanguage?.()||'ar-mixed'),image:picture||undefined}),signal:controller.signal});
   const data=await response.json().catch(()=>null);
   if(!response.ok)throw Error((data&&typeof data.error==='string'&&data.error)||(response.status===429?'حد الاستخدام اتملأ مؤقتًا. جرّب بعد شوية.':'خدمة مدار مش متاحة دلوقتي ('+response.status+').'));
   if(!data||typeof data.reply!=='string'||!data.reply.trim())throw Error('مدار رجّع رد فاضي. جرّب تاني.');
-  assistant.text=data.reply; $('chatStatus').textContent='متصل';if(autoSpeak)speakText(data.reply);
+  assistant.text=data.reply; $('chatStatus').textContent='ردّ بنجاح';if(autoSpeak)speakText(data.reply);
  }catch(e){
   assistant.text=(e?.name==='AbortError'?(stopRequested?'تم إيقاف الرد.':'الطلب أخد وقت أطول من المتوقع. جرّب تاني.'):e?.message||'حصل خطأ في الاتصال بالشات.');
   $('chatStatus').textContent='في مشكلة اتصال';
@@ -388,7 +432,18 @@ $('micBtn').addEventListener('click',()=>{
   notify('اتكلم دلوقتي، وهيتحول كلامك لرسالة.');
  }catch(e){notify('الميكروفون مش متاح دلوقتي.')}
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});restoreChats();render();resize();
+// Minimal UI: features remain available inside contextual menus.
+const moreToggle=$('proMoreToggle'),moreMenu=$('proMoreMenu'),toolsToggle=$('proToolsToggle'),toolsRow=$('proToolsRow');
+function closeProMenus(){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');toolsRow.hidden=true;toolsToggle.setAttribute('aria-expanded','false');}
+moreToggle.addEventListener('click',()=>{const next=moreMenu.hidden;closeProMenus();moreMenu.hidden=!next;moreToggle.setAttribute('aria-expanded',String(next));});
+toolsToggle.addEventListener('click',()=>{const next=toolsRow.hidden;closeProMenus();toolsRow.hidden=!next;toolsToggle.setAttribute('aria-expanded',String(next));});
+// Preserve voice features without crowding the composer.
+toolsRow.append($('micBtn'),$('voiceBtn'));
+moreMenu.addEventListener('click',e=>{if(e.target.closest('button,a')&&e.target!==moreToggle){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');}});
+document.addEventListener('click',e=>{if(!e.target.closest('.topbar-end')){moreMenu.hidden=true;moreToggle.setAttribute('aria-expanded','false');}});
+const modelSel=$('proModel');try{const saved=localStorage.getItem('madar-pro-model-v1');if(['auto','gemini','deepseek'].includes(saved))modelSel.value=saved;}catch(e){}
+modelSel.addEventListener('change',()=>{try{localStorage.setItem('madar-pro-model-v1',modelSel.value);}catch(e){}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();closeProMenus();}});restoreChats();render();resize();
 })();
 </script>
 <script src="/pro-studio.js" defer></script>
