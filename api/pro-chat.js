@@ -9,7 +9,7 @@
  *   deepseek: DeepSeek R1 via OpenRouter free route (limited and may be unavailable)
  *   pro    : Google Gemini 3.1 Pro Preview (PAID and opt-in only)
  */
-const MAX_BODY = 48000;
+const MAX_BODY = 1900000; // allows bounded image attachments; text remains capped
 const MAX_OUTPUT = 5500;
 const MAX_INPUT = 19000;
 const MAX_IMAGE_BYTES_B64 = 1700000;
@@ -129,7 +129,7 @@ module.exports=async function handler(req,res){
   res.setHeader('Cache-Control','no-store, no-cache, must-revalidate');
   res.setHeader('X-Content-Type-Options','nosniff');
   res.setHeader('Referrer-Policy','no-referrer');
-  res.setHeader('Access-Control-Allow-Origin','null'); // same-origin requests only; do not enable third-party CORS
+  // Same-origin requests only. Do not send CORS access headers.
   if(req.method!=='POST')return reply(res,405,{error:'POST only'});
   try{
     const origin=req.headers?.origin;
