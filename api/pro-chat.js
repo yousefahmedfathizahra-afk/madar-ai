@@ -97,7 +97,7 @@ async function fromGemini(key,model,ctx){
   const data=await response.json().catch(()=>null);
   if(!response.ok){
     if(response.status===429)throw fail(429,'رصيد أو عدد طلبات مدار PRO وصل للحد المتاح. جرّب لاحقًا.');
-    if(response.status===401||response.status===403)throw fail(503,'مفتاح Gemini الخاص بـ PRO ليس لديه صلاحية للنموذج.');
+    if(response.status===401||response.status===403)throw fail(503,'إعدادات خدمة مدار PRO تحتاج مراجعة الصلاحيات.');
     throw fail(502,'MADAR PRO لم يتمكن من معالجة الطلب ('+response.status+').');
   }
   const answer=(data?.candidates?.[0]?.content?.parts||[]).filter(p=>typeof p.text==='string'&&!p.thought).map(p=>p.text).join('\n').trim();
@@ -105,7 +105,7 @@ async function fromGemini(key,model,ctx){
   return answer;
 }
 async function fromOpenRouter(key,ctx){
-  if(ctx.image)throw fail(400,'موديل DeepSeek R1 المجاني هنا للنص فقط. اختار Gemini لتحليل الصور.');
+  if(ctx.image)throw fail(400,'خدمة تحليل الصور مش متاحة في الإعداد الحالي. جرّب لاحقًا.');
   const response=await callProvider('https://openrouter.ai/api/v1/chat/completions',{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'X-Title':'MADAR PRO'},
@@ -117,9 +117,9 @@ async function fromOpenRouter(key,ctx){
   });
   const data=await response.json().catch(()=>null);
   if(!response.ok){
-    if(response.status===429)throw fail(429,'OpenRouter Free وصل للحد اليومي أو حد السرعة. جرّب Gemini أو لاحقًا.');
-    if(response.status===401||response.status===403)throw fail(503,'مفتاح OpenRouter الخاص بـ PRO غير صالح أو لا يملك صلاحية.');
-    throw fail(502,'DeepSeek R1 المجاني غير متاح الآن ('+response.status+').');
+    if(response.status===429)throw fail(429,'حد استخدام مدار PRO اتملأ مؤقتًا. جرّب لاحقًا.');
+    if(response.status===401||response.status===403)throw fail(503,'خدمة مدار PRO تحتاج إعداد صلاحيات الاتصال.');
+    throw fail(502,'محرك مدار PRO غير متاح مؤقتًا ('+response.status+').');
   }
   const answer=data?.choices?.[0]?.message?.content;
   if(typeof answer!=='string'||!answer.trim())throw fail(502,'مدار PRO لم يُرجع إجابة نهائية. جرّب تاني.');
@@ -150,9 +150,9 @@ module.exports=async function handler(req,res){
       provider=data.image?'gemini':complex&&routerKey?'deepseek':geminiKey?'gemini':routerKey?'deepseek':'none';
     }
     if(provider==='none')throw fail(503,'PRO غير متصل بعد: يحتاج مفتاح API مستقل خاص ببرو. مدار المجاني لم يتغير.');
-    if(provider==='pro'&&process.env.MADAR_PRO_ALLOW_PAID_MODELS!=='true')throw fail(403,'Gemini Pro المدفوع معطل افتراضيًا لتجنب أي تكلفة.');
-    if((provider==='gemini'||provider==='pro')&&!geminiKey)throw fail(503,'مفتاح Gemini المستقل لمدار PRO غير مضبوط.');
-    if(provider==='deepseek'&&!routerKey)throw fail(503,'مفتاح OpenRouter المستقل لمدار PRO غير مضبوط.');
+    if(provider==='pro'&&process.env.MADAR_PRO_ALLOW_PAID_MODELS!=='true')throw fail(403,'خيار الأداء المدفوع غير مفعل حاليًا لتجنب التكاليف.');
+    if((provider==='gemini'||provider==='pro')&&!geminiKey)throw fail(503,'خدمة مدار PRO محتاجة إعداد اتصال خاص بها.');
+    if(provider==='deepseek'&&!routerKey)throw fail(503,'خدمة مدار PRO محتاجة إعداد اتصال خاص بها.');
     const model=provider==='pro'?'gemini-3.1-pro-preview':provider==='gemini'?'gemini-3.8-flash':'deepseek/deepseek-r1:free';
     const answer=provider==='deepseek'?await fromOpenRouter(routerKey,data):await fromGemini(geminiKey,model,data);
     return reply(res,200,{reply:answer});
