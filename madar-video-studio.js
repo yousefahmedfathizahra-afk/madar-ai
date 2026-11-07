@@ -9,7 +9,7 @@ const isPro=root.dataset.videoTier==='pro';
 const prompt=$('madarVideoPrompt'),quality=$('madarVideoQuality'),duration=$('madarVideoSeconds');
 const generate=$('madarVideoGenerate'),sample=$('madarVideoSample'),credit=$('madarVideoCredit');
 const status=$('madarVideoStatus'),preview=$('madarVideoPreview'),save=$('madarVideoDownload');
-const close=$('madarVideoClose'),open=$('madarVideoOpen'),dialog=$('madarVideoDialog');
+const close=$('madarVideoClose'),open=$('madarVideoOpen'),dialog=$('madarVideoDialog'),connect=$('madarVideoConnect');
 let busy=false,sdkPromise=null;
 function say(msg,error){status.textContent=msg;status.style.color=error?'#e89e91':'';}
 function cleanPreview(){preview.pause();preview.removeAttribute('src');preview.hidden=true;preview.load();save.hidden=true;save.removeAttribute('href');}
@@ -30,27 +30,39 @@ function ensurePuter(){
  return sdkPromise;
 }
 if(open&&dialog){open.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});}
+if(connect){
+ connect.addEventListener('click',()=>{
+   if(location.protocol==='file:'){say('فتح الملف مباشرة مش بيدعم تسجيل الدخول. افتح PRO من localhost أو دومين آمن.',true);return;}
+   if(!window.puter?.ai?.txt2vid){
+     ensurePuter().then(()=>say('الخدمة جاهزة. اضغط «تسجيل الدخول» مرة كمان لإكمال الربط.')).catch(e=>say(e.message,true));
+     return;
+   }
+   if(window.puter.auth?.isSignedIn?.()){say('حساب الفيديو متصل بالفعل.');return;}
+   if(!window.puter.auth?.signIn){say('تسجيل الدخول غير متاح حاليًا.',true);return;}
+   // Popup is opened synchronously from a user gesture.
+   Promise.resolve(window.puter.auth.signIn()).then(()=>say('حساب الفيديو اتربط. اختار العينة أو وافق على استهلاك الرصيد للفيديو الحقيقي.')).catch(e=>say('تعذر تسجيل الدخول: '+String(e?.message||'مرفوض'),true));
+ });
+}
 if(close&&dialog){close.addEventListener('click',()=>dialog.close());}
 if(dialog){dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});}
 async function run(testMode){
  if(busy)return;
  const idea=prompt.value.trim();
  if(idea.length<8){say('اكتب وصف الفيديو بتفاصيل أكتر (8 حروف على الأقل).',true);prompt.focus();return;}
- if(!testMode&&!credit.checked){say('علشان نولّد فيديو حقيقي، وافق الأول على استخدام رصيد حساب Puter. تقدر تجرب العينة بدون خصم.',true);return;}
+ if(!testMode&&!credit.checked){say('علشان نولّد فيديو حقيقي، وافق الأول على استخدام رصيد حسابك. تقدر تجرب العينة بدون خصم.',true);return;}
  busy=true;generate.disabled=true;sample.disabled=true;
  cleanPreview();say(testMode?'بنجهّز فيديو عينة للتجربة من غير خصم...':'بنجهّز الفيديو الحقيقي... العملية ممكن تاخد دقايق. خليك فاتح الصفحة.');
  try{
    const puter=await ensurePuter();
-   if(!testMode&&puter.auth?.isSignedIn&&!await puter.auth.isSignedIn()){
-     if(!puter.auth.signIn)throw new Error('لازم تسجل دخول Puter الأول عشان تستخدم رصيدك.');
-     await puter.auth.signIn();
+   if(!testMode&&puter.auth?.isSignedIn&&!puter.auth.isSignedIn()){
+     throw new Error('وصّل حساب الفيديو من الزر الأول. تسجيل الدخول بيحتاج ضغطة منك.');
    }
    const seconds=isPro?Number(duration.value||5):5;
    // Never switch Free to the premium engine. Never spend automatically on a retry.
    const opts=isPro?
     {model:'kling-3.0',seconds,size:quality.value==='4k'?'4k':'1080p',width:quality.value==='4k'?3840:1920,height:quality.value==='4k'?2160:1080,generate_audio:!!$('madarVideoAudio')?.checked,test_mode:testMode}:
     {model:'kling-2.5-turbo',seconds:5,size:'720p',width:1280,height:720,test_mode:testMode};
-   const result=testMode?await puter.ai.txt2vid(idea,true):await puter.ai.txt2vid(idea,opts);
+   const result=await puter.ai.txt2vid(idea,opts);
    const src=[result?.src,result?.currentSrc,result?.querySelector?.('source')?.src,result?.getAttribute?.('data-source')].find(safeSrc);
    if(!safeSrc(src))throw new Error('خدمة الفيديو رجّعت نتيجة غير صالحة.');
    preview.src=src;preview.hidden=false;preview.controls=true;preview.load();
