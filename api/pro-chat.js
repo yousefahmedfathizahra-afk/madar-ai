@@ -47,7 +47,7 @@ function parseRequest(data) {
   for(const m of data.messages.slice(-20)){
     if(!m||!['user','assistant'].includes(m.role)||typeof m.content!=='string')throw fail(400,'صيغة رسالة غير صحيحة.');
     const content=m.content.trim();
-    if(content)messages.push({role:m.role,content:content.slice(0,6000)});
+    if(content)messages.push({role:m.role,content:content.slice(0,15000)});
   }
   if(!messages.length||messages[messages.length-1].role!=='user')throw fail(400,'آخر رسالة لازم تكون من المستخدم.');
   let remaining=MAX_INPUT;
@@ -96,12 +96,12 @@ async function fromGemini(key,model,ctx){
   });
   const data=await response.json().catch(()=>null);
   if(!response.ok){
-    if(response.status===429)throw fail(429,'رصيد أو عدد طلبات Gemini PRO وصل للحد المتاح. جرّب لاحقًا.');
+    if(response.status===429)throw fail(429,'رصيد أو عدد طلبات مدار PRO وصل للحد المتاح. جرّب لاحقًا.');
     if(response.status===401||response.status===403)throw fail(503,'مفتاح Gemini الخاص بـ PRO ليس لديه صلاحية للنموذج.');
-    throw fail(502,'Gemini PRO لم يتمكن من معالجة الطلب ('+response.status+').');
+    throw fail(502,'MADAR PRO لم يتمكن من معالجة الطلب ('+response.status+').');
   }
   const answer=(data?.candidates?.[0]?.content?.parts||[]).filter(p=>typeof p.text==='string'&&!p.thought).map(p=>p.text).join('\n').trim();
-  if(!answer)throw fail(502,'Gemini رجّع رد فاضي. جرّب مرة تانية.');
+  if(!answer)throw fail(502,'مدار PRO رجّع رد فاضي. جرّب مرة تانية.');
   return answer;
 }
 async function fromOpenRouter(key,ctx){
@@ -122,7 +122,7 @@ async function fromOpenRouter(key,ctx){
     throw fail(502,'DeepSeek R1 المجاني غير متاح الآن ('+response.status+').');
   }
   const answer=data?.choices?.[0]?.message?.content;
-  if(typeof answer!=='string'||!answer.trim())throw fail(502,'DeepSeek لم يُرجع إجابة نهائية. جرّب Gemini.');
+  if(typeof answer!=='string'||!answer.trim())throw fail(502,'مدار PRO لم يُرجع إجابة نهائية. جرّب تاني.');
   return answer.trim();
 }
 module.exports=async function handler(req,res){
