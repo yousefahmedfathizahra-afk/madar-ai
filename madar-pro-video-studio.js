@@ -13,6 +13,12 @@ function updateDurations(){
  const previous=duration.value;
  duration.innerHTML=options.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('');
  duration.value=options.some(([v])=>v===previous)?previous:options[0][0];
+ if(aspect){
+  const ratios=model.value==='veo3.1-audio'?[['16:9','أفقي · YouTube'],['9:16','رأسي · Reels / TikTok']]:[['16:9','أفقي · YouTube'],['9:16','رأسي · Reels / TikTok'],['1:1','مربع · Instagram']];
+  const old=aspect.value;
+  aspect.innerHTML=ratios.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('');
+  aspect.value=ratios.some(([v])=>v===old)?old:'16:9';
+ }
 }
 if(model){model.addEventListener('change',updateDurations);updateDurations();}
 function displayVideo(url,credits){
@@ -23,7 +29,7 @@ function displayVideo(url,credits){
 }
 async function readJson(response){
  const data=await response.json().catch(()=>({}));
- if(!response.ok)throw new Error(data.error||'تعذر الاتصال بخدمة الفيديو ('+response.status+').');
+ if(!response.ok){const error=new Error(data.error||'تعذر الاتصال بخدمة الفيديو ('+response.status+').');error.status=response.status;throw error;}
  return data;
 }
 async function poll(id,knownCredits){
@@ -41,6 +47,7 @@ async function poll(id,knownCredits){
    info('🎬 مدار بيولّد الفيديو بالذكاء الاصطناعي… الحالة: '+s+' ('+tries+'/60).');
   }catch(e){
    if(e?.message?.includes('الفيديو اكتمل')){info(e.message,true);setBusy(false);return;}
+   if(e?.status&&e.status<500){info(e.message,true);setBusy(false);return;}
    if(e?.message?.includes('فشل توليد الفيديو')||(!activeProject&&e?.message)){info(e.message,true);setBusy(false);return;}
    // A temporary status-read failure does not create another generation.
    if(tries%4===0)info('الفيديو قيد المعالجة. بنحاول نقرأ الحالة فقط؛ مش بننشئ فيديو جديد.');
