@@ -2,7 +2,7 @@
 'use strict';
 // MADAR PRO only: AI video generation through the server-side Magic Hour key.
 const $=id=>document.getElementById(id),root=$('madarVideoRoot');if(!root)return;
-const idea=$('madarVideoPrompt'),aspect=$('madarVideoAspect'),generate=$('madarVideoGenerate'),message=$('madarVideoStatus'),preview=$('madarVideoPreview'),save=$('madarVideoDownload');
+const idea=$('madarVideoPrompt'),aspect=$('madarVideoAspect'),duration=$('madarVideoDuration'),generate=$('madarVideoGenerate'),message=$('madarVideoStatus'),preview=$('madarVideoPreview'),save=$('madarVideoDownload');
 let busy=false,activeProject=null,pollTimer=null;
 function info(t,bad=false){message.textContent=t;message.style.color=bad?'#e7a4a1':''}
 function setBusy(v){busy=v;generate.disabled=v;generate.textContent=v?'⏳ جاري العمل…':(activeProject?'↻ متابعة حالة الفيديو':'🎬 إنشاء فيديو بالذكاء الاصطناعي');}
@@ -49,11 +49,11 @@ async function start(){
  if(!window.confirm('توليد فيديو AI حقيقي لمدة 5 ثوانٍ بدقة 480p عبر Magic Hour. العملية قد تخصم كريدت من حسابك. هل تريد المتابعة؟'))return;
  resetPreview();setBusy(true);info('بنرسل طلبًا واحدًا إلى Magic Hour… لا تغلق الصفحة.');
  try{
-  const r=await fetch('/api/pro-video',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({prompt,aspectRatio:aspect.value||'16:9'})});
+  const r=await fetch('/api/pro-video',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({prompt,aspectRatio:aspect.value||'16:9',duration:Number(duration?.value)||10})});
   const d=await readJson(r);
   if(!d.projectId)throw new Error('الخدمة لم ترجع رقم مشروع. راجع مكتبة Magic Hour قبل إعادة المحاولة.');
   activeProject=d.projectId;try{sessionStorage.setItem('madarProVideoProject',d.projectId);}catch{}
-  info('تم قبول الطلب.'+(d.creditsCharged!=null?' تقدير الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
+  info('تم قبول طلب فيديو PRO بدقة '+(d.resolution||'1080p')+' مع صوت. '+(d.creditsCharged!=null?' الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
   await poll(d.projectId,d.creditsCharged);
  }catch(e){info(String(e?.message||e).slice(0,260),true);setBusy(false);}
 }
