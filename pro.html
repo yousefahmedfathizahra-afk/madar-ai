@@ -328,15 +328,15 @@ html,body{background:var(--bg)}
       <div class="studio-field"><label for="madarVideoPrompt">وصف الفيديو</label><textarea id="madarVideoPrompt" maxlength="1800" rows="4" placeholder="مثال: لقطة سينمائية لمدينة مستقبلية ليلًا، سيارات طائرة وأضواء نيون، حركة كاميرا بطيئة وواقعية..."></textarea></div>
       <div class="studio-cols">
         <div class="studio-field"><label for="madarVideoAspect">مقاس الفيديو</label><select id="madarVideoAspect"><option value="16:9">أفقي · YouTube</option><option value="9:16">رأسي · Reels / TikTok</option><option value="1:1">مربع · Instagram</option></select></div>
-        <div class="studio-field"><label>إعدادات التوليد</label><div class="studio-static-setting">5 ثوانٍ · 480p · LTX 2.5</div></div>
+        <div class="studio-field"><label for="madarVideoDuration">مدة الفيديو — PRO</label><select id="madarVideoDuration"><option value="5">5 ثوانٍ</option><option value="10" selected>10 ثوانٍ</option><option value="15">15 ثانية</option></select><div class="studio-static-setting">Kling 3.0 عبر خطة Magic Hour المدفوعة · 1080p · صوت مولّد</div></div>
       </div>
       <div class="studio-action-row">
         <button id="madarVideoGenerate" class="studio-main-button" type="button">🎬 إنشاء فيديو بالذكاء الاصطناعي</button>
         <a id="madarVideoDownload" class="studio-ghost-button" hidden>↗ فتح / تحميل الفيديو</a>
       </div>
-      <p id="madarVideoStatus" class="studio-status" role="status" aria-live="polite">جاهز لإنشاء فيديو AI. كل عملية توليد قد تخصم كريدت من حساب Magic Hour؛ لن يتم إنشاء أي فيديو تلقائيًا.</p>
+      <p id="madarVideoStatus" class="studio-status" role="status" aria-live="polite">جاهز لإنشاء فيديو PRO بدقة 1080p مع صوت. كل عملية توليد تخصم كريدت حسب خطة Magic Hour؛ لن يتم إنشاء أي فيديو تلقائيًا.</p>
       <video id="madarVideoPreview" class="madar-pro-video-preview" controls playsinline preload="none" hidden></video>
-      <p class="studio-footnote">توليد الفيديو يحتاج مفتاح Magic Hour في إعدادات MADAR PRO Preview. الإعداد الحالي محافظ: 5 ثوانٍ و480p لتقليل استهلاك الكريدت. لا نستخدم المفتاح في المتصفح ولا نعيد إرسال طلب التوليد تلقائيًا.</p>
+      <p class="studio-footnote">مدار يطلب موديل Magic Hour الافتراضي المدفوع (Kling 3.0 على حساب PRO) بدقة 1080p مع صوت، ومدة 5 أو 10 أو 15 ثانية. التكلفة حسب خطة حسابك ورصيدك. المفتاح محفوظ على الخادم ولا يظهر في المتصفح، ولا نعيد إرسال طلب مدفوع تلقائيًا.</p>
     </section>ion>
     <section class="studio-panel" data-studio-panel="game" hidden>
       <h3>AI Game Maker</h3><p class="studio-help">اكتب فكرة Game بميكانيك لعب واضح؛ هتطلع لعبة HTML5 قابلة للمعاينة والتحميل. النتائج تجريبية وتحتاج اختبار.</p>
