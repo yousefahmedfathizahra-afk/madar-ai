@@ -18,12 +18,9 @@ function parseBody(input){
  if(prompt.length<12||prompt.length>1800)throw fail(400,'اكتب وصف فيديو من 12 إلى 1800 حرف.');
  const aspect=input.aspectRatio||'16:9';
  if(!['16:9','9:16','1:1'].includes(aspect))throw fail(400,'نسبة أبعاد الفيديو غير مدعومة.');
- const model=input.model||'veo3.1-audio';
- if(!['veo3.1-audio','kling-2.5-audio'].includes(model))throw fail(400,'موديل الفيديو غير مدعوم.');
- const duration=Number(input.duration||(model==='veo3.1-audio'?8:10));
- const supported=model==='veo3.1-audio'?[4,6,8,16,24,32,40,48,56]:[5,10];
- if(!supported.includes(duration))throw fail(400,model==='veo3.1-audio'?'مدة Veo 3.1 Audio لازم تكون 4 أو 6 أو 8 أو 16 ثانية أو أكثر حسب الخيارات المتاحة.':'مدة Kling 2.5 Audio لازم تكون 5 أو 10 ثوانٍ.');
- if(model==='veo3.1-audio'&&aspect==='1:1')throw fail(400,'موديل Veo 3.1 Audio يدعم الفيديو الأفقي أو الرأسي فقط. اختار 16:9 أو 9:16.');
+ const model='kling-3.0';
+ const duration=Number(input.duration||5);
+ if(![5,10,15].includes(duration))throw fail(400,'اختر مدة 5 أو 10 أو 15 ثانية لموديل Kling 3.0.');
  return {prompt,aspect,duration,model};
 }
 function permit(req){
@@ -53,9 +50,8 @@ async function createVideo(req,res){
  if(!String(req.headers?.['content-type']||'').toLowerCase().startsWith('application/json'))throw fail(415,'Content-Type must be application/json.');
  if(!permit(req))throw fail(429,'لحماية رصيد الفيديو: الحد الأقصى فيديوهان في الساعة، مع انتظار 10 دقائق بين الطلبات من نفس الاتصال.');
  const body=parseBody(req.body),key=keyOrThrow();
- // Use an explicitly documented paid model instead of the ambiguous "default" alias.
- // Veo 3.1 Audio supports 1080p and native generated audio; Kling 2.5 Audio is an alternate motion-focused model.
- const response=await call(BASE+'/v1/text-to-video',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:'MADAR PRO AI Video',end_seconds:body.duration,aspect_ratio:body.aspect,style:{prompt:body.prompt},model:body.model,resolution:'1080p'})});
+ // Explicit premium model. Kling 3.0 supports text-to-video, 1080p, native audio and 5–15 second clips.
+ const response=await call(BASE+'/v1/text-to-video',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:'MADAR PRO AI Video',end_seconds:body.duration,aspect_ratio:body.aspect,style:{prompt:body.prompt},model:body.model,resolution:'1080p',audio:true})});
  const data=await response.json().catch(()=>null);
  if(!response.ok)await providerError(response,data);
  const project=data?.project||data?.data||data||{};
@@ -71,14 +67,12 @@ function readQuery(req,name){
 }
 async function checkAccount(req,res){
  const key=keyOrThrow();
- // Read-only auth probe: an intentionally nonexistent project returns 404 with a valid key.
- // It does not create a job, consume credits, or reveal account details.
- const response=await call(BASE+'/v1/video-projects/madar-pro-auth-check-no-project',{method:'GET',headers:{Authorization:'Bearer '+key,'Accept':'application/json'}});
- if(response.status===401)await providerError(response,null);
- if(response.status===403)await providerError(response,null);
- if(response.status===429)await providerError(response,null);
- if(response.status!==404&& !response.ok)await providerError(response,null);
- return reply(res,200,{connected:true,provider:'Magic Hour',readOnly:true,probe:'authenticated'});
+ // Official read-only account endpoint: confirms the actual subscription tier and available credits.
+ const response=await call(BASE+'/v1/account',{method:'GET',headers:{Authorization:'Bearer '+key,'Accept':'application/json'}});
+ const data=await response.json().catch(()=>null);
+ if(!response.ok)await providerError(response,data);
+ const subscription=data?.subscription||null;
+ return reply(res,200,{connected:true,provider:'Magic Hour',readOnly:true,tier:data?.tier||'unknown',credits:Number.isFinite(Number(data?.credits))?Number(data.credits):null,subscriptionName:subscription?.name||null,subscriptionStatus:subscription?.status||null});
 }
 
 function readProjectId(req){
