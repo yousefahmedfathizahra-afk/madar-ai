@@ -210,6 +210,12 @@ html,body{background:var(--bg)}
 @media(max-width:650px){.madar-mascot-shell{right:4px;bottom:88px}.madar-bot-button{width:89px;height:101px}.madar-bot-svg{width:89px;height:96px}.madar-bot-spark{inset:12px 0 4px}.madar-mascot-bubble{right:78px;bottom:65px;width:min(235px,calc(100vw - 101px));font-size:11px}}
 @media(prefers-reduced-motion:reduce){.madar-bot-svg,.madar-bot-spark,.madar-bot-eye,.madar-bot-signal{animation:none!important}.madar-bot-head,.madar-bot-pupil{transition:none!important}}
 
+
+/* AI video studio controls */
+.madar-video-panel .studio-static-setting{min-height:44px;display:flex;align-items:center;padding:10px 12px;border:1px solid var(--border,rgba(240,201,120,.22));border-radius:12px;background:rgba(255,255,255,.035);color:var(--text,#f7ead0);font-size:13px}
+.madar-video-panel .madar-pro-video-preview{display:block;width:100%;max-height:440px;margin-top:14px;background:#050505;border:1px solid rgba(240,201,120,.28);border-radius:14px}
+.madar-video-panel .studio-footnote{font-size:11px;line-height:1.7;opacity:.76}
+
 </style>
 </head>
 <body>
@@ -317,22 +323,21 @@ html,body{background:var(--bg)}
       <div class="studio-action-row"><button id="studioBuildPlatform" class="studio-main-button" type="button">🚀 Build Platform</button><button id="studioDownloadPlatform" class="studio-ghost-button" type="button" disabled>⬇ Download HTML</button></div><p id="studioPlatformStatus" class="studio-status" role="status"></p><iframe id="studioPlatformFrame" class="studio-frame" title="Platform preview" sandbox="allow-scripts" referrerpolicy="no-referrer" hidden></iframe>
     </section>
     <section id="madarVideoRoot" data-video-tier="pro" class="studio-panel madar-video-panel" data-studio-panel="video" hidden>
-      <h3>🎬 MADAR PRO — Motion Video Studio</h3>
-      <p class="studio-help">اعمل فيديو موشن جرافيك متحرك من عنوانك، بدقة Full HD أو 4K حسب جهازك، واحفظه مجانًا. <strong>ده موشن جرافيك من تصميم المتصفح، مش توليد مشاهد واقعية AI.</strong></p>
-      <div class="studio-field"><label for="madarVideoPrompt">عنوان ومحتوى الفيديو</label><textarea id="madarVideoPrompt" maxlength="300" rows="3" placeholder="مثال: إعلان افتتاح متجر جديد - عروض ذهبية مذهلة!"></textarea></div>
+      <h3>🎬 MADAR PRO — AI Video Studio</h3>
+      <p class="studio-help">اكتب وصف المشهد بالعربي أو الإنجليزي، ومدار ينشئ فيديو متحرك حقيقي بالذكاء الاصطناعي من Magic Hour.</p>
+      <div class="studio-field"><label for="madarVideoPrompt">وصف الفيديو</label><textarea id="madarVideoPrompt" maxlength="1800" rows="4" placeholder="مثال: لقطة سينمائية لمدينة مستقبلية ليلًا، سيارات طائرة وأضواء نيون، حركة كاميرا بطيئة وواقعية..."></textarea></div>
       <div class="studio-cols">
-        <div class="studio-field"><label for="madarVideoQuality">جودة التصدير</label><select id="madarVideoQuality"><option value="1080p">Full HD · 1080p</option><option value="4k">4K · لو الجهاز بيدعم التسجيل</option></select></div>
-        <div class="studio-field"><label for="madarVideoSeconds">المدة</label><select id="madarVideoSeconds"><option value="5">5 ثوانٍ</option><option value="10">10 ثوانٍ</option><option value="15">15 ثانية</option></select></div>
+        <div class="studio-field"><label for="madarVideoAspect">مقاس الفيديو</label><select id="madarVideoAspect"><option value="16:9">أفقي · YouTube</option><option value="9:16">رأسي · Reels / TikTok</option><option value="1:1">مربع · Instagram</option></select></div>
+        <div class="studio-field"><label>إعدادات التوليد</label><div class="studio-static-setting">5 ثوانٍ · 480p · LTX 2.5</div></div>
       </div>
       <div class="studio-action-row">
-        <button id="madarVideoSample" class="studio-ghost-button" type="button">▶ عينة 3 ثوانٍ</button>
-        <button id="madarVideoGenerate" class="studio-main-button" type="button">🎬 إنشاء الفيديو مجانًا</button>
-        <a id="madarVideoDownload" class="studio-ghost-button" hidden>⬇ تحميل الفيديو</a>
+        <button id="madarVideoGenerate" class="studio-main-button" type="button">🎬 إنشاء فيديو بالذكاء الاصطناعي</button>
+        <a id="madarVideoDownload" class="studio-ghost-button" hidden>↗ فتح / تحميل الفيديو</a>
       </div>
-      <p id="madarVideoStatus" class="studio-status" role="status" aria-live="polite"></p>
+      <p id="madarVideoStatus" class="studio-status" role="status" aria-live="polite">جاهز لإنشاء فيديو AI. كل عملية توليد قد تخصم كريدت من حساب Magic Hour؛ لن يتم إنشاء أي فيديو تلقائيًا.</p>
       <video id="madarVideoPreview" class="madar-pro-video-preview" controls playsinline preload="none" hidden></video>
-      <p class="studio-footnote">التسجيل بيحصل على جهازك من غير API أو رصيد. صيغة التنزيل WebM أو MP4 حسب دعم المتصفح، وبعض الموبايلات قد لا تدعم 4K.</p>
-    </section>
+      <p class="studio-footnote">توليد الفيديو يحتاج مفتاح Magic Hour في إعدادات MADAR PRO Preview. الإعداد الحالي محافظ: 5 ثوانٍ و480p لتقليل استهلاك الكريدت. لا نستخدم المفتاح في المتصفح ولا نعيد إرسال طلب التوليد تلقائيًا.</p>
+    </section>ion>
     <section class="studio-panel" data-studio-panel="game" hidden>
       <h3>AI Game Maker</h3><p class="studio-help">اكتب فكرة Game بميكانيك لعب واضح؛ هتطلع لعبة HTML5 قابلة للمعاينة والتحميل. النتائج تجريبية وتحتاج اختبار.</p>
       <div class="studio-field"><label for="studioGameIdea">Game Idea</label><textarea id="studioGameIdea" maxlength="2600" rows="3" placeholder="مثال: لعبة سباق بسيطة بمستويات ونقاط وأزرار للموبايل والكمبيوتر..."></textarea></div>
