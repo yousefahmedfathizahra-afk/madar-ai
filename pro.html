@@ -535,6 +535,7 @@ async function send(prefill){
     body:JSON.stringify({messages:buildRequestMessages(chat.messages),mode:'chat',tier:'pro',language:(window.MadarProLanguage?.()||'ar-mixed'),image:picture||undefined}),signal:controller.signal});
   const data=await response.json().catch(()=>null);
   if(!response.ok)throw Error(data?.error||'الخدمة المجانية وصلت للحد المسموح مؤقتًا. جرب لاحقًا.');
+  if(data?.tier && data.tier!=='pro')throw Error('الطلب لم يصل إلى وضع PRO. حدّث الصفحة وحاول مرة أخرى.');
   if(!data||typeof data.reply!=='string'||!data.reply.trim())throw Error('مدار رجّع رد فاضي. جرّب تاني.');
   assistant.text=data.reply; $('chatStatus').textContent='ردّ بنجاح';if(autoSpeak)speakText(data.reply);
  }catch(e){
