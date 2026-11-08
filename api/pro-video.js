@@ -53,7 +53,7 @@ async function createVideo(req,res){
  const project=data?.project||data?.data||data||{};
  const id=project.id||project.project_id||project.projectId||data?.id||data?.project_id;
  if(typeof id!=='string'||!id)throw fail(502,'Magic Hour لم يرجع رقم مشروع صالح. لا تعِد الإرسال تلقائيًا؛ راجع سجل المشاريع أولًا.');
- return reply(res,202,{projectId:id,status:project.status||data.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:'ltx-2.5',resolution:'480p',duration:5});
+ return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:'ltx-2.5',resolution:'480p',duration:5});
 }
 function readProjectId(req){
  let id=req.query?.id;
@@ -67,10 +67,10 @@ async function getVideo(req,res){
  const data=await response.json().catch(()=>null);
  if(!response.ok)await providerError(response);
  const p=data?.project||data?.data||data||{};
- const rawDownloads=Array.isArray(p.downloads)?p.downloads:(Array.isArray(data.downloads)?data.downloads:[]);
+ const rawDownloads=Array.isArray(p.downloads)?p.downloads:(Array.isArray(data?.downloads)?data.downloads:[]);
  const downloads=rawDownloads.map(x=>typeof x==='string'?x:(x?.url||x?.download_url||x?.downloadUrl)).filter(x=>typeof x==='string'&&/^https:\/\//i.test(x)).slice(0,4);
  const status=String(p.status||data.status||'processing').toLowerCase();
- return reply(res,200,{projectId:id,status,downloads,creditsCharged:p.credits_charged??data.credits_charged??null,error:status==='error'||status==='failed'?(p.error?.message||data.error?.message||'فشل توليد الفيديو.'):null});
+ return reply(res,200,{projectId:id,status,downloads,creditsCharged:p.credits_charged??data?.credits_charged??null,error:status==='error'||status==='failed'?(p.error?.message||data?.error?.message||'فشل توليد الفيديو.'):null});
 }
 module.exports=async function handler(req,res){
  res.setHeader('Referrer-Policy','no-referrer');
