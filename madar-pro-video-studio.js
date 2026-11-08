@@ -78,4 +78,17 @@ async function start(){
 generate.addEventListener('click',start);
 const resume=()=>{let id='';try{id=sessionStorage.getItem('madarProVideoProject')||'';}catch{}if(id&&!busy){setBusy(true);info('بنسترجع حالة آخر فيديو…');poll(id,null);}};
 resume();
+async function verifyMagicHourAccount(){
+ try{
+  const r=await fetch('/api/pro-video?check=1',{method:'GET',cache:'no-store',headers:{Accept:'application/json'}});
+  const d=await readJson(r);
+  const tier=String(d.tier||'unknown').toUpperCase();
+  if(d.tier==='free'){
+   info('مفتاح Magic Hour متصل، لكن الحساب المرتبط به FREE ('+(d.credits??0)+' كريدت). لازم مفتاح من حساب Creator/PRO/Business المدفوع عشان Kling 3.0 يشتغل.',true);
+  }else{
+   info('حساب Magic Hour '+tier+' متصل بنجاح. الرصيد المتاح: '+(d.credits??'غير متاح')+' كريدت.');
+  }
+ }catch(e){info('تعذر التحقق من خطة Magic Hour: '+String(e?.message||e).slice(0,180),true);}
+}
+verifyMagicHourAccount();
 })();
