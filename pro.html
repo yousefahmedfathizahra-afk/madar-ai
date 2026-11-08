@@ -514,6 +514,25 @@ function imagePayload(photo){
  if(!m||m[2].length>2000000)throw new Error('الصورة كبيرة أو غير مدعومة. اختار صورة أصغر من 1.5 ميجابايت.');
  return {mimeType:m[1],data:m[2]};
 }
+async function fetchMadarChat(body,signal){
+ let response=null;
+ for(let attempt=0;attempt<2;attempt++){
+  if(signal?.aborted)throw Object.assign(Error('Aborted'),{name:'AbortError'});
+  try{
+   response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body,signal});
+  }catch(err){
+   if(signal?.aborted||err?.name==='AbortError'||attempt===1)throw err;
+   await new Promise(resolve=>setTimeout(resolve,450));
+   continue;
+  }
+  // One quiet retry for transient server/model outages. Quota and validation
+  // errors are not retried, and the visitor never has to retype the question.
+  if(response.ok||![500,502,503,504].includes(response.status)||attempt===1)return response;
+  await new Promise(resolve=>setTimeout(resolve,450));
+ }
+ return response;
+}
+
 async function send(prefill){
  if(isWaiting)return;
  const text=String(prefill??els.prompt.value).trim();if(!text&&!pendingPhoto&&!pendingDocuments.length)return;
@@ -528,13 +547,12 @@ async function send(prefill){
  els.prompt.value='';clearPhoto();clearDocuments();isWaiting=true;resize();render();
  $('chatStatus').textContent='مدار بيرد...';
  const controller=new AbortController();activeController=controller;
- stopRequested=false;$('stopBtn').hidden=false;const timeout=setTimeout(()=>controller.abort(),52000);
+ stopRequested=false;$('stopBtn').hidden=false;const timeout=setTimeout(()=>controller.abort(),75000);
  try{
   if(location.protocol==='file:')throw Error('افتح مدار PRO من رابط Vercel بدل ملف HTML محلي.');
-  const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({messages:buildRequestMessages(chat.messages),mode:'chat',tier:'pro',language:(window.MadarProLanguage?.()||'ar-mixed'),image:picture||undefined}),signal:controller.signal});
+  const response=await fetchMadarChat(JSON.stringify({messages:buildRequestMessages(chat.messages),mode:'chat',tier:'pro',language:(window.MadarProLanguage?.()||'ar-mixed'),image:picture||undefined}),controller.signal);
   const data=await response.json().catch(()=>null);
-  if(!response.ok)throw Error(data?.error||'الخدمة المجانية وصلت للحد المسموح مؤقتًا. جرب لاحقًا.');
+  if(!response.ok)throw Error(data?.error||'تعذر إكمال الرد بعد تجربة البدائل تلقائيًا. سؤالك محفوظ في المحادثة.');
   if(data?.tier && data.tier!=='pro')throw Error('الطلب لم يصل إلى وضع PRO. حدّث الصفحة وحاول مرة أخرى.');
   if(!data||typeof data.reply!=='string'||!data.reply.trim())throw Error('مدار رجّع رد فاضي. جرّب تاني.');
   assistant.text=data.reply; $('chatStatus').textContent='ردّ بنجاح';if(autoSpeak)speakText(data.reply);
