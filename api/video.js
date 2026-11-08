@@ -30,9 +30,8 @@ module.exports=async function handler(req,res){
    end_seconds:seconds,
    aspect_ratio:aspect,
    style:{prompt},
-   model:'ltx-2.5',
-   resolution:'480p',
-   audio:body.audio!==false
+   model:'default',
+   resolution:'720p'
   });
  }else{
   const id=String(req.query?.id||'').trim();
