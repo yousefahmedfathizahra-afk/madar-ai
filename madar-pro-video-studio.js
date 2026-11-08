@@ -8,13 +8,14 @@ function info(t,bad=false){message.textContent=t;message.style.color=bad?'#e7a4a
 function setBusy(v){busy=v;generate.disabled=v;generate.textContent=v?'⏳ جاري العمل…':(activeProject?'↻ متابعة حالة الفيديو':'🎬 إنشاء فيديو بالذكاء الاصطناعي');}
 function resetPreview(){preview.pause();preview.removeAttribute('src');preview.hidden=true;preview.load();save.hidden=true;save.removeAttribute('href');}
 function updateDurations(){
- if(!duration||!model)return;
- const options=model.value==='veo3.1-audio'?[['8','8 ثوانٍ'],['16','16 ثانية']]:[['5','5 ثوانٍ'],['10','10 ثوانٍ']];
- const previous=duration.value;
- duration.innerHTML=options.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('');
- duration.value=options.some(([v])=>v===previous)?previous:options[0][0];
+ if(duration){
+  const options=[['5','5 ثوانٍ'],['10','10 ثوانٍ'],['15','15 ثانية']];
+  const previous=duration.value;
+  duration.innerHTML=options.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('');
+  duration.value=options.some(([v])=>v===previous)?previous:'5';
+ }
  if(aspect){
-  const ratios=model.value==='veo3.1-audio'?[['16:9','أفقي · YouTube'],['9:16','رأسي · Reels / TikTok']]:[['16:9','أفقي · YouTube'],['9:16','رأسي · Reels / TikTok'],['1:1','مربع · Instagram']];
+  const ratios=[['16:9','أفقي · YouTube'],['9:16','رأسي · Reels / TikTok'],['1:1','مربع · Instagram']];
   const old=aspect.value;
   aspect.innerHTML=ratios.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('');
   aspect.value=ratios.some(([v])=>v===old)?old:'16:9';
@@ -61,8 +62,8 @@ async function start(){
  if(activeProject){setBusy(true);info('بنستكمل متابعة الفيديو السابق من غير إنشاء طلب جديد…');await poll(activeProject,null);return;}
  const prompt=idea.value.trim();
  if(prompt.length<12){info('اكتب وصفًا أوضح للفيديو (12 حرفًا على الأقل).',true);idea.focus();return;}
- const chosenModel=model?.value||'veo3.1-audio';
- const modelName=chosenModel==='veo3.1-audio'?'Google Veo 3.1 Audio':'Kling 2.5 Audio';
+ const chosenModel='kling-3.0';
+ const modelName='Kling 3.0';
  if(!window.confirm('توليد فيديو PRO باستخدام '+modelName+' بدقة 1080p ومدة '+(duration?.value||8)+' ثانية. العملية قد تخصم كريدت من اشتراكك المدفوع. هل تريد المتابعة؟'))return;
  resetPreview();setBusy(true);info('بنرسل طلبًا واحدًا إلى Magic Hour… لا تغلق الصفحة.');
  try{
@@ -70,7 +71,7 @@ async function start(){
   const d=await readJson(r);
   if(!d.projectId)throw new Error('الخدمة لم ترجع رقم مشروع. راجع مكتبة Magic Hour قبل إعادة المحاولة.');
   activeProject=d.projectId;try{sessionStorage.setItem('madarProVideoProject',d.projectId);}catch{}
-  info('تم قبول طلب '+(chosenModel==='veo3.1-audio'?'Veo 3.1 Audio':'Kling 2.5 Audio')+' بدقة 1080p. '+(d.creditsCharged!=null?' تقدير الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
+  info('تم قبول طلب '+'Kling 3.0'+' بدقة 1080p. '+(d.creditsCharged!=null?' تقدير الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
   await poll(d.projectId,d.creditsCharged);
  }catch(e){info(String(e?.message||e).slice(0,260),true);setBusy(false);}
 }
