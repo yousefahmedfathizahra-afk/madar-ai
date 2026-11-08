@@ -30,8 +30,9 @@ module.exports=async function handler(req,res){
    end_seconds:seconds,
    aspect_ratio:aspect,
    style:{prompt},
-   model:'kling-3.0',
-   resolution:'1080p'
+   // Let Magic Hour select LTX 2.5 for Free accounts or Kling 3.0 for paid tiers.
+   // Omit resolution so the provider applies the correct plan default.
+   model:'default'
   });
  }else{
   const id=String(req.query?.id||'').trim();
