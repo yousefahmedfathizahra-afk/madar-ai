@@ -55,6 +55,20 @@ async function createVideo(req,res){
  if(typeof id!=='string'||!id)throw fail(502,'Magic Hour لم يرجع رقم مشروع صالح. لا تعِد الإرسال تلقائيًا؛ راجع سجل المشاريع أولًا.');
  return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:'ltx-2.5',resolution:'480p',duration:5});
 }
+
+function readQuery(req,name){
+ let value=req.query?.[name];
+ if(value===undefined){try{value=new URL(req.url,'https://madar-pro.invalid').searchParams.get(name);}catch{}}
+ return value;
+}
+async function checkAccount(req,res){
+ const key=keyOrThrow();
+ const response=await call(BASE+'/v1/account',{method:'GET',headers:{Authorization:'Bearer '+key,'Accept':'application/json'}});
+ if(!response.ok)await providerError(response);
+ // Deliberately return no account details or balance; this is a read-only credential check.
+ return reply(res,200,{connected:true,provider:'Magic Hour',readOnly:true});
+}
+
 function readProjectId(req){
  let id=req.query?.id;
  if(!id){try{id=new URL(req.url,'https://madar-pro.invalid').searchParams.get('id');}catch{}}
@@ -77,7 +91,7 @@ module.exports=async function handler(req,res){
  try{
   originGuard(req);
   if(req.method==='POST')return await createVideo(req,res);
-  if(req.method==='GET')return await getVideo(req,res);
+  if(req.method==='GET'){if(readQuery(req,'check')==='1')return await checkAccount(req,res);return await getVideo(req,res);}
   res.setHeader('Allow','GET, POST');return reply(res,405,{error:'GET or POST only'});
  }catch(e){return reply(res,e?.statusCode||500,{error:e?.statusCode?e.message:'حصل خطأ غير متوقع في استوديو الفيديو.'});}
 };
