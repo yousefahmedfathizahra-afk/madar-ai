@@ -62,16 +62,16 @@ async function start(){
  if(activeProject){setBusy(true);info('بنستكمل متابعة الفيديو السابق من غير إنشاء طلب جديد…');await poll(activeProject,null);return;}
  const prompt=idea.value.trim();
  if(prompt.length<12){info('اكتب وصفًا أوضح للفيديو (12 حرفًا على الأقل).',true);idea.focus();return;}
- const chosenModel='kling-3.0';
- const modelName='Kling 3.0';
- if(!window.confirm('توليد فيديو PRO باستخدام '+modelName+' بدقة 1080p ومدة '+(duration?.value||8)+' ثانية. العملية قد تخصم كريدت من اشتراكك المدفوع. هل تريد المتابعة؟'))return;
+ const chosenModel='default';
+ const modelName='الموديل التلقائي المناسب لخطة حسابك';
+ if(!window.confirm('توليد فيديو باستخدام '+modelName+' ومدة '+(duration?.value||5)+' ثوانٍ. Magic Hour سيختار LTX 2.5 للحساب المجاني أو Kling 3.0 للحساب المدفوع، والدقة حسب الخطة. قد تُستخدم كريدت من رصيدك. هل تريد المتابعة؟'))return;
  resetPreview();setBusy(true);info('بنرسل طلبًا واحدًا إلى Magic Hour… لا تغلق الصفحة.');
  try{
   const r=await fetch('/api/pro-video',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({prompt,aspectRatio:aspect.value||'16:9',duration:Number(duration?.value)||8,model:chosenModel})});
   const d=await readJson(r);
   if(!d.projectId)throw new Error('الخدمة لم ترجع رقم مشروع. راجع مكتبة Magic Hour قبل إعادة المحاولة.');
   activeProject=d.projectId;try{sessionStorage.setItem('madarProVideoProject',d.projectId);}catch{}
-  info('تم قبول طلب '+'Kling 3.0'+' بدقة 1080p. '+(d.creditsCharged!=null?' تقدير الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
+  info('تم قبول طلب الفيديو بالموديل التلقائي المناسب لخطة حسابك. '+(d.creditsCharged!=null?' تقدير الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
   await poll(d.projectId,d.creditsCharged);
  }catch(e){info(String(e?.message||e).slice(0,260),true);setBusy(false);}
 }
@@ -84,7 +84,7 @@ async function verifyMagicHourAccount(){
   const d=await readJson(r);
   const tier=String(d.tier||'unknown').toUpperCase();
   if(d.tier==='free'){
-   info('مفتاح Magic Hour متصل، لكن الحساب المرتبط به FREE ('+(d.credits??0)+' كريدت). لازم مفتاح من حساب Creator/PRO/Business المدفوع عشان Kling 3.0 يشتغل.',true);
+   info('Magic Hour متصل بالحساب المجاني ('+(d.credits??0)+' كريدت). مدار سيستخدم LTX 2.5 تلقائيًا. الترقية مطلوبة فقط لاستخدام Kling 3.0 المدفوع ودقته الأعلى.');
   }else{
    info('حساب Magic Hour '+tier+' متصل بنجاح. الرصيد المتاح: '+(d.credits??'غير متاح')+' كريدت.');
   }
