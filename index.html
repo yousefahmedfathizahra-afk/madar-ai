@@ -391,6 +391,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 .madar-tier-switch option{background:var(--panel);color:var(--fg)}
 .madar-pro-link{display:inline-flex;align-items:center;justify-content:center;padding:8px 10px;border:1px solid var(--purple);border-radius:10px;background:var(--soft);color:var(--purple-light);font-size:11px;font-weight:800;text-decoration:none;white-space:nowrap}
 .madar-pro-link:hover{background:var(--control);color:var(--fg)}
+.madar-new-badge{display:inline-flex;align-items:center;margin-inline-start:4px;padding:2px 5px;border-radius:6px;background:#16a34a;color:#fff;font-size:9px;font-weight:900;line-height:1.4}
 @media(max-width:850px){.madar-tier-switch span{display:none}.madar-tier-switch{padding:5px 6px}.madar-tier-switch select{max-width:105px;font-size:10px}.madar-pro-link{display:none}}
 @media(max-width:560px){.topbar{padding-left:10px;padding-right:10px}.topbar-left{gap:6px}.madar-tier-switch select{max-width:90px}.madar-tier-switch{padding:4px 5px}.topbar .status{padding:7px 8px}}
 </style>
@@ -433,7 +434,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           </label>
           <div id="status" class="status" role="status"><span class="status-dot"></span><span id="statusText">Checking connection...</span></div>
           <button id="madarStudioOpen" type="button" class="studio-launch" title="صانع المشاريع والمدرس والألعاب والتصميم وإصلاح الأكواد">✦ مدار ستوديو</button>
-          <a id="madarProOpen" href="/pro.html" class="madar-pro-link" title="افتح مدار PRO المجاني">مدار PRO ↗</a>
+          <a id="madarProOpen" href="/pro.html" class="madar-pro-link" title="افتح مدار PRO المجاني">مدار PRO ↗ <span class="madar-new-badge">جديد</span></a>
           <button id="accountBtn" class="account-btn" title="Account sign-in requires secure setup">Sign in</button>
           <button id="themeToggle" class="icon-btn theme-toggle" title="Switch theme" aria-label="Switch theme"><span id="themeIcon">☀</span></button>
         </div>
