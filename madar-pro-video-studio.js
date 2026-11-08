@@ -2,11 +2,19 @@
 'use strict';
 // MADAR PRO only: AI video generation through the server-side Magic Hour key.
 const $=id=>document.getElementById(id),root=$('madarVideoRoot');if(!root)return;
-const idea=$('madarVideoPrompt'),aspect=$('madarVideoAspect'),duration=$('madarVideoDuration'),generate=$('madarVideoGenerate'),message=$('madarVideoStatus'),preview=$('madarVideoPreview'),save=$('madarVideoDownload');
+const idea=$('madarVideoPrompt'),aspect=$('madarVideoAspect'),model=$('madarVideoModel'),duration=$('madarVideoDuration'),generate=$('madarVideoGenerate'),message=$('madarVideoStatus'),preview=$('madarVideoPreview'),save=$('madarVideoDownload');
 let busy=false,activeProject=null,pollTimer=null;
 function info(t,bad=false){message.textContent=t;message.style.color=bad?'#e7a4a1':''}
 function setBusy(v){busy=v;generate.disabled=v;generate.textContent=v?'⏳ جاري العمل…':(activeProject?'↻ متابعة حالة الفيديو':'🎬 إنشاء فيديو بالذكاء الاصطناعي');}
 function resetPreview(){preview.pause();preview.removeAttribute('src');preview.hidden=true;preview.load();save.hidden=true;save.removeAttribute('href');}
+function updateDurations(){
+ if(!duration||!model)return;
+ const options=model.value==='veo3.1-audio'?[['8','8 ثوانٍ'],['16','16 ثانية']]:[['5','5 ثوانٍ'],['10','10 ثوانٍ']];
+ const previous=duration.value;
+ duration.innerHTML=options.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('');
+ duration.value=options.some(([v])=>v===previous)?previous:options[0][0];
+}
+if(model){model.addEventListener('change',updateDurations);updateDurations();}
 function displayVideo(url,credits){
  preview.src=url;preview.hidden=false;preview.controls=true;preview.load();
  save.href=url;save.target='_blank';save.rel='noopener noreferrer';save.textContent='↗ فتح / تحميل الفيديو';save.hidden=false;
@@ -46,14 +54,14 @@ async function start(){
  if(activeProject){setBusy(true);info('بنستكمل متابعة الفيديو السابق من غير إنشاء طلب جديد…');await poll(activeProject,null);return;}
  const prompt=idea.value.trim();
  if(prompt.length<12){info('اكتب وصفًا أوضح للفيديو (12 حرفًا على الأقل).',true);idea.focus();return;}
- if(!window.confirm('توليد فيديو PRO حقيقي بدقة 1080p مع صوت عبر Magic Hour لمدة '+(duration?.value||10)+' ثانية. العملية قد تخصم كريدت من اشتراكك المدفوع. هل تريد المتابعة؟'))return;
+ const chosenModel=model?.value||'veo3.1-audio';\n const modelName=chosenModel==='veo3.1-audio'?'Google Veo 3.1 Audio':'Kling 2.5 Audio';\n if(!window.confirm('توليد فيديو PRO باستخدام '+modelName+' بدقة 1080p ومدة '+(duration?.value||8)+' ثانية. العملية قد تخصم كريدت من اشتراكك المدفوع. هل تريد المتابعة؟'))return;
  resetPreview();setBusy(true);info('بنرسل طلبًا واحدًا إلى Magic Hour… لا تغلق الصفحة.');
  try{
-  const r=await fetch('/api/pro-video',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({prompt,aspectRatio:aspect.value||'16:9',duration:Number(duration?.value)||10})});
+  const r=await fetch('/api/pro-video',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({prompt,aspectRatio:aspect.value||'16:9',duration:Number(duration?.value)||8,model:chosenModel})});
   const d=await readJson(r);
   if(!d.projectId)throw new Error('الخدمة لم ترجع رقم مشروع. راجع مكتبة Magic Hour قبل إعادة المحاولة.');
   activeProject=d.projectId;try{sessionStorage.setItem('madarProVideoProject',d.projectId);}catch{}
-  info('تم قبول طلب فيديو PRO بدقة '+(d.resolution||'1080p')+' مع صوت. '+(d.creditsCharged!=null?' الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
+  info('تم قبول طلب '+(chosenModel==='veo3.1-audio'?'Veo 3.1 Audio':'Kling 2.5 Audio')+' بدقة 1080p. '+(d.creditsCharged!=null?' تقدير الكريدت: '+d.creditsCharged+'.':'')+' جاري متابعة النتيجة…');
   await poll(d.projectId,d.creditsCharged);
  }catch(e){info(String(e?.message||e).slice(0,260),true);setBusy(false);}
 }
