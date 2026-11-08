@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),root=$('madarVideoRoot');if(!root)return
 const idea=$('madarVideoPrompt'),aspect=$('madarVideoAspect'),generate=$('madarVideoGenerate'),message=$('madarVideoStatus'),preview=$('madarVideoPreview'),save=$('madarVideoDownload');
 let busy=false,activeProject=null,pollTimer=null;
 function info(t,bad=false){message.textContent=t;message.style.color=bad?'#e7a4a1':''}
-function setBusy(v){busy=v;generate.disabled=v;generate.textContent=v?'⏳ جاري تجهيز الفيديو…':'🎬 إنشاء فيديو بالذكاء الاصطناعي';}
+function setBusy(v){busy=v;generate.disabled=v;generate.textContent=v?'⏳ جاري العمل…':(activeProject?'↻ متابعة حالة الفيديو':'🎬 إنشاء فيديو بالذكاء الاصطناعي');}
 function resetPreview(){preview.pause();preview.removeAttribute('src');preview.hidden=true;preview.load();save.hidden=true;save.removeAttribute('href');}
 function displayVideo(url,credits){
  preview.src=url;preview.hidden=false;preview.controls=true;preview.load();
@@ -29,20 +29,21 @@ async function poll(id,knownCredits){
     if(d.downloads&&d.downloads.length){displayVideo(d.downloads[0],d.creditsCharged??knownCredits);return;}
     throw new Error('الفيديو اكتمل لكن رابط التنزيل لم يظهر بعد. احتفظ برقم المشروع: '+id);
    }
-   if(['error','failed','canceled','cancelled'].includes(s))throw new Error(d.error||'فشل توليد الفيديو. لم نعد إرسال الطلب.');
+   if(['error','failed','canceled','cancelled'].includes(s)){activeProject=null;try{sessionStorage.removeItem('madarProVideoProject');}catch{}throw new Error(d.error||'فشل توليد الفيديو. لم نعد إرسال الطلب.');}
    info('🎬 مدار بيولّد الفيديو بالذكاء الاصطناعي… الحالة: '+s+' ('+tries+'/60).');
   }catch(e){
    if(e?.message?.includes('الفيديو اكتمل')){info(e.message,true);setBusy(false);return;}
-   if(e?.message?.includes('فشل توليد الفيديو')){info(e.message,true);setBusy(false);return;}
+   if(e?.message?.includes('فشل توليد الفيديو')||(!activeProject&&e?.message)){info(e.message,true);setBusy(false);return;}
    // A temporary status-read failure does not create another generation.
    if(tries%4===0)info('الفيديو قيد المعالجة. بنحاول نقرأ الحالة فقط؛ مش بننشئ فيديو جديد.');
   }
   if(tries<60)await new Promise(resolve=>{pollTimer=setTimeout(resolve,8000);});
  }
- if(activeProject===id){info('الفيديو لسه بيتعالج. رقم المشروع محفوظ، اضغط متابعة الحالة لاحقًا من نفس الصفحة.',true);setBusy(false);}
+ if(activeProject===id){info('الفيديو لسه بيتعالج. رقم المشروع محفوظ؛ اضغط متابعة حالة الفيديو لاحقًا من غير ما ننشئ طلبًا جديدًا.',true);setBusy(false);}
 }
 async function start(){
  if(busy)return;
+ if(activeProject){setBusy(true);info('بنستكمل متابعة الفيديو السابق من غير إنشاء طلب جديد…');await poll(activeProject,null);return;}
  const prompt=idea.value.trim();
  if(prompt.length<12){info('اكتب وصفًا أوضح للفيديو (12 حرفًا على الأقل).',true);idea.focus();return;}
  if(!window.confirm('توليد فيديو AI حقيقي لمدة 5 ثوانٍ بدقة 480p عبر Magic Hour. العملية قد تخصم كريدت من حسابك. هل تريد المتابعة؟'))return;
