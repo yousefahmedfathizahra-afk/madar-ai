@@ -23,6 +23,7 @@ function parseBody(input){
  const duration=Number(input.duration||(model==='veo3.1-audio'?8:10));
  const supported=model==='veo3.1-audio'?[4,6,8,16,24,32,40,48,56]:[5,10];
  if(!supported.includes(duration))throw fail(400,model==='veo3.1-audio'?'مدة Veo 3.1 Audio لازم تكون 4 أو 6 أو 8 أو 16 ثانية أو أكثر حسب الخيارات المتاحة.':'مدة Kling 2.5 Audio لازم تكون 5 أو 10 ثوانٍ.');
+ if(model==='veo3.1-audio'&&aspect==='1:1')throw fail(400,'موديل Veo 3.1 Audio يدعم الفيديو الأفقي أو الرأسي فقط. اختار 16:9 أو 9:16.');
  return {prompt,aspect,duration,model};
 }
 function permit(req){
@@ -40,12 +41,13 @@ async function call(url,options){
  finally{clearTimeout(timer);}
 }
 function keyOrThrow(){const key=process.env.MAGIC_HOUR_API_KEY||'';if(!key||key==='PASTE_MAGIC_HOUR_API_KEY_HERE')throw fail(503,'مفتاح Magic Hour لم يُضف بعد إلى إعدادات MADAR PRO Preview.');return key;}
-async function providerError(response){
+async function providerError(response,data){
+ const detail=String(data?.error?.message||data?.message||data?.error_description||'').slice(0,220);
  if(response.status===401)throw fail(503,'مفتاح Magic Hour غير صالح أو غير مفعّل (401). راجع المفتاح في Vercel.');
- if(response.status===402)throw fail(402,'رصيد Magic Hour أو الخطة لا تسمح بإنشاء هذا الفيديو. لم نحاول الشراء أو الشحن.');
- if(response.status===403)throw fail(403,'Magic Hour رفض الصلاحيات (403). راجع صلاحيات الحساب والمفتاح.');
- if(response.status===429)throw fail(429,'طلبات Magic Hour كثيرة حاليًا. انتظر قليلًا قبل المحاولة.');
- throw fail(502,'خدمة Magic Hour لم تقبل الطلب ('+response.status+').');
+ if(response.status===402)throw fail(402,'Magic Hour رفض الطلب بسبب الرصيد أو أهلية الخطة (402). '+detail);
+ if(response.status===403)throw fail(403,'Magic Hour رفض الصلاحيات (403). '+detail);
+ if(response.status===429)throw fail(429,'طلبات Magic Hour كثيرة حاليًا. '+detail);
+ throw fail(502,'Magic Hour رفض الطلب ('+response.status+'). '+detail);
 }
 async function createVideo(req,res){
  if(!String(req.headers?.['content-type']||'').toLowerCase().startsWith('application/json'))throw fail(415,'Content-Type must be application/json.');
@@ -55,11 +57,11 @@ async function createVideo(req,res){
  // Veo 3.1 Audio supports 1080p and native generated audio; Kling 2.5 Audio is an alternate motion-focused model.
  const response=await call(BASE+'/v1/text-to-video',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:'MADAR PRO AI Video',end_seconds:body.duration,aspect_ratio:body.aspect,style:{prompt:body.prompt},model:body.model,resolution:'1080p'})});
  const data=await response.json().catch(()=>null);
- if(!response.ok)await providerError(response);
+ if(!response.ok)await providerError(response,data);
  const project=data?.project||data?.data||data||{};
  const id=project.id||project.project_id||project.projectId||data?.id||data?.project_id;
  if(typeof id!=='string'||!id)throw fail(502,'Magic Hour لم يرجع رقم مشروع صالح. لا تعِد الإرسال تلقائيًا؛ راجع سجل المشاريع أولًا.');
- return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:body.model,resolution:'1080p',duration:body.duration});
+ return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data?.credits_charged??null,model:body.model,resolution:'1080p',duration:body.duration});
 }
 
 function readQuery(req,name){
@@ -72,10 +74,10 @@ async function checkAccount(req,res){
  // Read-only auth probe: an intentionally nonexistent project returns 404 with a valid key.
  // It does not create a job, consume credits, or reveal account details.
  const response=await call(BASE+'/v1/video-projects/madar-pro-auth-check-no-project',{method:'GET',headers:{Authorization:'Bearer '+key,'Accept':'application/json'}});
- if(response.status===401)await providerError(response);
- if(response.status===403)await providerError(response);
- if(response.status===429)await providerError(response);
- if(response.status!==404&& !response.ok)await providerError(response);
+ if(response.status===401)await providerError(response,null);
+ if(response.status===403)await providerError(response,null);
+ if(response.status===429)await providerError(response,null);
+ if(response.status!==404&& !response.ok)await providerError(response,null);
  return reply(res,200,{connected:true,provider:'Magic Hour',readOnly:true,probe:'authenticated'});
 }
 
@@ -94,6 +96,7 @@ async function getVideo(req,res){
  const rawDownloads=Array.isArray(p.downloads)?p.downloads:(Array.isArray(data?.downloads)?data.downloads:[]);
  const downloads=rawDownloads.map(x=>typeof x==='string'?x:(x?.url||x?.download_url||x?.downloadUrl)).filter(x=>typeof x==='string'&&/^https:\/\//i.test(x)).slice(0,4);
  const status=String(p.status||data.status||'processing').toLowerCase();
+ const single=p.download?.url||p.download_url||data?.download?.url||'';if(!downloads.length&&/^https:\/\//i.test(single))downloads.push(single);
  return reply(res,200,{projectId:id,status,downloads,creditsCharged:p.credits_charged??data?.credits_charged??null,error:status==='error'||status==='failed'?(p.error?.message||data?.error?.message||'فشل توليد الفيديو.'):null});
 }
 module.exports=async function handler(req,res){
