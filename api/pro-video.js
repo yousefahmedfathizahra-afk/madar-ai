@@ -57,7 +57,7 @@ async function createVideo(req,res){
  const project=data?.project||data?.data||data||{};
  const id=project.id||project.project_id||project.projectId||data?.id||data?.project_id;
  if(typeof id!=='string'||!id)throw fail(502,'Magic Hour لم يرجع رقم مشروع صالح. لا تعِد الإرسال تلقائيًا؛ راجع سجل المشاريع أولًا.');
- return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data?.credits_charged??null,model:'ltx-2.5',resolution:'480p-free-tier',duration:body.duration});
+ return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data?.credits_charged??null,model:'ltx-2.5',duration:body.duration});
 }
 
 function readQuery(req,name){
