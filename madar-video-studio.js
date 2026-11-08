@@ -1,71 +1,85 @@
 (function(){
 'use strict';
-// MADAR AI Video Studio. Two distinct presets: Free (standard 720p), PRO (premium up to 4K).
-// Puter.js User-Pays: never call a real model until explicit credit consent on this screen.
+// MADAR AI Video Studio — Magic Hour server-side generation.
 const root=document.getElementById('madarVideoRoot');
 if(!root)return;
 const $=id=>document.getElementById(id);
-const isPro=root.dataset.videoTier==='pro';
 const prompt=$('madarVideoPrompt'),quality=$('madarVideoQuality'),duration=$('madarVideoSeconds');
 const generate=$('madarVideoGenerate'),sample=$('madarVideoSample'),credit=$('madarVideoCredit');
 const status=$('madarVideoStatus'),preview=$('madarVideoPreview'),save=$('madarVideoDownload');
 const close=$('madarVideoClose'),open=$('madarVideoOpen'),dialog=$('madarVideoDialog');
-let busy=false,sdkPromise=null;
-function say(msg,error){status.textContent=msg;status.style.color=error?'#e89e91':'';}
+let busy=false,pollController=null;
+function say(message,error){status.textContent=message;status.style.color=error?'#e89e91':'';}
 function cleanPreview(){preview.pause();preview.removeAttribute('src');preview.hidden=true;preview.load();save.hidden=true;save.removeAttribute('href');}
-function safeSrc(value){return typeof value==='string'&&(/^(https:\/\/|data:video\/mp4;base64,|blob:)/.test(value));}
-function ensurePuter(){
- if(window.puter?.ai?.txt2vid)return Promise.resolve(window.puter);
- if(sdkPromise)return sdkPromise;
- sdkPromise=new Promise((resolve,reject)=>{
-   let script=document.querySelector('script[data-madar-puter-sdk],script[src="https://js.puter.com/v2/"]');
-   if(!script){script=document.createElement('script');script.src='https://js.puter.com/v2/';script.async=true;script.dataset.madarPuterSdk='true';document.head.appendChild(script);}
-   const timer=setTimeout(()=>{cleanup();sdkPromise=null;reject(new Error('تعذّر تحميل خدمة الفيديو. اتأكد من الإنترنت وجرّب تاني.'));},25000);
-   function cleanup(){clearTimeout(timer);script.removeEventListener('load',onLoad);script.removeEventListener('error',onError);}
-   function onLoad(){cleanup();if(window.puter?.ai?.txt2vid)resolve(window.puter);else{sdkPromise=null;reject(new Error('توليد الفيديو مش متاح حاليًا.'));}}
-   function onError(){cleanup();sdkPromise=null;reject(new Error('تعذّر الاتصال بخدمة الفيديو.'));}
-   script.addEventListener('load',onLoad);script.addEventListener('error',onError);
-   if(window.puter?.ai?.txt2vid)onLoad();
- });
- return sdkPromise;
+function findProjectId(value){
+ if(!value||typeof value!=='object')return '';
+ for(const k of ['project_id','projectId','id'])if(typeof value[k]==='string'&&/^[A-Za-z0-9_-]{6,160}$/.test(value[k]))return value[k];
+ for(const v of Object.values(value))if(v&&typeof v==='object'){const id=findProjectId(v);if(id)return id;}
+ return '';
 }
-if(open&&dialog){open.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});}
-if(close&&dialog){close.addEventListener('click',()=>dialog.close());}
-if(dialog){dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});}
-async function run(testMode){
+function collectUrls(value,out=[],seen=new Set()){
+ if(!value||typeof value!=='object'||seen.has(value))return out;
+ seen.add(value);
+ for(const [key,v] of Object.entries(value)){
+  if(typeof v==='string'&&/^https:\/\//i.test(v)&&/(url|video|download|output|mp4|asset)/i.test(key))out.push(v);
+  else if(v&&typeof v==='object')collectUrls(v,out,seen);
+ }
+ return [...new Set(out)];
+}
+function videoUrl(data){
+ const urls=collectUrls(data);
+ return urls.find(u=>/\.mp4(?:[?#]|$)/i.test(u))||urls.find(u=>/video|download|output/i.test(u))||'';
+}
+async function request(path,options={}){
+ const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})},cache:'no-store'});
+ const data=await response.json().catch(()=>null);
+ if(!response.ok)throw new Error(data?.error||'خدمة الفيديو مش متاحة حاليًا.');
+ return data||{};
+}
+async function run(){
  if(busy)return;
  const idea=prompt.value.trim();
  if(idea.length<8){say('اكتب وصف الفيديو بتفاصيل أكتر (8 حروف على الأقل).',true);prompt.focus();return;}
- if(!testMode&&!credit.checked){say('علشان نولّد فيديو حقيقي، وافق الأول على استخدام رصيد حساب Puter. تقدر تجرب العينة بدون خصم.',true);return;}
- busy=true;generate.disabled=true;sample.disabled=true;
- cleanPreview();say(testMode?'بنجهّز فيديو عينة للتجربة من غير خصم...':'بنجهّز الفيديو الحقيقي... العملية ممكن تاخد دقايق. خليك فاتح الصفحة.');
+ if(!credit.checked){say('وافق الأول على استخدام رصيد Magic Hour. مش هيتم الخصم قبل ضغط زر التوليد.',true);return;}
+ busy=true;generate.disabled=true;sample.disabled=true;cleanPreview();
+ say('بنرسل طلب الفيديو إلى Magic Hour…');
  try{
-   const puter=await ensurePuter();
-   if(!testMode&&puter.auth?.isSignedIn&&!await puter.auth.isSignedIn()){
-     if(!puter.auth.signIn)throw new Error('لازم تسجل دخول Puter الأول عشان تستخدم رصيدك.');
-     await puter.auth.signIn();
-   }
-   const seconds=isPro?Number(duration.value||5):5;
-   // Never switch Free to the premium engine. Never spend automatically on a retry.
-   const opts=isPro?
-    {model:'kling-3.0',seconds,size:quality.value==='4k'?'4k':'1080p',width:quality.value==='4k'?3840:1920,height:quality.value==='4k'?2160:1080,generate_audio:!!$('madarVideoAudio')?.checked,test_mode:testMode}:
-    {model:'kling-2.5-turbo',seconds:5,size:'720p',width:1280,height:720,test_mode:testMode};
-   const result=testMode?await puter.ai.txt2vid(idea,true):await puter.ai.txt2vid(idea,opts);
-   const src=[result?.src,result?.currentSrc,result?.querySelector?.('source')?.src,result?.getAttribute?.('data-source')].find(safeSrc);
-   if(!safeSrc(src))throw new Error('خدمة الفيديو رجّعت نتيجة غير صالحة.');
-   preview.src=src;preview.hidden=false;preview.controls=true;preview.load();
-   save.href=src;save.hidden=false;
-   if(src.startsWith('data:')||src.startsWith('blob:')){
-     save.download='madar-'+(isPro?'pro-':'')+'video.mp4';save.target='_self';
-   }else{save.removeAttribute('download');save.target='_blank';save.rel='noopener noreferrer';}
-   say(testMode?'دي عينة توضيحية للتجربة، مش فيديو متولّد من وصفك.':'الفيديو جاهز. افتحه أو احفظه قبل ما الرابط المؤقت ينتهي.');
- }catch(e){
-   const raw=String(e?.message||'');
-   if(/insufficient_funds|payment|credits|balance/i.test(raw))say('رصيد حساب Puter مش كفاية لتوليد الفيديو بالجودة دي.',true);
-   else if(/cancell?ed|denied|popup/i.test(raw))say('تم إلغاء تسجيل الدخول أو العملية.',true);
-   else say('تعذر توليد الفيديو: '+raw.slice(0,260),true);
- }finally{busy=false;generate.disabled=false;sample.disabled=false;}
+  // One creation request only. Polling reads the same project and never creates another charge.
+  const created=await request('/api/video',{method:'POST',body:JSON.stringify({
+   prompt:idea,aspect_ratio:quality?.value||'16:9',seconds:Number(duration?.value)||5,audio:true
+  })});
+  const id=findProjectId(created);
+  if(!id){
+   const direct=videoUrl(created);
+   if(direct){showVideo(direct);return;}
+   throw new Error('الخدمة استلمت الطلب لكن لم ترجع معرّف مشروع واضح. لا تعيد التوليد قبل مراجعة حساب Magic Hour.');
+  }
+  say('الفيديو بيتجهّز… بنراجع نفس المشروع من غير ما نكرر طلب مدفوع.');
+  const started=Date.now(),maxWait=8*60*1000;
+  while(Date.now()-started<maxWait){
+   await new Promise(resolve=>setTimeout(resolve,8000));
+   const detail=await request('/api/video?id='+encodeURIComponent(id),{method:'GET'});
+   const url=videoUrl(detail);
+   const state=String(detail.status||detail.project?.status||detail.data?.status||'').toLowerCase();
+   if(url&&(state==='complete'||state==='completed'||state==='success'||!state)){showVideo(url);return;}
+   if(['failed','error','cancelled','canceled'].includes(state))throw new Error('خدمة الفيديو لم تكمل التوليد. راجع تفاصيل المشروع في Magic Hour.');
+   say('لسه بنرندر الفيديو… ('+Math.floor((Date.now()-started)/1000)+' ثانية)');
+  }
+  say('الفيديو لسه بيتجهّز. طلبك محفوظ؛ اقفل النافذة وراجع مشاريع Magic Hour قبل ما تطلب فيديو جديد.',true);
+ }catch(error){say('تعذر إنشاء الفيديو: '+String(error?.message||'خطأ غير معروف').slice(0,300),true);}
+ finally{busy=false;generate.disabled=false;sample.disabled=false;}
 }
-generate.addEventListener('click',()=>run(false));
-sample.addEventListener('click',()=>run(true));
+function showVideo(src){
+ preview.src=src;preview.hidden=false;preview.controls=true;preview.load();
+ save.href=src;save.hidden=false;save.target='_blank';save.rel='noopener noreferrer';
+ say('الفيديو جاهز! شغّله واحفظه من زر العرض / الحفظ.');
+}
+if(open&&dialog)open.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
+if(close&&dialog)close.addEventListener('click',()=>dialog.close());
+if(dialog)dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+sample.addEventListener('click',()=>{
+ prompt.value='لقطة سينمائية لطائرة ورقية تحلق فوق شاطئ البحر وقت الغروب، أمواج هادئة، حركة كاميرا بطيئة وانعكاس ذهبي على الماء، تفاصيل واقعية، بدون كتابة على الشاشة.';
+ prompt.focus();say('حطينا لك وصفًا جاهزًا. اضغط توليد فيديو حقيقي لما تكون مستعدًا.');
+});
+generate.addEventListener('click',run);
 })();
