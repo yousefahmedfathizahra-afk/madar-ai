@@ -14,7 +14,7 @@ module.exports=async function(req,res){
    headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},
    body:JSON.stringify({
     name:'MADAR PRO one-time Kling 3.0 integration test',
-    end_seconds:8,
+    end_seconds:5,
     aspect_ratio:'16:9',
     style:{prompt:'A cinematic aerial shot of the Pyramids of Giza at golden hour, smooth slow camera push-in, realistic desert atmosphere, detailed ancient stone textures, natural warm sunlight.'},
     model:'kling-3.0',
@@ -29,7 +29,7 @@ module.exports=async function(req,res){
   }
   const id=data?.id||data?.project_id||data?.project?.id||data?.data?.id;
   if(!id)return res.status(502).json({accepted:false,error:'Magic Hour returned no project ID.',response:data});
-  return res.status(202).json({accepted:true,projectId:id,status:data?.status||'queued',creditsCharged:data?.credits_charged??null,model:'kling-3.0',resolution:'1080p',duration:8,audio:true});
+  return res.status(202).json({accepted:true,projectId:id,status:data?.status||'queued',creditsCharged:data?.credits_charged??null,model:'kling-3.0',resolution:'1080p',duration:5,audio:true});
  }catch(e){
   return res.status(502).json({accepted:false,error:'Could not reach Magic Hour.'});
  }
