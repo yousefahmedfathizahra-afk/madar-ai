@@ -328,8 +328,8 @@ html,body{background:var(--bg)}
       <div class="studio-field"><label for="madarVideoPrompt">وصف الفيديو</label><textarea id="madarVideoPrompt" maxlength="1800" rows="4" placeholder="مثال: لقطة سينمائية لمدينة مستقبلية ليلًا، سيارات طائرة وأضواء نيون، حركة كاميرا بطيئة وواقعية..."></textarea></div>
       <div class="studio-cols">
         <div class="studio-field"><label for="madarVideoAspect">مقاس الفيديو</label><select id="madarVideoAspect"><option value="16:9">أفقي · YouTube</option><option value="9:16">رأسي · Reels / TikTok</option><option value="1:1">مربع · Instagram</option></select></div>
-        <div class="studio-field"><label for="madarVideoModel">موديل PRO</label><select id="madarVideoModel"><option value="veo3.1-audio" selected>Google Veo 3.1 Audio — جودة سينمائية</option><option value="kling-2.5-audio">Kling 2.5 Audio — حركة وأكشن</option></select></div>
-        <div class="studio-field"><label for="madarVideoDuration">مدة الفيديو — PRO</label><select id="madarVideoDuration"><option value="8" selected>8 ثوانٍ</option><option value="16">16 ثانية</option></select><div class="studio-static-setting">دقة 1080p · صوت مولّد · الموديلات المدفوعة الموثّقة في Magic Hour</div></div>
+        <div class="studio-field"><label for="madarVideoModel">موديل PRO</label><select id="madarVideoModel"><option value="kling-3.0" selected>Kling 3.0 PRO — جودة سينمائية وصوت</option></select></div>
+        <div class="studio-field"><label for="madarVideoDuration">مدة الفيديو — PRO</label><select id="madarVideoDuration"><option value="5" selected>5 ثوانٍ</option><option value="10">10 ثوانٍ</option><option value="15">15 ثانية</option></select><div class="studio-static-setting">Kling 3.0 · دقة 1080p · صوت مولّد · أفقي أو رأسي أو مربع</div></div>
       </div>
       <div class="studio-action-row">
         <button id="madarVideoGenerate" class="studio-main-button" type="button">🎬 إنشاء فيديو بالذكاء الاصطناعي</button>
@@ -337,7 +337,7 @@ html,body{background:var(--bg)}
       </div>
       <p id="madarVideoStatus" class="studio-status" role="status" aria-live="polite">جاهز لإنشاء فيديو PRO. اختر الموديل والمدة؛ سيظهر تأكيد قبل أي عملية تخصم كريدت.</p>
       <video id="madarVideoPreview" class="madar-pro-video-preview" controls playsinline preload="none" hidden></video>
-      <p class="studio-footnote">اختر موديل PRO مدفوعًا: Veo 3.1 Audio أو Kling 2.5 Audio. مدار يرسل الموديل والمدة المدعومين رسميًا بدقة 1080p وصوت مولّد. التكلفة حسب خطة حسابك ورصيدك. المفتاح محفوظ على الخادم ولا يظهر في المتصفح، ولا نعيد إرسال طلب مدفوع تلقائيًا.</p>
+      <p class="studio-footnote">مدار يستخدم Kling 3.0 المدفوع بدقة 1080p مع صوت مولّد، ويدعم 5 أو 10 أو 15 ثانية. التكلفة حسب خطة Magic Hour ورصيدها. المفتاح محفوظ على الخادم ولا يظهر في المتصفح، ولا نعيد إرسال طلب مدفوع تلقائيًا.</p>
     </section>ion>
     <section class="studio-panel" data-studio-panel="game" hidden>
       <h3>AI Game Maker</h3><p class="studio-help">اكتب فكرة Game بميكانيك لعب واضح؛ هتطلع لعبة HTML5 قابلة للمعاينة والتحميل. النتائج تجريبية وتحتاج اختبار.</p>
