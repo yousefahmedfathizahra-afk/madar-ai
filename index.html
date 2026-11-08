@@ -1599,6 +1599,19 @@ window.MADAR_APP={
   <script src="/madar-robot.js" defer></script>
 <script src="/madar-video-studio.js" defer></script>
 <script src="/madar-document-reader.js" defer></script>
+<script id="madar-disable-view-source">
+(function(){
+  'use strict';
+  window.addEventListener('keydown',function(event){
+    if(event.ctrlKey && !event.altKey && !event.metaKey && String(event.key).toLowerCase()==='u'){
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function')event.stopImmediatePropagation();
+      return false;
+    }
+  },true);
+})();
+</script>
 </body>
 </html>
 
