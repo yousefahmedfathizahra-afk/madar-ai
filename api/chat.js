@@ -9,7 +9,9 @@
 // Free mode stays on lightweight models. PRO mode uses the strongest
 // Gemini Flash models that have a no-cost API tier; it never falls back to Lite.
 const FREE_MODELS = ['gemini-3.5-flash-lite','gemini-3.1-flash-lite'];
-const PRO_FREE_MODELS = ['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'];
+// Runtime logs showed temporary 503s on 3.8/3.7, so prefer the stable 3.6/3.5
+// endpoints first and keep newer models as automatic fallbacks.
+const PRO_FREE_MODELS = ['gemini-3.6-flash','gemini-3.5-flash','gemini-3.8-flash','gemini-3.7-flash'];
 const VISION_MODELS = FREE_MODELS;
 const PRO_VISION_MODELS = PRO_FREE_MODELS;
 const VISION_RULES = [
@@ -24,8 +26,29 @@ const VISION_RULES = [
 ].join('\\n');
 
 function preferredModels(question,mode,tier='free'){
- // Never silently downgrade a PRO request into the lightweight Free models.
+ // Keep the selected tier isolated; PRO never silently falls back to Free/Lite.
  return tier==='pro' ? PRO_FREE_MODELS : FREE_MODELS;
+}
+
+// Match reasoning effort and output size to the actual task. Simple questions
+// should feel immediate; complex study/code requests get more time and tokens.
+function requestProfile(question,mode,tier='free',hasImage=false){
+ const q=String(question||'').trim();
+ const deep=/(?:بالتفصيل|خطوة\s*بخطوة|حلل|حلّل|قارن|برهن|اثبت|اشتق|خوارزمية|تصميم\s*نظام|خطة\s*شاملة|مشروع\s*كامل|تصحيح\s*كود|راجع\s*الكود|debug|algorithm|architecture|proof|derive|optimi[sz]e|multi.?step|deep reasoning|refactor|system design|complex|detailed analysis)/i.test(q)
+   ||q.length>=600||(mode==='code'&&q.length>=280);
+ const medium=deep||hasImage||['study','code','write'].includes(mode)||q.length>=170
+   ||/(?:اشرح|فسر|وضح|علمني|ازاي اعمل|كيف اعمل|ما الفرق|الفرق بين|لخص|اكتب|صمم|برمج|كود|حل مسألة|رياضيات|explain|teach|compare|summari[sz]e|write|build|design|solve|code|program|calculate|analy[sz]e)/i.test(q);
+ const complexity=deep?'complex':medium?'medium':'simple';
+ const thinkingLevel=complexity==='complex'
+   ?(tier==='pro'?'high':'medium')
+   :complexity==='medium'?'medium':'low';
+ const maxOutputTokens=complexity==='complex'
+   ?(tier==='pro'?4096:3072)
+   :complexity==='medium'?(tier==='pro'?2048:1536)
+   :(tier==='pro'?1024:768);
+ const modelTimeoutMs=complexity==='complex'?18000:complexity==='medium'?11000:6000;
+ const totalTimeoutMs=complexity==='complex'?65000:complexity==='medium'?38000:17000;
+ return{complexity,thinkingLevel,maxOutputTokens,modelTimeoutMs,totalTimeoutMs};
 }
 
 const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. The MADAR AI product and website were developed by Youssef Ahmed (يوسف أحمد). If asked who created or developed MADAR AI, credit Youssef Ahmed accurately as the application developer, not as the creator of the foundation AI model. Do not mention underlying AI model/provider brands in ordinary answers, introductions, capabilities, or sign-offs. Understand and respond in the language requested by the visitor, including Arabic, English, French, Spanish, German, Italian, Turkish, Portuguese, Chinese, Japanese, Korean, Hindi, Russian and other languages within your capability. Do not assert fluency in every language; if unfamiliar, be transparent and try to help. Implementation/provider selection are internal product details. If directly asked which model, company or provider powers the assistant, courteously say that internal model/provider details are not publicly disclosed; do not invent an alternative model, deny true technical dependencies, or claim the underlying foundation model was trained by MADAR. Answer the user's actual topic rather than appending attribution.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly. Avoid accidentally inserting Korean, Chinese, or other unrelated-language words in Arabic or English sentences. Keep common technical names in their original spelling only when useful.\n- Answer genuinely different questions on science, history, maths, coding, literature, language, technology and daily life based on the user's request, not on canned examples. Follow requested length and format, and account for prior conversation context.\n- For mathematics, verify calculations and state key steps when nontrivial. For factual claims, separate established facts from uncertainty and avoid presenting guesses as facts.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
@@ -348,11 +371,13 @@ module.exports = async function chat(req,res) {
       sourceNotes='\n\nWikipedia lookup is unavailable. Answer from general knowledge, do not invent source citations or claim live verification.';
     }
   }
+  const profile=requestProfile(currentQuestion,mode,tier,!!image);
+  const models=preferredModels(currentQuestion,mode,tier);
   const controller=new AbortController();
   const started=Date.now();
-  // Browser currently times out at 33 seconds. Keep a 24-second overall budget,
-  // and cap each model attempt so an overloaded model cannot block all fallbacks.
-  const timer=setTimeout(()=>controller.abort(),24000);
+  // Give simple questions a short fast path; difficult work gets a longer
+  // server budget so automatic model failover can finish without a manual resend.
+  const timer=setTimeout(()=>controller.abort(),profile.totalTimeoutMs);
   const contents=messages.map((m,i)=>({
     role:m.role==='assistant'?'model':'user',parts:[{text:m.content+(i===messages.length-1?sourceNotes:'')}]
   }));
@@ -360,24 +385,23 @@ module.exports = async function chat(req,res) {
   let sawBusy=false,sawEmpty=false,sawBadRequest=false,sawQuota=false;
   let emptyReason='';
   try {
-    for (const model of (image ? (tier==='pro'?PRO_VISION_MODELS:VISION_MODELS) : preferredModels(messages[messages.length-1].content,mode,tier))) {
+    for (const model of models) {
       for (let attempt=0;attempt<1;attempt++) {
       const endpoint='https://generativelanguage.googleapis.com/v1beta/models/'
         +model+':generateContent';
       let response;
       try {
         response=await fetch(endpoint,{
-          method:'POST',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(7000)]),
+          method:'POST',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(profile.modelTimeoutMs)]),
           headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
           body:JSON.stringify({
             systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')+(languageInstruction?'\n\n'+languageInstruction:'')+(image?'\n\n'+VISION_RULES:'')}]},
             contents,
             generationConfig:{
-              maxOutputTokens:tier==='pro'?4096:2048,
-              // Gemini 2.5 Flash/Lite supports disabled thinking, so all output
-              // tokens are available for a visible answer. Gemini 3 uses levels.
+              maxOutputTokens:profile.maxOutputTokens,
+              // Keep routine replies fast; increase reasoning only for harder work.
               thinkingConfig:model.startsWith('gemini-2.5-')
-                ?{thinkingBudget:0}:{thinkingLevel:tier==='pro'?'high':'low'}
+                ?{thinkingBudget:0}:{thinkingLevel:profile.thinkingLevel}
             }
           })
         });
@@ -419,7 +443,11 @@ module.exports = async function chat(req,res) {
       const reply=candidates.map(candidate=>(candidate?.content?.parts||[])
         .filter(p=>typeof p?.text==='string'&&p.thought!==true)
         .map(p=>p.text).join('\n').trim()).find(Boolean);
-      if(reply)return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url})),tier,model});
+      if(reply){
+        const elapsedMs=Date.now()-started;
+        console.info('MADAR Gemini success:',tier,profile.complexity,model,'elapsedMs',elapsedMs);
+        return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url})),tier,model,elapsedMs,complexity:profile.complexity});
+      }
       const finish=candidates.map(c=>String(c?.finishReason||'')).filter(Boolean).join(',');
       const block=String(answer?.promptFeedback?.blockReason||'');
       // Only log diagnostics, never log user messages, keys, or image bytes.
@@ -433,15 +461,15 @@ module.exports = async function chat(req,res) {
 
       }
     }
-    if(sawQuota)return send(res,429,{error:'تم الوصول لحد الاستخدام المؤقت لخدمة مدار. جرّب لاحقًا.'});
-    if(sawEmpty)return send(res,502,{error:'تعذر إنشاء ردّ حاليًا. ابعت السؤال مرة تانية بعد قليل.',reason:emptyReason});
-    if(sawBusy)return send(res,503,{error:'خدمة مدار مشغولة مؤقتًا. حاول بعد قليل.'});
+    if(sawBusy)return send(res,503,{error:'مدار جرّب الموديلات الاحتياطية تلقائيًا، لكن الخدمة ما زالت مشغولة. سؤالك محفوظ في المحادثة.'});
+    if(sawEmpty)return send(res,502,{error:'الموديلات الاحتياطية لم تُرجع إجابة صالحة. سؤالك محفوظ في المحادثة.',reason:emptyReason});
+    if(sawQuota)return send(res,429,{error:'حصة الاستخدام المجاني للخدمة وصلت لحدها المؤقت. سؤالك محفوظ في المحادثة.'});
     return send(res,502,{error:sawBadRequest
-      ?'تعذر معالجة الرسالة. جرّب سؤالًا أقصر.'
-      :'خدمة الذكاء الاصطناعي غير مهيأة حاليًا. تواصل مع إدارة الموقع.'});
+      ?'تعذر معالجة الرسالة بعد تجربة الإعدادات البديلة. سؤالك محفوظ في المحادثة.'
+      :'خدمة الذكاء الاصطناعي غير متاحة حاليًا. سؤالك محفوظ في المحادثة.'});
   } catch(err) {
     console.error('MADAR unexpected Gemini error:',err?.name);
-    if(controller.signal.aborted)return send(res,504,{error:'الاتصال بخدمة مدار أخد وقت طويل. حاول مرة تانية.'});
+    if(controller.signal.aborted)return send(res,504,{error:'الطلب استغرق وقتًا أطول من المعتاد بعد تجربة البدائل. سؤالك محفوظ في المحادثة.'});
     return send(res,502,{error:'تعذر الاتصال بالخدمة حاليًا. حاول مرة تانية.'});
   } finally {clearTimeout(timer);}
 };
