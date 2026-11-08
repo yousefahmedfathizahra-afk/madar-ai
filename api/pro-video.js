@@ -18,7 +18,9 @@ function parseBody(input){
  if(prompt.length<12||prompt.length>1800)throw fail(400,'اكتب وصف فيديو من 12 إلى 1800 حرف.');
  const aspect=input.aspectRatio||'16:9';
  if(!['16:9','9:16','1:1'].includes(aspect))throw fail(400,'نسبة أبعاد الفيديو غير مدعومة.');
- return {prompt,aspect};
+ const duration=Number(input.duration||10);
+ if(![5,10,15].includes(duration))throw fail(400,'اختر مدة 5 أو 10 أو 15 ثانية.');
+ return {prompt,aspect,duration};
 }
 function permit(req){
  const ip=String(req.headers?.['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].trim().slice(0,90),now=Date.now();
@@ -46,14 +48,14 @@ async function createVideo(req,res){
  if(!String(req.headers?.['content-type']||'').toLowerCase().startsWith('application/json'))throw fail(415,'Content-Type must be application/json.');
  if(!permit(req))throw fail(429,'لحماية رصيد الفيديو: الحد الأقصى فيديوهان في الساعة، مع انتظار 10 دقائق بين الطلبات من نفس الاتصال.');
  const body=parseBody(req.body),key=keyOrThrow();
- // Conservative launch settings: 5 seconds, 480p, LTX 2.5, audio disabled.
- const response=await call(BASE+'/v1/text-to-video',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:'MADAR PRO AI Video',end_seconds:5,aspect_ratio:body.aspect,style:{prompt:body.prompt},model:'ltx-2.5',resolution:'480p',audio:false})});
+ // MADAR PRO: Magic Hour resolves `default` to its paid-tier Kling 3.0 model for PRO accounts.
+ const response=await call(BASE+'/v1/text-to-video',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:'MADAR PRO AI Video',end_seconds:body.duration,aspect_ratio:body.aspect,style:{prompt:body.prompt},model:'default',resolution:'1080p',audio:true})});
  const data=await response.json().catch(()=>null);
  if(!response.ok)await providerError(response);
  const project=data?.project||data?.data||data||{};
  const id=project.id||project.project_id||project.projectId||data?.id||data?.project_id;
  if(typeof id!=='string'||!id)throw fail(502,'Magic Hour لم يرجع رقم مشروع صالح. لا تعِد الإرسال تلقائيًا؛ راجع سجل المشاريع أولًا.');
- return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:'ltx-2.5',resolution:'480p',duration:5});
+ return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:'default',resolution:'1080p',duration:body.duration,audio:true});
 }
 
 function readQuery(req,name){
