@@ -785,17 +785,17 @@ window.addEventListener('pagehide',cleanup);render();
   </dialog>
   <dialog id="madarVideoDialog" class="madar-video-dialog" aria-labelledby="madarVideoTitle" lang="ar" dir="rtl">
     <section id="madarVideoRoot" data-video-tier="free">
-      <div class="madar-video-header"><div><h2 id="madarVideoTitle">🎬 مدار Video Maker</h2><small>نسخة مجانية · فيديو قصير بجودة قياسية 720p</small></div><button id="madarVideoClose" type="button" aria-label="إغلاق الفيديو">×</button></div>
-      <p class="madar-video-info">اكتب وصف الفيديو بالعربي أو الإنجليزي، ومدار هيولّد فيديو فعلي باستخدام Magic Hour. التوليد بيستخدم رصيد حساب Magic Hour المرتبط بالمفتاح السري لمدار.</p>
+      <div class="madar-video-header"><div><h2 id="madarVideoTitle">🎬 مدار Video Maker PRO</h2><small>الجودة والموديل تلقائيًا حسب اشتراك Magic Hour — بدون وضع مجاني إجباري</small></div><button id="madarVideoClose" type="button" aria-label="إغلاق الفيديو">×</button></div>
+      <p class="madar-video-info">اكتب وصف الفيديو بالعربي أو الإنجليزي. مدار يختار موديل Magic Hour الافتراضي المناسب لخطة حسابك؛ الخطط المدفوعة تحصل على موديل مدفوع وإعدادات الجودة المتاحة لها. التوليد يستهلك رصيد الحساب.</p>
       <label class="madar-video-label" for="madarVideoPrompt">وصف الفيديو</label>
       <textarea id="madarVideoPrompt" rows="4" maxlength="1800" placeholder="مثال: مشهد سينمائي لمدينة مستقبلية في القاهرة وقت الغروب، حركة كاميرا بطيئة، تفاصيل واقعية..."></textarea>
       <label class="madar-video-label" for="madarVideoQuality">شكل الفيديو</label>
       <select id="madarVideoQuality"><option value="16:9">عرضي 16:9 — يوتيوب</option><option value="9:16">طولي 9:16 — ريلز وتيك توك</option><option value="1:1">مربع 1:1</option></select>
-      <input id="madarVideoSeconds" type="hidden" value="5">
+      <label class="madar-video-label" for="madarVideoSeconds">مدة الفيديو</label><select id="madarVideoSeconds"><option value="5">5 ثوانٍ</option><option value="10">10 ثوانٍ</option><option value="15">15 ثانية</option></select>
       <label class="madar-video-approval"><input id="madarVideoCredit" type="checkbox"> أوافق على إرسال الوصف إلى Magic Hour واستخدام رصيد الحساب لإنشاء الفيديو.</label>
       <div class="madar-video-buttons"><button id="madarVideoSample" type="button">✍️ استخدم وصفًا جاهزًا</button><button id="madarVideoGenerate" type="button">🎬 ولّد الفيديو</button><a id="madarVideoDownload" hidden target="_blank" rel="noopener noreferrer">⬇ عرض / حفظ الفيديو</a></div>
       <p id="madarVideoStatus" role="status" aria-live="polite"></p><video id="madarVideoPreview" controls playsinline preload="none" hidden></video>
-      <small class="madar-video-footnote">يبدأ التوليد بعد موافقتك فقط. الموديل والمدة والجودة حسب المتاح في حساب Magic Hour. لو التوليد اتأخر، مدار بيتابع نفس الطلب بدون إنشاء طلب مدفوع جديد.</small>
+      <small class="madar-video-footnote">مدار لا يفرض موديل LTX المجاني ولا دقة 720p ثابتة؛ Magic Hour يختار الموديل والدقة الافتراضيين وفق خطة حسابك. الخيارات النهائية والمدة والتكلفة تخضع لدعم الموديل ورصيد الحساب.</small>
     </section>
   </dialog>
   <dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle" lang="ar" dir="rtl">
