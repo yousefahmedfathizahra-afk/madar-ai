@@ -51,3 +51,10 @@ test('Invalid prompts, foreign origins and methods are rejected',async()=>{
  assert.equal((await invoke('POST',{prompt:'A cinematic sunset over the sea'},{headers:{origin:'https://evil.example'}})).status,403);
  assert.equal((await invoke('PUT',{})).status,405);
 });
+
+test('Magic Hour credential check is read-only and does not create a video',async()=>{
+ process.env.MAGIC_HOUR_API_KEY='fake-magic-key';let calls=0;
+ global.fetch=async(url,options)=>{calls++;assert.equal(url,'https://api.magichour.ai/v1/account');assert.equal(options.method,'GET');return {ok:true,status:200,json:async()=>({credits:999})};};
+ const r=await invoke('GET',undefined,{query:{check:'1'}});
+ assert.equal(r.status,200);assert.equal(r.connected,true);assert.equal(r.readOnly,true);assert.equal(calls,1);
+});
