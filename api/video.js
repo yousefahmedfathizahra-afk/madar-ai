@@ -20,7 +20,7 @@ module.exports=async function handler(req,res){
   const prompt=String(body.prompt||'').trim();
   if(prompt.length<8||prompt.length>1800)return send(res,400,{error:'اكتب وصف فيديو من 8 إلى 1800 حرف.'});
   const aspect=['16:9','9:16','1:1'].includes(body.aspect_ratio)?body.aspect_ratio:'16:9';
-  const seconds=Math.min(8,Math.max(3,Number(body.seconds)||5));
+  const seconds=Math.min(15,Math.max(3,Number(body.seconds)||5));
   const name='MADAR AI video';
   path='/v1/text-to-video';
   options.method='POST';
@@ -30,8 +30,7 @@ module.exports=async function handler(req,res){
    end_seconds:seconds,
    aspect_ratio:aspect,
    style:{prompt},
-   model:'default',
-   resolution:'720p'
+   model:'default'
   });
  }else{
   const id=String(req.query?.id||'').trim();
