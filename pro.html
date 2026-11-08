@@ -679,5 +679,18 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSidebar();clos
 </aside>
 
 <script src="/madar-pro-mascot.js" defer></script>
+<script id="madar-disable-view-source">
+(function(){
+  'use strict';
+  window.addEventListener('keydown',function(event){
+    if(event.ctrlKey && !event.altKey && !event.metaKey && String(event.key).toLowerCase()==='u'){
+      event.preventDefault();
+      event.stopPropagation();
+      if(typeof event.stopImmediatePropagation==='function')event.stopImmediatePropagation();
+      return false;
+    }
+  },true);
+})();
+</script>
 </body>
 </html>
