@@ -30,7 +30,8 @@ module.exports=async function handler(req,res){
    end_seconds:seconds,
    aspect_ratio:aspect,
    style:{prompt},
-   model:'default'
+   model:'kling-3.0',
+   resolution:'1080p'
   });
  }else{
   const id=String(req.query?.id||'').trim();
