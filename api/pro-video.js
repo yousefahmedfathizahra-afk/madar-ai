@@ -18,9 +18,12 @@ function parseBody(input){
  if(prompt.length<12||prompt.length>1800)throw fail(400,'اكتب وصف فيديو من 12 إلى 1800 حرف.');
  const aspect=input.aspectRatio||'16:9';
  if(!['16:9','9:16','1:1'].includes(aspect))throw fail(400,'نسبة أبعاد الفيديو غير مدعومة.');
- const duration=Number(input.duration||10);
- if(![5,10,15].includes(duration))throw fail(400,'اختر مدة 5 أو 10 أو 15 ثانية.');
- return {prompt,aspect,duration};
+ const model=input.model||'veo3.1-audio';
+ if(!['veo3.1-audio','kling-2.5-audio'].includes(model))throw fail(400,'موديل الفيديو غير مدعوم.');
+ const duration=Number(input.duration||(model==='veo3.1-audio'?8:10));
+ const supported=model==='veo3.1-audio'?[4,6,8,16,24,32,40,48,56]:[5,10];
+ if(!supported.includes(duration))throw fail(400,model==='veo3.1-audio'?'مدة Veo 3.1 Audio لازم تكون 4 أو 6 أو 8 أو 16 ثانية أو أكثر حسب الخيارات المتاحة.':'مدة Kling 2.5 Audio لازم تكون 5 أو 10 ثوانٍ.');
+ return {prompt,aspect,duration,model};
 }
 function permit(req){
  const ip=String(req.headers?.['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].trim().slice(0,90),now=Date.now();
@@ -48,14 +51,15 @@ async function createVideo(req,res){
  if(!String(req.headers?.['content-type']||'').toLowerCase().startsWith('application/json'))throw fail(415,'Content-Type must be application/json.');
  if(!permit(req))throw fail(429,'لحماية رصيد الفيديو: الحد الأقصى فيديوهان في الساعة، مع انتظار 10 دقائق بين الطلبات من نفس الاتصال.');
  const body=parseBody(req.body),key=keyOrThrow();
- // MADAR PRO: Magic Hour resolves `default` to Kling 3.0 on paid accounts; omit resolution so the account's paid-tier default is applied.
- const response=await call(BASE+'/v1/text-to-video',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:'MADAR PRO AI Video',end_seconds:body.duration,aspect_ratio:body.aspect,style:{prompt:body.prompt},model:'default',audio:true})});
+ // Use an explicitly documented paid model instead of the ambiguous "default" alias.
+ // Veo 3.1 Audio supports 1080p and native generated audio; Kling 2.5 Audio is an alternate motion-focused model.
+ const response=await call(BASE+'/v1/text-to-video',{method:'POST',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name:'MADAR PRO AI Video',end_seconds:body.duration,aspect_ratio:body.aspect,style:{prompt:body.prompt},model:body.model,resolution:'1080p'})});
  const data=await response.json().catch(()=>null);
  if(!response.ok)await providerError(response);
  const project=data?.project||data?.data||data||{};
  const id=project.id||project.project_id||project.projectId||data?.id||data?.project_id;
  if(typeof id!=='string'||!id)throw fail(502,'Magic Hour لم يرجع رقم مشروع صالح. لا تعِد الإرسال تلقائيًا؛ راجع سجل المشاريع أولًا.');
- return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:'default',duration:body.duration,audio:true});
+ return reply(res,202,{projectId:id,status:project.status||data?.status||'queued',creditsCharged:project.credits_charged??data.credits_charged??null,model:body.model,resolution:'1080p',duration:body.duration});
 }
 
 function readQuery(req,name){
@@ -65,10 +69,14 @@ function readQuery(req,name){
 }
 async function checkAccount(req,res){
  const key=keyOrThrow();
- const response=await call(BASE+'/v1/account',{method:'GET',headers:{Authorization:'Bearer '+key,'Accept':'application/json'}});
- if(!response.ok)await providerError(response);
- // Deliberately return no account details or balance; this is a read-only credential check.
- return reply(res,200,{connected:true,provider:'Magic Hour',readOnly:true});
+ // Read-only auth probe: an intentionally nonexistent project returns 404 with a valid key.
+ // It does not create a job, consume credits, or reveal account details.
+ const response=await call(BASE+'/v1/video-projects/madar-pro-auth-check-no-project',{method:'GET',headers:{Authorization:'Bearer '+key,'Accept':'application/json'}});
+ if(response.status===401)await providerError(response);
+ if(response.status===403)await providerError(response);
+ if(response.status===429)await providerError(response);
+ if(response.status!==404&& !response.ok)await providerError(response);
+ return reply(res,200,{connected:true,provider:'Magic Hour',readOnly:true,probe:'authenticated'});
 }
 
 function readProjectId(req){
