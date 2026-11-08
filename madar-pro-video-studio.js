@@ -54,7 +54,9 @@ async function start(){
  if(activeProject){setBusy(true);info('بنستكمل متابعة الفيديو السابق من غير إنشاء طلب جديد…');await poll(activeProject,null);return;}
  const prompt=idea.value.trim();
  if(prompt.length<12){info('اكتب وصفًا أوضح للفيديو (12 حرفًا على الأقل).',true);idea.focus();return;}
- const chosenModel=model?.value||'veo3.1-audio';\n const modelName=chosenModel==='veo3.1-audio'?'Google Veo 3.1 Audio':'Kling 2.5 Audio';\n if(!window.confirm('توليد فيديو PRO باستخدام '+modelName+' بدقة 1080p ومدة '+(duration?.value||8)+' ثانية. العملية قد تخصم كريدت من اشتراكك المدفوع. هل تريد المتابعة؟'))return;
+ const chosenModel=model?.value||'veo3.1-audio';
+ const modelName=chosenModel==='veo3.1-audio'?'Google Veo 3.1 Audio':'Kling 2.5 Audio';
+ if(!window.confirm('توليد فيديو PRO باستخدام '+modelName+' بدقة 1080p ومدة '+(duration?.value||8)+' ثانية. العملية قد تخصم كريدت من اشتراكك المدفوع. هل تريد المتابعة؟'))return;
  resetPreview();setBusy(true);info('بنرسل طلبًا واحدًا إلى Magic Hour… لا تغلق الصفحة.');
  try{
   const r=await fetch('/api/pro-video',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({prompt,aspectRatio:aspect.value||'16:9',duration:Number(duration?.value)||8,model:chosenModel})});
