@@ -617,7 +617,7 @@ q('.mt-form').onsubmit=async e=>{
  const timer=setTimeout(()=>controller.abort(),40000);
  try{
   const prompt='Teach this study question in '+(lang==='en'?'English':'Egyptian Arabic')+'. Return ONLY valid JSON, no markdown, with this exact structure: {"title":"short title","steps":[{"explanation":"clear spoken explanation","caption":"short board caption","nodes":["label","→","label"]}],"quiz":{"question":"a question","options":["A","B","C"],"answer":0}}. Use 3 concise steps, 1 to 5 short text nodes each; nodes form a conceptual diagram. Include an accurate three-choice quiz with a zero-based answer index. No HTML, SVG or code. For unsuitable or unclear questions explain the limitation honestly. Student question: '+question;
-  const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:prompt}],tier:getSelectedTier()}),signal:controller.signal});
+  const response=await fetchMadarChat(JSON.stringify({messages:[{role:'user',content:prompt}],tier:getSelectedTier()}),controller.signal);
   const data=await response.json().catch(()=>null);if(!response.ok||typeof data?.reply!=='string'||!data.reply.trim())throw Error('response');
   if(id!==requestId)return;const raw=data.reply.trim();let result=null;try{result=safeLesson(JSON.parse(raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'')))}catch{}
   if(result){lessons.custom=result;q('.mt-status').textContent=t('الشرح جاهز. راجعه خطوة بخطوة.');}
@@ -1117,10 +1117,10 @@ function setConnectionStatus(mode, message){
 function apiError(response, data){
   if (data && typeof data.error === 'string' && data.error.trim()) return data.error;
   if (response.status === 401 || response.status === 403) return 'Hosting is blocking access to MADAR’s API. Check deployment protection.';
-  if (response.status === 404 || response.status === 405) return 'The AI or research endpoint is unavailable. Try again.';
-  if (response.status === 429) return 'Too many requests. Please wait and try again.';
-  if (response.status === 503) return 'خدمة مدار غير متاحة مؤقتًا. جرّب بعد قليل.';
-  if (response.status >= 500) return `Server error (HTTP ${response.status}). Check the deployed backend and its logs.`;
+  if (response.status === 404 || response.status === 405) return 'خدمة الشات غير متاحة على الرابط الحالي.';
+  if (response.status === 429) return 'حصة الاستخدام المجاني لخدمة مدار وصلت لحدها المؤقت. سؤالك محفوظ في المحادثة.';
+  if (response.status === 503) return 'مدار جرّب الموديلات الاحتياطية تلقائيًا، لكن الخدمة ما زالت مشغولة. سؤالك محفوظ في المحادثة.';
+  if (response.status >= 500) return 'تعذر إكمال الرد بعد تجربة البدائل تلقائيًا. سؤالك محفوظ في المحادثة.';
   return `Unexpected API response (HTTP ${response.status}). Check the server setup.`;
 }
 async function readApiJson(response){
@@ -1202,6 +1202,25 @@ function chatRequestMessages(messages){
  }
  return result;
 }
+async function fetchMadarChat(body,signal){
+ let response=null;
+ for(let attempt=0;attempt<2;attempt++){
+  if(signal?.aborted)throw Object.assign(Error('Aborted'),{name:'AbortError'});
+  try{
+   response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body,signal});
+  }catch(err){
+   if(signal?.aborted||err?.name==='AbortError'||attempt===1)throw err;
+   await new Promise(resolve=>setTimeout(resolve,450));
+   continue;
+  }
+  // One quiet retry for transient server/model outages. Quota and validation
+  // errors are not retried, and the visitor never has to retype the question.
+  if(response.ok||![500,502,503,504].includes(response.status)||attempt===1)return response;
+  await new Promise(resolve=>setTimeout(resolve,450));
+ }
+ return response;
+}
+
 async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false){
   if(isWaiting)return;
   const imageForMessage=pendingImage;
@@ -1232,7 +1251,7 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
   chat.messages.push({role:'user',content,photoId,documentName:docsForMessage.map(d=>d.name).join(' · '),documentText});chat.messages=chat.messages.slice(-100);
   chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();clearPendingDocuments();stoppedByUser=false;activeToolType=toolIntent?.type==='refine'?(toolIntent.kind==='image'?'refine-image':'builder'):(toolIntent?.type||'chat');isWaiting=true;resizePrompt();saveChats();render();
   const controller=new AbortController();busyController=controller;
-  const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?38000:33000);
+  const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?38000:75000);
   try{
     if(location.protocol === 'file:') throw Error('MADAR needs its server for live AI chat. This HTML file alone is a design preview.');
     if(toolIntent){
@@ -1246,7 +1265,7 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
     const requestedTier=getSelectedTier();
     let response;
     try{
-      response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:chatRequestMessages(chat.messages),tier:requestedTier,image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch||isWikipediaResearchRequest(content),mode:window.MADAR_FEATURES?.getModeFor?.(content,chat.messages)||'chat'}),signal:controller.signal});
+      response=await fetchMadarChat(JSON.stringify({messages:chatRequestMessages(chat.messages),tier:requestedTier,image:imageForMessage?{mimeType:imageForMessage.mimeType,data:imageForMessage.data}:undefined,webSearch:wikiResearch||isWikipediaResearchRequest(content),mode:window.MADAR_FEATURES?.getModeFor?.(content,chat.messages)||'chat'}),controller.signal);
     }catch(err){
       if(err?.name === 'AbortError') throw err;
       throw Error('Cannot reach /api/chat. Deploy the full MADAR server on HTTPS, not only the HTML file.');
