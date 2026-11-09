@@ -30,9 +30,9 @@ module.exports=async function handler(req,res){
    end_seconds:seconds,
    aspect_ratio:aspect,
    style:{prompt},
-   // Let Magic Hour select LTX 2.5 for Free accounts or Kling 3.0 for paid tiers.
-   // Omit resolution so the provider applies the correct plan default.
-   model:'default'
+   // Hard-pin every MADAR video request to the free LTX 2.5 model.
+   // Never allow Magic Hour account tier defaults to select a paid model.
+   model:'ltx-2.5'
   });
  }else{
   const id=String(req.query?.id||'').trim();
