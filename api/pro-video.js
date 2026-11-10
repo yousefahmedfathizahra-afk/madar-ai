@@ -37,7 +37,7 @@ async function call(url,options){
  catch(e){if(e?.name==='AbortError')throw fail(504,'خدمة توليد الفيديو تأخرت. احتفظ برقم المشروع إن ظهر ولا تضغط إنشاء مرة أخرى قبل مراجعة الحالة.');throw fail(502,'تعذر الاتصال بخدمة توليد الفيديو.');}
  finally{clearTimeout(timer);}
 }
-function keyOrThrow(){const key=process.env.MAGIC_HOUR_API_KEY||'';if(!key||key==='PASTE_MAGIC_HOUR_API_KEY_HERE')throw fail(503,'مفتاح Magic Hour لم يُضف بعد إلى إعدادات MADAR PRO Preview.');return key;}
+function keyOrThrow(){const key=process.env.MAGIC_HOUR_API_KEY||'';if(!key||key==='PASTE_MAGIC_HOUR_API_KEY_HERE')throw fail(503,'مفتاح Magic Hour لم يُضف بعد إلى إعدادات MADAR PRO Production.');return key;}
 async function providerError(response,data){
  const detail=String(data?.error?.message||data?.message||data?.error_description||'').slice(0,220);
  if(response.status===401)throw fail(503,'مفتاح Magic Hour غير صالح أو غير مفعّل (401). راجع المفتاح في Vercel.');
