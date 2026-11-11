@@ -59,7 +59,7 @@ const SITE_CAPABILITIES = [
  'MADAR CAN EXPLAIN UPLOADED PHOTOS. If the visitor wants to attach a picture, tell them to type «ارفع صورة» and choose it from their device. MADAR supports browser-based voice input and voice reading when the browser supports speech APIs; visitors can type «شغل المايك» or «شغل الصوت».',
  'MADAR CAN HELP TUTOR, QUIZ, WRITE CODE, TRANSLATE, AND DRAFT CONTENT directly from a normal conversation, with automatic mode inference and without extra visible buttons.',
  'MADAR CAN TEACH WORLD LANGUAGES via «🌍 مدرس اللغات» in MADAR Studio. Visitors choose a target language and learner level to receive interactive lessons, translations, vocabulary, practice conversations and quizzes one turn at a time. Browser microphone and speech playback support many languages depending on device and installed voices; do not promise audio support for every language. The main composer includes mic, speaking toggle and voice-language controls.',
- 'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab; MADAR can verify recent sports and news through limited web-grounded search for time-sensitive questions, when that tool returns supporting sources. Do not pretend to know unverified live sports results, weather, prices or breaking news.',
+ 'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab. MADAR does not use Google Search grounding inside chat in its free-only API setup; for time-sensitive questions, clearly state when direct verification is unavailable and never guess.',
  'Important: tools are triggered by the WEBSITE before or alongside text chat, NOT by the text-answering AI model. Answer capability questions positively with honest setup requirements and actionable instructions. Never claim a generated picture, live lookup, or deployed site was completed when the tool did not actually run.'
 ].join('\\n');
 // Modes change response behavior only; users still share the same safe Gemini backend.
@@ -74,7 +74,7 @@ const counters = new Map();
 function send(res, status, body) { return res.status(status).json(body); }
 
 
-/** Only time-sensitive requests pay the latency/quota cost of a grounded search. */
+/** Detect time-sensitive requests and fail closed; paid Google Search grounding is not used. */
 function needsLiveSearch(text){
  const q=String(text||'').normalize('NFKC').toLowerCase()
   .replace(/[\u064b-\u065f\u0670]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').trim();
@@ -85,46 +85,6 @@ function needsLiveSearch(text){
  const specific=/(?:20[2-9]\d.{0,40}(?:فاز|كسب|حصل على|نتيجه|ballon|award|won|winner|election|انتخابات|بطل|الدوري))|(?:مين|من|who|which).{0,45}(?:فاز|كسب|خد|حصل على|won).{0,50}(?:بطوله|جايزه|جائزه|دوري|كاس|ballon|award)/i;
  return temporal.test(q)||sport.test(q)||specific.test(q);
 }
-function safeGroundedSources(candidate){
- const chunks=candidate?.groundingMetadata?.groundingChunks;
- if(!Array.isArray(chunks))return[];
- const out=[],seen=new Set();
- for(const chunk of chunks){
-  const uri=String(chunk?.web?.uri||'').trim(),title=String(chunk?.web?.title||'').trim().slice(0,120);
-  try{const u=new URL(uri);
-   if(u.protocol!=='https:'||!title||seen.has(uri))continue;
-   seen.add(uri);out.push({title,url:uri,type:'web'});
-   if(out.length===5)break;
-  }catch{}
- }
- return out;
-}
-async function checkCurrentNews(question,key,dateInfo){
- const c=new AbortController(),timer=setTimeout(()=>c.abort(),18500);
- try{
-  // Gemini 2.5 Flash-Lite supports free-tier Google Search grounding subject
-  // to Google's limits. One grounded request, no automatic paid-model retries.
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',{
-   method:'POST',signal:c.signal,
-   headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
-   body:JSON.stringify({
-    contents:[{role:'user',parts:[{text:question}]}],
-    tools:[{googleSearch:{}}],
-    systemInstruction:{parts:[{text:'You are MADAR AI. You are connected to Google Search for THIS question. Verify sports results, awards and recent news by performing Google Search. Current Cairo date: '+dateInfo.englishDate+'. Resolve yesterday relative to this date. Respond first with the actual fact in the user language (natural Egyptian Arabic if asked in Arabic), mention the relevant event date and year. Never pretend that web lookup is unavailable when Google Search results are provided. If results conflict or are not returned, do not invent an answer or sources. Ground every recent claim in search evidence.'}]},
-    generationConfig:{maxOutputTokens:1600,thinkingConfig:{thinkingBudget:0}}
-   })
-  });
-  const data=await r.json().catch(()=>({}));
-  if(!r.ok){console.warn('MADAR grounding failure:',r.status,String(data?.error?.status||''));return null;}
-  const candidate=(data?.candidates||[]).find(p=>(p?.content?.parts||[]).some(x=>typeof x?.text==='string'));
-  const reply=(candidate?.content?.parts||[]).filter(p=>typeof p?.text==='string'&&!p.thought).map(p=>p.text).join('\n').trim();
-  const sources=safeGroundedSources(candidate);
-  if(!reply||!sources.length)return null;
-  return{reply,sources,searchSuggestions:String(candidate?.groundingMetadata?.searchEntryPoint?.renderedContent||'').slice(0,30000),liveVerified:true};
- }catch(err){console.warn('MADAR grounding connection issue:',String(err?.name||'unknown'));return null}
- finally{clearTimeout(timer)}
-}
-
 // A Wikipedia keyword lookup is optional supporting evidence, not a general web search.
 const WIKI_STOPWORDS = new Set([
  'ايه','اية','اين','فين','متي','متى','مين','من','هل','كيف','ازاي','ليه',
@@ -348,8 +308,6 @@ module.exports = async function chat(req,res) {
     ? directArabCountriesAnswer(currentQuestion) : null;
   if(directAnswer)return send(res,200,{reply:directAnswer,sources:[],tier,model:null});
   if(!image&&data.webSearch!==true&&needsLiveSearch(currentQuestion)){
-   const verified=await checkCurrentNews(currentQuestion,key,currentDate);
-   if(verified)return send(res,200,{...verified,tier,model:null});
    return send(res,200,{reply:'مش قادر أتحقق من الخبر بمصدر مباشر دلوقتي، ومش هخمن اسم الفائز أو نتيجة مباراة. جرّب السؤال بعد شوية.',sources:[],liveVerified:false,tier,model:null});
   }
   let sources=[],sourceNotes='';
