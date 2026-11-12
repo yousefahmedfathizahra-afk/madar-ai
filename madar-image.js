@@ -249,7 +249,7 @@ async function connect(){
       const task=chatImageRequest;
       task.started=true;
       note('🎨 جاري توليد الصورة وإرسالها إلى الشات...');
-      generateFromProvider(task.prompt).then(src=>{
+      generateFromProvider(task.prompt,task.options).then(src=>{
         if(chatImageRequest===task)chatImageRequest=null;
         if(dialog.open)dialog.close();
         task.resolve(src);
@@ -303,7 +303,7 @@ async function generate(event){
    console.warn('MADAR Image Studio:',String(error?.code||error?.name||'unavailable').slice(0,60));
  }finally{busy(false);}
 }
-async function generateFromProvider(description){
+async function generateFromProvider(description,options={}){
  const instance=await loadSdk();
  if(!signedIn())throw Error('Puter sign-in is required.');
  // Use the free-allowance fast model by default, without paid calls on MADAR.
@@ -311,29 +311,46 @@ async function generateFromProvider(description){
  // Higher-fidelity Gemini image model for buildings/landmarks; fast FLUX
  // remains the economical default for unrelated image requests.
  const architecture=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد|قلعه|قصر|كاتدرائيه|معبد|كنيسه|متحف|هرم|اهرام|برج)(?=$|[\s،.!؟:])/.test(normalized);
- const result=await instance.ai.txt2img(prepareImagePrompt(description),architecture?MODELS.detailed:MODELS.fast);
+ // Send the original image to the image-edit model. Never claim that
+ // re-generating from a text description is an edit of the original.
+ const original=options?.inputImage;
+ let editSource=original;
+ if(typeof original==='string'&&original.startsWith('blob:')){
+  const loaded=await fetch(original);
+  if(!loaded.ok)throw Error('الصورة الأصلية مش متاحة للتعديل؛ ارفعها تاني.');
+  editSource=await loaded.blob();
+ }
+ const useEdit=!!editSource;
+ const needsDetail=architecture||/(?:واقعي|واقعيه|واقعية|احترافي|احترافية|جودة\s*عالية|دقة\s*عالية|تفصيلي|لوجو|شعار|بوستر|كتاب|كتابة|نص|photorealistic|realistic|professional|high\s*quality|detailed|logo|poster|typography)/i.test(String(description||''));
+ const params=useEdit
+  ?{...MODELS.detailed,input_images:[editSource]}
+  :needsDetail?MODELS.detailed:MODELS.fast;
+ const actualPrompt=useEdit
+  ?'EDIT THE PROVIDED INPUT IMAGE following the instructions. Preserve the original subject, identity, layout and other details unless the user explicitly asks to change them. Do not replace the original with an unrelated picture. USER EDIT REQUEST: '+String(description||'').slice(0,900)
+  :prepareImagePrompt(description);
+ const result=await instance.ai.txt2img(actualPrompt,params);
  const source=typeof result?.src==='string'?result.src:'';
  if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
    throw Error('Puter لم يرجع صورة صالحة. حاول تاني.');
  return source;
 }
-async function generateFromChat(description){
+async function generateFromChat(description,options={}){
  const promptText=String(description||'').trim().slice(0,900);
  if(promptText.length<3)throw Error('اكتب وصف الصورة بعد كلمة اعمل صورة.');
  if(chatImageRequest)throw Error('استنى الصورة الحالية تخلص الأول.');
  try{await loadSdk();}
  catch(e){throw Error('مش قادر أحمل خدمة الصور Puter. جرّب تغيير الشبكة أو المتصفح.');}
  if(signedIn()){
-   try{return await generateFromProvider(promptText);}
+   try{return await generateFromProvider(promptText,options);}
    catch(e){throw Error(errorText(e));}
  }
  // Puter authentication must be initiated from the user's Connect click
  // because browsers block login popups launched asynchronously.
  return await new Promise((resolve,reject)=>{
-   chatImageRequest={prompt:promptText,resolve,reject,started:false};
+   chatImageRequest={prompt:promptText,options,resolve,reject,started:false};
    prompt.value=promptText;
    open();
-   note('🔐 لتوليد الصور من الشات: اضغط Connect Puter مرة واحدة، وبعدها مدار هيكمّل تلقائيًا. مفيش اشتراك مدفوع من MADAR.');
+   note('🔐 كمّل تسجيل الدخول لخدمة الصور. بعد الاتصال، مدار هيكمل '+(options?.inputImage?'تعديل الصورة الأصلية':'توليد الصورة')+' تلقائيًا.');
  });
 }
 

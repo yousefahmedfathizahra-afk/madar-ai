@@ -134,7 +134,7 @@ async function generate(keepPrevious){
  report(previous?'✨ مدار بيحدّث مشروعك الحالي...':'✨ مدار بيبني مشروعك دلوقتي...');
  const controller=new AbortController();
  requestController=controller;
- const timer=setTimeout(()=>controller.abort(),33000);
+ const timer=setTimeout(()=>controller.abort(),75000);
  try{
   const response=await fetch('/api/builder',{
    method:'POST',

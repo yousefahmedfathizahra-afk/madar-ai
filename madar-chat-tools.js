@@ -75,8 +75,18 @@ function detect(input,history=[]){
  const draw=text.match(/^(?:(?:يا مدار|مدار|لو سمحت|بص)\s+){0,2}(?:ارسم(?:لي|ي)?|رسملي|draw me)\s+(.+)$/);
  if(draw&&!/(?:لعبه|موقع|تطبيق|game|website|app)(?=$|[\s،.!؟:])/.test(draw[1]))
   return{type:'image',prompt:draw[1].trim().slice(0,900)};
+ // Prefer editing the last generated picture over creating an unrelated one.
+ const lastImage=Array.isArray(history)?[...history].reverse().find(m=>
+  m?.role==='assistant'&&m.toolType==='image'&&typeof m.toolKey==='string'):null;
+ const editExistingImage=/(?:^|[\s،.!؟:])(?:عدل|عدّل|تعديل|غير|غيّر|بدل|بدّل|خلي|خليها|احذف|امسح|شيل|ضيف|اضف|أضف|حول|حوّل|حولها|حوّلها|كبّر|كبر|صغّر|صغر|حسن|حسّن|edit|change|modify|update|replace|remove|add)(?:[\s،.!؟:]|$)/i;
+ if(lastImage&&editExistingImage.test(text)&&!/(?:^|[\s،.!؟:])(?:موقع|website|تطبيق|app|game|لعبة)(?:[\s،.!؟:]|$)/i.test(text))
+  return{type:'refine',kind:'image',toolKey:lastImage.toolKey,prompt:raw};
+ // Ask for the original image when there is no previous generated image.
+ if(!lastImage&&/^(?:(?:يا مدار|ممكن)\s+){0,2}(?:عدل|تعديل|غير|غيّر|edit|modify)\s+(?:لي\s+)?(?:الصوره|صوره|image|photo)/i.test(text))
+  return{type:'need-image'};
  const types=[
   {type:'image',re:/(?:^|[\s،:])(?:صوره|صور|رسمه|لوحه|لوجو|لوغو|شعار|بوستر|ملصق|بانر|غلاف|image|picture|photo|drawing|artwork|logo|poster|banner|thumbnail|cover art)(?=$|[\s،.!؟:])/g},
+  {type:'builder',kind:'website',re:/(?:^|[\s،:])(?:شات\s*بوت|شاتبوت|بوت\s*دردشه|بوت\s*محادثه|روبوت\s*محادثه|chat\s*bot|chatbot|conversational\s*bot)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'game',re:/(?:^|[\s،:])(?:لعبه|العاب|game|video game|3d game)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'website',re:/(?:^|[\s،:])(?:موقع(?:\s+الكتروني)?|مواقع|منصه|متجر(?:\s+الكتروني)?|متجر|موقع\s+ويب|صفحه\s+ويب|ويب\s*سايت|ويبسايت|مدونه|بورتفوليو|لوحه\s+تحكم|داشبورد|website|web\s?site|webpage|landing\s+page|web\s?app|web\s?platform|online\s+store|e-?commerce|portfolio|blog|dashboard|saas)(?=$|[\s،.!؟:])/g},
   {type:'builder',kind:'tool',re:/(?:^|[\s،:])(?:تطبيق|ابلكيشن|اداه|app|application|tool)(?=$|[\s،.!؟:])/g}
@@ -126,7 +136,23 @@ function cacheProject(project,kind='game'){
  try{localStorage.setItem(PROJECTS_KEY,JSON.stringify([...projects].map(([key,p])=>({id:key,kind:projectKinds.get(key),project:p}))));}catch{}
  return id;
 }
+function detectUploadedImageEdit(value){
+ const q=normalize(value).trim();
+ // Distinguish edits from questions about what is visible in an uploaded photo.
+ return /(?:^|[\s،.!؟:])(?:عدل|عدّل|تعديل|غير|غيّر|بدل|بدّل|خلي|خليها|امسح|شيل|احذف|ضيف|اضف|أضف|لون|لوّن|حول|حوّل|حولها|حوّلها|حسن|حسّن|كبر|كبّر|صغر|صغّر|edit|change|modify|replace|remove|add|recolor|retouch)(?:[\s،.!؟:]|$)/i.test(q)
+  || /(?:اعمل(?:لي)?|اصنع|صمم|create|make|generate)\s+(?:(?:صوره|نسخه)\s+)?(?:نفس|زي|شبه|مثل|similar|a version|based on|from this)/i.test(q);
+}
 async function run(request,options={}){
+ if(request?.type==='need-image')return{content:'ارفع الصورة الأصلية من زر +، واكتب التعديل المطلوب؛ هعدل نفس الصورة بدل ما أعمل صورة مختلفة.'};
+ if(request?.type==='edit-uploaded-image'){
+  const maker=window.MADAR_IMAGE_STUDIO;
+  if(!maker?.generateFromChat)throw Error('خدمة تعديل الصور غير متاحة حاليًا.');
+  if(!request.inputImage)throw Error('ارفع الصورة اللي عايز تعدّلها الأول.');
+  const source=await maker.generateFromChat(request.prompt,{inputImage:request.inputImage});
+  const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
+  pictures.set(id,{src:source,prompt:request.prompt});
+  return{toolType:'image',toolKey:id,content:'🎨 عدّلت الصورة باستخدام الصورة الأصلية اللي رفعتها. راجع النتيجة واحفظها قبل ما تقفل الصفحة.'};
+ }
  if(request?.type==='clarify'){
   const type=request.kind==='image'?'الصورة':request.kind==='website'?'الموقع':request.kind==='tool'?'التطبيق':'اللعبة';
   const example=request.kind==='image'?'عايز صورة قطة بيضا في حديقة وقت الغروب':
@@ -137,12 +163,14 @@ async function run(request,options={}){
  if(request?.type==='refine'&&request.kind==='image'){
   const previous=pictures.get(request.toolKey);
   if(!previous)return{content:'قولّي وصف الصورة كامل مع التعديل، لأن الصورة الأصلية مش متاحة بعد تحديث الصفحة.'};
-  const oldPrompt=typeof previous==='string'?'':previous.prompt||'';
-  const imagePrompt=(oldPrompt+'؛ التعديل المطلوب: '+request.prompt).slice(0,900);
-  const source=await window.MADAR_IMAGE_STUDIO.generateFromChat(imagePrompt);
+  const sourceImage=typeof previous==='string'?previous:previous?.src;
+  if(!sourceImage||previous?.kind==='reference')
+   return{content:'ارفع الصورة الأصلية اللي عايز تعدّلها، عشان أقدر أعدّل بكسلاتها فعليًا.'};
+  const imagePrompt=String(request.prompt||'').slice(0,900);
+  const source=await window.MADAR_IMAGE_STUDIO.generateFromChat(imagePrompt,{inputImage:sourceImage});
   const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
   pictures.set(id,{src:source,prompt:imagePrompt});
-  return{toolType:'image',toolKey:id,content:'🎨 عملت صورة جديدة بناءً على وصفك وتعديلك. (دي إعادة توليد، مش تعديل مباشر على نفس الصورة.)'};
+  return{toolType:'image',toolKey:id,content:'🎨 عدّلت الصورة الأصلية حسب طلبك. راجع التفاصيل واحفظ النتيجة.'};
  }
  if(request?.type==='landmark-photo'){
   const {place,photos}=await landmarkPhotos(request.id,options.signal);
@@ -252,5 +280,5 @@ function render(message,body){
  }
 }
 restore();
-window.MADAR_CHAT_TOOLS={detect,run,render};
+window.MADAR_CHAT_TOOLS={detect,detectUploadedImageEdit,run,render};
 })();

@@ -1257,14 +1257,19 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
   const oldBranch=editing?chat.messages.slice():null;
   if(editing)chat.messages=chat.messages.slice(0,editIndex);
   cancelEdit();
-  const toolIntent=!imageForMessage&&!docsForMessage.length?window.MADAR_CHAT_TOOLS?.detect(content,chat.messages):null;
+  // Image-edit requests go to the image engine, not the text-only chat.
+  // Both Free and PRO can edit pictures; tiers continue to select text-chat models.
+  const toolIntent=docsForMessage.length?null:imageForMessage
+   ?(window.MADAR_CHAT_TOOLS?.detectUploadedImageEdit?.(content)
+     ?{type:'edit-uploaded-image',prompt:content,inputImage:imageForMessage.preview}:null)
+   :window.MADAR_CHAT_TOOLS?.detect(content,chat.messages);
   const photoId=imageForMessage?createId():undefined;
   if(photoId)temporaryPhotos.set(photoId,imageForMessage.preview);
   const documentText=docsForMessage.map(d=>'[ملف: '+d.name+']\n'+d.text).join('\n\n').slice(0,3800);
   chat.messages.push({role:'user',content,photoId,documentName:docsForMessage.map(d=>d.name).join(' · '),documentText});chat.messages=chat.messages.slice(-100);
-  chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();clearPendingDocuments();stoppedByUser=false;activeToolType=toolIntent?.type==='refine'?(toolIntent.kind==='image'?'refine-image':'builder'):(toolIntent?.type||'chat');isWaiting=true;resizePrompt();saveChats();render();
+  chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();clearPendingDocuments();stoppedByUser=false;activeToolType=toolIntent?.type==='refine'?(toolIntent.kind==='image'?'refine-image':'builder'):(toolIntent?.type==='edit-uploaded-image'?'refine-image':(toolIntent?.type||'chat'));isWaiting=true;resizePrompt();saveChats();render();
   const controller=new AbortController();busyController=controller;
-  const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?38000:65000);
+  const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||toolIntent?.type==='edit-uploaded-image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?85000:65000);
   try{
     if(location.protocol === 'file:') throw Error('MADAR needs its server for live AI chat. This HTML file alone is a design preview.');
     if(toolIntent){

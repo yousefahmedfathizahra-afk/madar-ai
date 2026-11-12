@@ -6,7 +6,7 @@ const {siteSpec}=require('./site-spec');
 const MODELS=['gemini-3.1-flash-lite','gemini-3.5-flash-lite','gemini-2.5-flash','gemini-3.6-flash','gemini-2.5-flash-lite'];
 // Realistic games benefit from the more capable free-eligible model when available.
 const REALISTIC_MODELS=['gemini-3.6-flash','gemini-2.5-flash','gemini-3.5-flash-lite','gemini-3.1-flash-lite','gemini-2.5-flash-lite'];
-const WEBSITE_MODELS=['gemini-2.5-flash','gemini-3.1-flash-lite','gemini-3.5-flash-lite'];
+const WEBSITE_MODELS=['gemini-3.6-flash','gemini-3.5-flash','gemini-2.5-flash','gemini-3.5-flash-lite'];
 const LIMITS={prompt:1200,html:22000,css:20000,js:26000,explanation:800,previous:42000};
 const requestsByIp=new Map();
 const SYSTEM=[
@@ -39,6 +39,8 @@ const WEBSITE_SYSTEM=[
  'Use the correct content language and direction; Arabic websites should default to natural Arabic and RTL; English sites should default to English and LTR. Ensure a usable experience down to 360px widths.',
  'If user wants an actual deployable backend or real integrations, provide a functioning local frontend demo within the sandbox restrictions and mention the missing backend in explanation; never claim a production service is live.',
  'When refining: preserve original branding, functional components and pages while implementing only the requested modifications.',
+ 'If the user asks for a chatbot, build a complete interactive CHATBOT FRONTEND: message thread, send action, keyboard handling, typing indicator, conversation reset, history within this session, accessible scroll area and graceful failure states.',
+ 'If no actual AI endpoint, database or API key exists, label any local scripted responses clearly as DEMO. Do not pretend generated if/else or prewritten strings are a real AI model. Explain backend integration required for live bot intelligence.',
  'Spend more output tokens on genuinely usable markup/CSS/JavaScript, fewer on filler explanations. Return exactly the JSON schema required by SYSTEM.'
 ].join('\n');
 const REALISTIC_SYSTEM=[
@@ -69,6 +71,8 @@ function websiteQuality(project,prompt){
  const intentionallySimple=/(?:صفحه واحده|صفحة واحدة|landing page|single page|صفحه هبوط|صفحة هبوط|بسيط جدا|بسيطة جدًا)/i.test(q);
  const hasNavigation=/<nav\b/i.test(h)||/data-view|data-page|class=["'][^"']*(?:nav|menu|sidebar)/i.test(h);
  const hasInteraction=/addEventListener|onclick|oninput|onsubmit|function\s+\w+|=>/.test(j);
+ const chatbot=/(?:شات\s*بوت|شاتبوت|بوت\s*دردشه|chat\s*bot|chatbot)/i.test(q);
+ if(chatbot&&(!/(?:<textarea|<input)/i.test(h)||!/(?:محادث|chat|message|رسائ|دردش)/i.test(h)||!/(?:addEventListener|onsubmit|onclick)/i.test(j)))return false;
  const layoutAdaptable=/@media|clamp\s*\(|minmax\s*\(|grid-template-columns/i.test(c);
  if(!h.includes('<')||h.length<950||c.length<1000||j.length<350)return false;
  if(!hasInteraction||!layoutAdaptable)return false;
@@ -135,8 +139,12 @@ module.exports=async function builder(req,res){
  if(requestsByIp.size>600)for(const [ip,v] of requestsByIp)if(now-v.start>900000)requestsByIp.delete(ip);
  // Run a tiny site-design brief in parallel with full code generation, so that
  // if code fails, the responsive starter still reflects the visitor's brand.
- const siteSpecPromise=kind==='website'&&!previous?siteSpec(prompt,key):Promise.resolve(null);
- const localFallback=(status,message)=>maybeFallback(res,kind,prompt,status,message,siteSpecPromise,previous);
+ // Avoid consuming limited model quota on a second concurrent design request.
+ let siteSpecPromise=null;
+ const localFallback=(status,message)=>{
+  if(kind==='website'&&!previous&&!siteSpecPromise)siteSpecPromise=siteSpec(prompt,key);
+  return maybeFallback(res,kind,prompt,status,message,siteSpecPromise,previous);
+ };
  const realistic=kind==='game'&&graphics==='realistic';
  const descriptions=[
   kind==='game'?'Build a PLAYABLE browser game.':kind==='tool'?'Build an INTERACTIVE utility app.':'Build an ORIGINAL, RESPONSIVE, MULTI-VIEW WEBSITE OR DEMO PLATFORM matched to the user requirements.',
@@ -144,14 +152,14 @@ module.exports=async function builder(req,res){
   'USER IDEA:\n'+prompt.trim()
  ];
  if(previous)descriptions.push('PREVIOUS PROJECT FOR REFINEMENT:\n'+JSON.stringify({title:previous.title,html:previous.html,css:previous.css,js:previous.js}));
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),kind==='website'?17500:27000);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),kind==='website'?68000:42000);
  let busy=false,invalid=false;
  try{
   for(const model of (realistic?REALISTIC_MODELS:kind==='website'?WEBSITE_MODELS:MODELS)){
    let response;
    try{
     response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{
-     method:'POST',signal:controller.signal,
+     method:'POST',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(kind==='website'?15500:12000)]),
      headers:{'Content-Type':'application/json','x-goog-api-key':key},
      body:JSON.stringify({
       systemInstruction:{parts:[{text:SYSTEM+(realistic?'\n'+REALISTIC_SYSTEM:'')+(kind==='website'?'\n'+WEBSITE_SYSTEM:'')}]},
