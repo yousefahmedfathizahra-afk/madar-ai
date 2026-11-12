@@ -332,7 +332,13 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 @media(max-width:620px){.madar-attach-menu{right:9px}.madar-attach-toggle{width:35px;height:35px;flex-basis:35px}}
 
 
-/* Free video: standard 720p / 5s; never silently upgrade to PRO. */
+.madar-direct-media-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:5px 0 8px;direction:rtl}
+.madar-direct-media-actions button{border:1px solid var(--line-strong);background:var(--soft);color:var(--fg);border-radius:10px;font-size:12px;font-weight:750;padding:8px 11px;cursor:pointer}
+.madar-direct-media-actions button:hover,.madar-direct-media-actions button:focus-visible{border-color:var(--purple);color:var(--purple-light)}
+.madar-direct-media-actions small{font-size:10px;color:var(--muted)}
+@media(max-width:550px){.madar-direct-media-actions button{font-size:11px;padding:7px 8px}.madar-direct-media-actions small{display:none}}
+.madar-chat-video{display:block;width:min(100%,620px);aspect-ratio:16/9;background:#080c15;border-radius:13px;margin:10px 0;max-height:400px}
+/* Free video: short clips only; never silently upgrade to a paid tier. */
 .madar-video-dialog{width:min(680px,calc(100vw - 22px));max-height:calc(100dvh - 28px);overflow-y:auto;direction:rtl;background:var(--panel);color:var(--fg);border:1px solid var(--line-strong);border-radius:19px;padding:18px;box-shadow:0 22px 70px rgba(0,0,0,.4)}
 .madar-video-dialog::backdrop{background:rgba(0,0,0,.66)}
 .madar-video-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -350,15 +356,6 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 #madarVideoStatus{min-height:21px;margin:12px 0 8px;color:var(--text);font-size:12px}
 #madarVideoPreview{width:100%;max-height:320px;border-radius:12px;background:#000}
 .madar-video-footnote{display:block;margin-top:8px}
-.madar-external-card{margin-top:14px;border:1px solid var(--line-strong);background:var(--soft);border-radius:14px;padding:14px;display:grid;gap:9px}
-.madar-external-card h3{color:var(--fg);font-size:15px;margin:0}
-.madar-external-card p{color:var(--text);font-size:12px;line-height:1.9;margin:0}
-.madar-external-links{display:flex;gap:8px;flex-wrap:wrap}
-.madar-external-links a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;color:var(--fg);font-size:12px;font-weight:750;background:var(--control)}
-.madar-external-links a:hover,.madar-external-links a:focus-visible{border-color:var(--purple);color:var(--purple-light)}
-.madar-external-card small{font-size:11px;line-height:1.8;color:var(--muted)}
-.madar-external-tool-link{cursor:pointer;text-decoration:none!important}
-.madar-external-tool-link:focus-visible{outline:2px solid var(--purple-light);outline-offset:2px}
 
 
 .madar-document-chip{display:flex;gap:9px;align-items:center;background:var(--soft);border:1px solid var(--line-strong);border-radius:12px;padding:9px;margin-bottom:9px;font-size:12px;color:var(--fg)}
@@ -541,10 +538,6 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
             <button id="cameraBtn" type="button" class="madar-attach-choice" title="فتح كاميرا مدار"><span class="madar-attach-icon" aria-hidden="true">📷</span><span><strong>تصوير بالكاميرا</strong><small>صوّر سؤال أو أي حاجة وابعته لمدار</small></span></button>
             <button id="photoBtn" type="button" class="madar-attach-choice" title="اختيار صورة من المعرض أو الجهاز"><span class="madar-attach-icon" aria-hidden="true">🖼️</span><span><strong>إرسال صورة</strong><small>من المعرض أو ملفات الجهاز</small></span></button>
             <button id="documentBtn" type="button" class="madar-attach-choice" title="إرسال مستند إلى مدار"><span class="madar-attach-icon" aria-hidden="true">📎</span><span><strong>إضافة ملفات</strong><small>PDF · Word · Excel · PowerPoint · TXT · Code</small></span></button>
-            <a id="madarCapCutQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.capcut.com/tools/free-ai-video-generator" target="_blank" rel="noopener noreferrer" title="افتح CapCut لإنشاء فيديوهات AI أو مونتاج مقاطع"><span class="madar-attach-icon" aria-hidden="true">🎬</span><span><strong>CapCut للفيديوهات</strong><small>إنشاء فيديو من وصف أو مونتاج · أدوات مجانية وحدود لرصيد AI · موقع خارجي</small></span></a>
-            <a id="madarMatchCutQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.textmatchcut.app/" target="_blank" rel="noopener noreferrer" title="افتح محرر تأثير العناوين المتحركة الخارجي"><span class="madar-attach-icon" aria-hidden="true">✂️</span><span><strong>فيديو عناوين متحركة</strong><small>TextMatchCut · مجاني بإعلان قصير · يفتح موقعًا خارجيًا</small></span></a>
-            <a id="madarCanvaQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.canva.com/ai-image-generator/" target="_blank" rel="noopener noreferrer" title="افتح Canva لإنشاء الصور"><span class="madar-attach-icon" aria-hidden="true">🎨</span><span><strong>صور Canva</strong><small>توليد صور وتعديلها · حصة مجانية محدودة · موقع خارجي</small></span></a>
-            <a id="madarVidoGridQuick" class="madar-attach-choice madar-external-tool-link" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer" title="استكشف VidoGrid للصور والفيديوهات"><span class="madar-attach-icon" aria-hidden="true">🎞️</span><span><strong>VidoGrid للصور والفيديوهات</strong><small>أداة خارجية · قد تحتاج رصيدًا مدفوعًا</small></span></a>
             <button id="madarShowTools" type="button" class="madar-attach-choice" aria-expanded="false" title="إظهار أو إخفاء أدوات مدار الأخرى"><span class="madar-attach-icon" aria-hidden="true">⚙️</span><span><strong>باقي الأدوات</strong><small>فيديو · بحث · تصميم · تعليم · ميكروفون</small></span></button>
           </div>
           <div class="tools-row" role="toolbar" aria-label="AI tools">
@@ -562,6 +555,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
           <div id="photoChip" class="photo-chip" hidden><img id="photoThumb" alt="Photo selected"><span>الصورة جاهزة — اكتب سؤالك واضغط إرسال</span><button id="removePhoto" aria-label="Remove selected photo" title="Remove photo">×</button></div>
           <div id="madarEditBar" class="madar-edit-bar" hidden><span>✏️ بتعدل رسالة قديمة — الرسائل اللي بعدها هتتبدل بالرد الجديد</span><button type="button" id="madarCancelEdit" title="إلغاء التعديل">✕ إلغاء</button></div>
           <textarea id="prompt" dir="auto" rows="1" maxlength="5000" placeholder="اسأل مدار أو قوله: علمني إسباني، اعمل صورة، أو لعبة..." aria-label="Write your message"></textarea>
+          <div class="madar-direct-media-actions" role="group" aria-label="إنشاء الصور والفيديو داخل مدار"><button id="madarDirectImage" type="button">🎨 صورة</button><button id="madarDirectVideo" type="button">🎬 فيديو</button><button id="madarDirectEdit" type="button">🖌️ تعديل صورة</button><small>اكتب وصفك وابعته في الشات</small></div>
           <div class="composer-bottom"><button id="madarAttachToggle" type="button" class="madar-attach-toggle" aria-controls="madarAttachMenu" aria-expanded="false" aria-label="الكاميرا والصور والملفات" title="إضافة مرفق">＋</button><span class="composer-hint">Enter to send · Shift + Enter لسطر جديد</span><div class="madar-send-actions"><select id="madarVoiceQuick" class="madar-voice-quick" aria-label="اختار لغة الميكروفون والنطق"><option value="auto">🌐 تلقائي</option></select><button id="madarCameraQuick" class="madar-voice-btn madar-camera-quick" type="button" aria-label="افتح الكاميرا وصوّر مع مدار" title="📷 افتح الكاميرا">📷 <span class="madar-camera-label">كاميرا</span></button><button id="madarMicQuick" class="madar-voice-btn" type="button" aria-label="تكلم مع مدار بالميكروفون" title="اتكلم مع مدار">🎙️</button><button id="madarSpeakQuick" class="madar-voice-btn" type="button" aria-pressed="false" aria-label="تشغيل نطق ردود مدار" title="تشغيل أو إيقاف الردود الصوتية">🔈</button><button id="madarStop" class="madar-stop" type="button" hidden title="إيقاف إنشاء الرد">⏹ إيقاف</button><button id="send" class="send" title="Send" aria-label="Send" disabled>➜</button></div></div>
         </div>
         <p class="disclaimer">جديد: 📷 كاميرا مدار جنب زر الإرسال. صوّر أي حاجة واسأل مدار عنها. كمان تقدر تطلب «اعمل صورة» أو «ابني موقع». <span>✧</span> راجع المعلومات المهمة.</p>
@@ -704,7 +698,7 @@ window.addEventListener('pagehide',cleanup);render();
         <button type="button" class="studio-primary" data-studio-action="game">🎮 افتح صانع الألعاب</button>
       </section>
       <section data-studio-panel="design" class="studio-panel" hidden>
-        <h3>استوديو التصميم</h3><p>اطلب بوستر أو لوجو أو صورة مصغّرة ليوتيوب. التصميم بالذكاء الاصطناعي يعتمد على خدمة Puter وحساب الزائر ورصيده.</p>
+        <h3>استوديو التصميم</h3><p>اطلب بوستر أو لوجو أو صورة مصغّرة ليوتيوب. التصميم بيستخدم خدمة صور خارجية وحصة الحساب المتاحة.</p>
         <label for="studioDesignIdea">وصف التصميم</label>
         <textarea id="studioDesignIdea" rows="4" maxlength="900" placeholder="مثال: بوستر إعلاني احترافي لمحل قهوة عربي، بخلفية بنية وإضاءة سينمائية وكوب قهوة"></textarea>
         <div class="studio-example-row"><button type="button" data-studio-target="studioDesignIdea" data-studio-example="شعار بسيط فاخر لشركة تقنية عربية، حرف M بألوان أرجوانية مع خلفية داكنة، تصميم شعار أصلي">✦ لوجو</button><button type="button" data-studio-target="studioDesignIdea" data-studio-example="بوستر إعلاني رأسي 4:5 لمطعم برجر فاخر، برجر في المنتصف وإضاءة درامية، ألوان برتقالية وسوداء">🖼️ بوستر</button><button type="button" data-studio-target="studioDesignIdea" data-studio-example="صورة مصغرة لفيديو يوتيوب عن تعلم البرمجة، شاشة كود مضيئة ودراما بصرية وتباين قوي وألوان بنفسجية">▶️ يوتيوب</button></div>
@@ -811,7 +805,7 @@ window.addEventListener('pagehide',cleanup);render();
   </dialog>
   <dialog id="madarImageDialog" class="madar-image-dialog" aria-labelledby="madarImageTitle">
     <div class="madar-image-head">
-      <h2 id="madarImageTitle">🎨 MADAR Image Studio</h2>
+      <h2 id="madarImageTitle">🎨 مدار للصور</h2>
       <button type="button" id="madarImageClose" title="Close" aria-label="Close image studio">×</button>
     </div>
     <p class="madar-image-description">دي رسومات بالذكاء الاصطناعي وليست صورًا فوتوغرافية موثقة. لو عايز صور حقيقية لمسجد معروف، اكتب في الشات «صور جامع عمرو بن العاص» وستظهر الصور مع مصدرها. ✨</p>
@@ -823,28 +817,19 @@ window.addEventListener('pagehide',cleanup);render();
         <button type="button" data-image-idea="مدينة مستقبلية مصرية فيها الأهرامات ومبانٍ مضيئة ليلاً، فن سينمائي واقعي">🌆 مصر المستقبل</button>
         <button type="button" data-image-idea="A cute astronaut cat in a purple galaxy, highly detailed digital illustration">🐱 قطة رائدة فضاء</button>
       </div>
-      <label for="madarImageModel">Image style / engine</label>
+      <label for="madarImageModel">أسلوب الصورة</label>
       <select id="madarImageModel">
-        <option value="fast">⚡ Fast • FLUX (1024 × 1024)</option>
+        <option value="fast">⚡ سريع</option>
         <option value="detailed">✨ صورة بتفاصيل أعلى</option>
       </select>
-      <p class="madar-image-note">Images use <strong>Puter</strong> (a separate service). Connect a separate Puter account before generating images. Free allowance may be limited; extra usage may require adding credit to your own Puter account. MADAR's owner is never billed for images. Images are only requested when you press Generate.</p>
-      <div class="madar-image-connection" aria-label="Connect to Puter for image creation">
-        <p id="madarPuterConnection" role="status">Step 1: Connect your Puter account.</p>
-        <button id="madarConnectPuter" type="button" disabled>⏳ Loading Puter...</button>
+      <p class="madar-image-note">اطلب صورة من الشات مباشرة. عند أول استخدام، ممكن تحتاج ربط حساب خدمة صور خارجية بموافقتك. الحصة محدودة ومفيش شراء تلقائي.</p>
+      <div class="madar-image-connection" aria-label="ربط خدمة صور خارجية">
+        <p id="madarPuterConnection" role="status">اربط خدمة الصور مرة واحدة عند الحاجة.</p>
+        <button id="madarConnectPuter" type="button" disabled>⏳ جاري تجهيز الصور...</button>
       </div>
       <button id="madarGenerateImage" class="madar-image-generate" type="submit" disabled>✦ Generate image</button>
       <p id="madarImageState" class="madar-image-state" role="status" aria-live="polite"></p>
     </form>
-    <section class="madar-external-card" aria-label="بدائل الصور الخارجية">
-      <h3>🎨 بدائل لإنشاء وتعديل الصور</h3>
-      <p>لو عايز تجرب أداة مختلفة، Canva بتولّد الصور من الوصف وتسمح بتعديلها. VidoGrid بيقدم صور وفيديوهات؛ لكن قد يحتاج رصيدًا مدفوعًا.</p>
-      <div class="madar-external-links">
-        <a id="madarCanvaImages" href="https://www.canva.com/ai-image-generator/" target="_blank" rel="noopener noreferrer">صور Canva ↗</a>
-        <a id="madarVidoGridImages" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer">VidoGrid ↗</a>
-      </div>
-      <small>دي أدوات خارجية بتفتح في تبويب جديد، ومش متصلة بمحادثة مدار أو بمفتاح API. Canva Free له حصة استخدام محدودة؛ راجع أي طلب دفع داخل الموقع الخارجي قبل الاستخدام.</small>
-    </section>
     <section id="madarImageResult" class="madar-image-result" aria-label="Generated image" hidden>
       <img id="madarImagePreview" alt="Your generated image">
       <div><a id="madarImageDownload" class="madar-image-download" href="#" rel="noopener noreferrer" target="_blank">⬇ Save image</a></div>
@@ -854,33 +839,21 @@ window.addEventListener('pagehide',cleanup);render();
   <dialog id="featureDialog" class="feature-dialog" aria-labelledby="dialogTitle">
     <h2 id="dialogTitle"></h2>
     <p id="dialogMessage"></p>
-    <div class="dialog-actions"><a id="dialogLink" href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" hidden>Open AI Studio ↗</a><button id="dialogClose">Close</button></div>
+    <div class="dialog-actions"><a id="dialogLink" href="#" target="_blank" rel="noopener noreferrer" hidden>عرض التفاصيل</a><button id="dialogClose">Close</button></div>
   </dialog>
   <dialog id="madarVideoDialog" class="madar-video-dialog" aria-labelledby="madarVideoTitle" lang="ar" dir="rtl">
     <section id="madarVideoRoot" data-video-tier="free">
-      <div class="madar-video-header"><div><h2 id="madarVideoTitle">🎬 مدار Video Maker PRO</h2><small>LTX 2.5 المجاني فقط — لا يتم اختيار موديلات فيديو مدفوعة</small></div><button id="madarVideoClose" type="button" aria-label="إغلاق الفيديو">×</button></div>
-      <p class="madar-video-info">اكتب وصف الفيديو بالعربي أو الإنجليزي. مدار يستخدم LTX 2.5 المجاني فقط، ولا يختار أي موديل فيديو مدفوع. إنشاء الفيديو يتم بعد موافقتك وقد يستهلك من رصيد Magic Hour المجاني.</p>
+      <div class="madar-video-header"><div><h2 id="madarVideoTitle">🎬 مدار للفيديوهات</h2><small>مقاطع قصيرة بالحصة المجانية المتاحة</small></div><button id="madarVideoClose" type="button" aria-label="إغلاق الفيديو">×</button></div>
+      <p class="madar-video-info">اكتب وصف الفيديو ووافق على استخدام الحصة المجانية المتاحة فقط. النتيجة بتظهر داخل مدار لو نجح التوليد؛ مفيش تحويل لمحرر خارجي ولا شراء تلقائي.</p>
       <label class="madar-video-label" for="madarVideoPrompt">وصف الفيديو</label>
       <textarea id="madarVideoPrompt" rows="4" maxlength="1800" placeholder="مثال: مشهد سينمائي لمدينة مستقبلية في القاهرة وقت الغروب، حركة كاميرا بطيئة، تفاصيل واقعية..."></textarea>
       <label class="madar-video-label" for="madarVideoQuality">شكل الفيديو</label>
       <select id="madarVideoQuality"><option value="16:9">عرضي 16:9 — يوتيوب</option><option value="9:16">طولي 9:16 — ريلز وتيك توك</option><option value="1:1">مربع 1:1</option></select>
-      <label class="madar-video-label" for="madarVideoSeconds">مدة الفيديو</label><select id="madarVideoSeconds"><option value="5">5 ثوانٍ</option><option value="10">10 ثوانٍ</option><option value="15">15 ثانية</option></select>
-      <label class="madar-video-approval"><input id="madarVideoCredit" type="checkbox"> أوافق على إرسال الوصف إلى Magic Hour واستخدام رصيد Magic Hour المجاني لإنشاء الفيديو.</label>
+      <label class="madar-video-label" for="madarVideoSeconds">مدة الفيديو</label><select id="madarVideoSeconds"><option value="3">3 ثوانٍ — حصة مجانية</option></select>
+      <label class="madar-video-approval"><input id="madarVideoCredit" type="checkbox"> أوافق على إرسال الوصف لخدمة إنشاء فيديو خارجية واستخدام الحصة المتاحة فقط؛ بدون شراء رصيد.</label>
       <div class="madar-video-buttons"><button id="madarVideoSample" type="button">✍️ استخدم وصفًا جاهزًا</button><button id="madarVideoGenerate" type="button">🎬 ولّد الفيديو</button><a id="madarVideoDownload" hidden target="_blank" rel="noopener noreferrer">⬇ عرض / حفظ الفيديو</a></div>
       <p id="madarVideoStatus" role="status" aria-live="polite"></p><video id="madarVideoPreview" controls playsinline preload="none" hidden></video>
-      <small class="madar-video-footnote">مدار يثبت موديل LTX 2.5 المجاني فقط، ولا يختار Kling أو Veo أو أي موديل فيديو مدفوع. دقة الإخراج حسب إعدادات LTX 2.5 المتاحة في حساب Magic Hour، وقد يستهلك الطلب من رصيد Magic Hour المجاني بعد موافقتك.</small>
-      <section class="madar-external-card" aria-label="أدوات الفيديو الخارجية">
-        <h3>✂️ تأثيرات وفيديوهات خارجية</h3>
-        <p><strong>CapCut:</strong> مونتاج مجاني وأدوات AI لتحويل النصوص والصور لفيديو حسب الحصة المتاحة. <strong>TextMatchCut:</strong> تأثير عناوين صحف ونصوص متحركة، مش فيديو مولّد من أي وصف. <strong>Canva:</strong> مونتاج وفيديوهات قصيرة بمزايا تختلف حسب الخطة. <strong>VidoGrid:</strong> توليد فيديو من وصف أو صورة بخدمات تعتمد على الرصيد.</p>
-        <div class="madar-external-links">
-          <a id="madarCapCutAiVideo" href="https://www.capcut.com/tools/free-ai-video-generator" target="_blank" rel="noopener noreferrer">🎬 CapCut فيديو AI ↗</a>
-          <a id="madarCapCutEditor" href="https://www.capcut.com/tools/ai-video-editor" target="_blank" rel="noopener noreferrer">✂️ CapCut مونتاج ↗</a>
-          <a id="madarMatchCutVideo" href="https://www.textmatchcut.app/" target="_blank" rel="noopener noreferrer">TextMatchCut ↗</a>
-          <a id="madarCanvaVideo" href="https://www.canva.com/video-editor/ai/" target="_blank" rel="noopener noreferrer">Canva فيديو ↗</a>
-          <a id="madarVidoGridVideo" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer">VidoGrid ↗</a>
-        </div>
-        <small>هذه مواقع مستقلة تُفتح في تبويب جديد. أدوات المونتاج الأساسية في CapCut مجانية؛ إنشاء فيديو AI قد يحتاج رصيدًا أو اشتراكًا حسب حسابك وبلدك. TextMatchCut مجاني بإعلان قصير، وVidoGrid وبعض ميزات Canva قد تكون مدفوعة. مدار لا يرسل طلبك إليها تلقائيًا ولا يفعّل أي دفع.</small>
-      </section>
+      <small class="madar-video-footnote">بيتم فحص الحصة والخطة قبل بدء الطلب. لو مش متاحة، مدار هيوقف التوليد من غير دفع.</small>
     </section>
   </dialog>
   <dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle" lang="ar" dir="rtl">
@@ -988,7 +961,7 @@ function escapeState(input) {
   return input.filter(c => typeof c?.id === 'string' && Array.isArray(c.messages)).slice(0,MAX_CONVERSATIONS).map(c => ({
     id: c.id, title: String(c.title ?? 'New chat').slice(0, 70),
     updatedAt: Number(c.updatedAt) || Date.now(),
-    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),documentName:String(m.documentName||'').slice(0,250),documentText:String(m.documentText||'').slice(0,3900),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>safeSourceLink(s)).slice(0,3):[],toolType:['builder','image'].includes(m.toolType)?m.toolType:undefined,toolKey:typeof m.toolKey==='string'&&m.toolKey.length<110?m.toolKey:undefined}))
+    messages: c.messages.filter(m => ['user','assistant'].includes(m?.role) && typeof m.content==='string').slice(-100).map(m => ({role:m.role,content:m.content.slice(0,5000),documentName:String(m.documentName||'').slice(0,250),documentText:String(m.documentText||'').slice(0,3900),photoId:typeof m.photoId==='string'?m.photoId.slice(0,70):undefined,sources:Array.isArray(m.sources)?m.sources.filter(s=>safeSourceLink(s)).slice(0,3):[],toolType:['builder','image','video','image-clarify'].includes(m.toolType)?m.toolType:undefined,toolKey:typeof m.toolKey==='string'&&m.toolKey.length<110?m.toolKey:undefined}))
   }));
 }
 function loadChats(){try{return escapeState(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'));}catch{return []}}
@@ -1124,7 +1097,7 @@ function appendMessage(message, isPending=false, messageIndex=-1){const row=docu
 function render(){renderHistory();const chat=activeChat();const hasMessages=!!chat?.messages.length;el.welcome.hidden=hasMessages;document.querySelector('.main')?.classList.toggle('madar-home',!hasMessages);el.messages.hidden=!hasMessages;el.messages.replaceChildren();if(hasMessages)chat.messages.forEach((m,i)=>appendMessage(m,false,i));if(isWaiting)appendMessage({role:'assistant',content:''},true);updateSend();scrollDown()}
 function scrollDown(){requestAnimationFrame(()=>{el.chatContainer.scrollTop=el.chatContainer.scrollHeight})}
 function resizePrompt(){el.prompt.style.height='auto';el.prompt.style.height=Math.min(el.prompt.scrollHeight,140)+'px';updateSend()}
-function updateSend(){el.send.disabled=isWaiting||readingDocument||(!el.prompt.value.trim()&&!pendingImage&&!pendingDocuments.length);el.prompt.disabled=isWaiting;el.photoBtn.disabled=isWaiting;el.wikiToggle.disabled=isWaiting;$('madarTierBadge').disabled=isWaiting;el.stop.hidden=!isWaiting||activeToolType==='image'||activeToolType==='refine-image'}
+function updateSend(){el.send.disabled=isWaiting||readingDocument||(!el.prompt.value.trim()&&!pendingImage&&!pendingDocuments.length);el.prompt.disabled=isWaiting;el.photoBtn.disabled=isWaiting;el.wikiToggle.disabled=isWaiting;$('madarTierBadge').disabled=isWaiting;el.stop.hidden=!isWaiting||activeToolType==='image'||activeToolType==='refine-image'||activeToolType==='video'}
 function cancelEdit(){
  pendingEditIndex=null;el.editBar.hidden=true;
 }
@@ -1294,16 +1267,18 @@ async function sendMessage(prefill,replaceAfterIndex=null,restoreOnFailure=false
   // Image-edit requests go to the image engine, not the text-only chat.
   // Both Free and PRO can edit pictures; tiers continue to select text-chat models.
   const toolIntent=docsForMessage.length?null:imageForMessage
-   ?(window.MADAR_CHAT_TOOLS?.detectUploadedImageEdit?.(content)
-     ?{type:'edit-uploaded-image',prompt:content,inputImage:imageForMessage.preview}:null)
-   :window.MADAR_CHAT_TOOLS?.detect(content,chat.messages);
+    ?(window.MADAR_CHAT_TOOLS?.detectVideo?.(content)
+      ?{...window.MADAR_CHAT_TOOLS.detectVideo(content),inputImage:imageForMessage.preview}
+      :(window.MADAR_CHAT_TOOLS?.detectUploadedImageEdit?.(content)
+        ?{type:'edit-uploaded-image',prompt:content,inputImage:imageForMessage.preview}:null))
+    :window.MADAR_CHAT_TOOLS?.detect(content,chat.messages);
   const photoId=imageForMessage?createId():undefined;
   if(photoId)temporaryPhotos.set(photoId,imageForMessage.preview);
   const documentText=docsForMessage.map(d=>'[ملف: '+d.name+']\n'+d.text).join('\n\n').slice(0,3800);
   chat.messages.push({role:'user',content,photoId,documentName:docsForMessage.map(d=>d.name).join(' · '),documentText});chat.messages=chat.messages.slice(-100);
   chat.updatedAt=Date.now();el.prompt.value='';pendingImage=null;updatePhotoChip();clearPendingDocuments();stoppedByUser=false;activeToolType=toolIntent?.type==='refine'?(toolIntent.kind==='image'?'refine-image':'builder'):(toolIntent?.type==='edit-uploaded-image'?'refine-image':(toolIntent?.type||'chat'));isWaiting=true;resizePrompt();saveChats();render();
   const controller=new AbortController();busyController=controller;
-  const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||toolIntent?.type==='edit-uploaded-image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?85000:65000);
+  const timeout=setTimeout(()=>controller.abort(),(toolIntent?.type==='image'||toolIntent?.type==='edit-uploaded-image'||(toolIntent?.type==='refine'&&toolIntent.kind==='image'))?180000:toolIntent?.type==='video'?540000:toolIntent?85000:65000);
   try{
     if(location.protocol === 'file:') throw Error('MADAR needs its server for live AI chat. This HTML file alone is a design preview.');
     if(toolIntent){
@@ -1538,6 +1513,15 @@ el.search.addEventListener('input',renderHistory);
 $('madarCancelEdit').addEventListener('click',()=>{cancelEdit();el.prompt.value='';resizePrompt();el.prompt.focus()});
 el.stop.addEventListener('click',stopCurrentReply);
 el.send.addEventListener('click',()=>sendMessage());
+for(const [id,seed,attach] of [['madarDirectImage','اعمل صورة ',false],['madarDirectVideo','اعمل فيديو ',false],['madarDirectEdit','عدّل الصورة: ',true]]){
+ const control=document.getElementById(id);
+ control?.addEventListener('click',()=>{
+  if(isWaiting)return;
+  if(!el.prompt.value.trim())el.prompt.value=seed;
+  resizePrompt();if(attach)el.photoInput.click();
+  el.prompt.focus();el.prompt.setSelectionRange?.(el.prompt.value.length,el.prompt.value.length);
+ });
+}
 // Existing camera, image compression and Free chat API are unchanged.
 // The plus menu exposes both existing camera/gallery actions clearly.
 const madarAttachToggle=$('madarAttachToggle'),madarAttachMenu=$('madarAttachMenu');
