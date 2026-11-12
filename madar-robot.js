@@ -8,6 +8,17 @@ const panel=document.getElementById('madarBuddyPanel');
 if(!dock||!toggle||!panel)return;
 const eyes=[document.getElementById('buddyPupilLeft'),document.getElementById('buddyPupilRight')].filter(Boolean);
 const head=document.getElementById('madarBuddyHead');
+const hint=dock.querySelector('.madar-buddy-hint');
+const panelHeading=panel.querySelector('.madar-buddy-panel-head strong');
+function syncRobotTier(){
+ const pro=document.documentElement.dataset.madarTier==='pro';
+ dock.dataset.tier=pro?'pro':'free';
+ if(hint)hint.textContent=pro?'أنا مساعد مدار PRO ✨':'أنا مساعد مدار! 👋';
+ if(panelHeading)panelHeading.textContent=pro?'أهلًا! أنا مساعد مدار PRO':'أهلًا! أنا مساعد مدار';
+ toggle.setAttribute('aria-label',pro?'افتح روبوت مدار PRO الذهبي':'افتح روبوت مدار المجاني الأبيض');
+}
+syncRobotTier();
+new MutationObserver(syncRobotTier).observe(document.documentElement,{attributes:true,attributeFilter:['data-madar-tier']});
 const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 let x=0,y=0,tx=0,ty=0,frameId=0,lastFocused=null;
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));

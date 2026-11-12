@@ -31,3 +31,29 @@
 @media(max-width:470px){.madar-buddy-hint{display:none}.madar-buddy-panel{right:0;bottom:103px;width:min(290px,calc(100vw - 18px))}}
 @media(max-height:460px){.madar-buddy{bottom:60px}.madar-buddy-panel{bottom:55px;right:90px;max-height:73vh;overflow-y:auto}.madar-buddy-hint{display:none}}
 @media(prefers-reduced-motion:reduce){.madar-buddy-figure,.madar-buddy-eye-lid,.madar-buddy-antenna{animation:none!important}.madar-buddy-robot{transition:none!important}}
+
+/* Same MADAR robot silhouette: gold only when selected tier is PRO. */
+html[data-madar-tier="pro"] .madar-buddy-orbit{background:radial-gradient(circle,#ffe48b51,#b88b2c26 53%,transparent 74%)}
+html[data-madar-tier="pro"] .madar-buddy-btn{filter:drop-shadow(0 16px 21px #80551988)}
+html[data-madar-tier="pro"] .madar-buddy-btn:hover{filter:drop-shadow(0 17px 27px #c9973999)}
+html[data-madar-tier="pro"] #buddyHelmet stop:first-child{stop-color:#fff7c8}
+html[data-madar-tier="pro"] #buddyHelmet stop:nth-child(2){stop-color:#eac14f}
+html[data-madar-tier="pro"] #buddyHelmet stop:last-child{stop-color:#92601b}
+html[data-madar-tier="pro"] #buddyBody stop:first-child{stop-color:#ffec9b}
+html[data-madar-tier="pro"] #buddyBody stop:last-child{stop-color:#a56b1d}
+html[data-madar-tier="pro"] #madarBuddyHead .madar-buddy-antenna path{stroke:#ffdb78}
+html[data-madar-tier="pro"] #madarBuddyHead .madar-buddy-antenna circle[stroke="#fff"]{stroke:#ffebae}
+html[data-madar-tier="pro"] #madarBuddyHead > rect[fill="#dddde4"]{fill:#c89432}
+html[data-madar-tier="pro"] #madarBuddyHead > rect[fill="#1d1d23"]{fill:#6e4b1c}
+html[data-madar-tier="pro"] #madarBuddyHead rect[stroke="#e4e4e8"]{stroke:#edc15d}
+html[data-madar-tier="pro"] #madarBuddyHead path[stroke="#e5e5ea"]{stroke:#e4b345}
+html[data-madar-tier="pro"] #madarBuddyHead circle[fill="#fff"][stroke="#15151b"]{fill:#ffe29a;stroke:#6e4a20}
+html[data-madar-tier="pro"] #madarBuddyHead circle[fill="#eeeeF3"]{fill:#f8d66b}
+html[data-madar-tier="pro"] #madarBuddyHead rect[stroke="#18181f"]{stroke:#6e4c19}
+html[data-madar-tier="pro"] #madarBuddyHead path[stroke="#fff"][stroke-opacity=".9"]{stroke:#fff4c5}
+html[data-madar-tier="pro"] #madarBuddyHead path[stroke="#fff"][stroke-opacity=".75"]{stroke:#ffe0a1}
+html[data-madar-tier="pro"] #madarBuddyHead path[stroke="#fff"][stroke-opacity=".6"]{stroke:#ffeac2}
+html[data-madar-tier="pro"] #madarBuddyHead circle[fill="#c6c6d0"]{fill:#e4b34a}
+html[data-madar-tier="pro"] .madar-buddy-hint{background:#382912;border-color:#b98935;color:#ffe6a3}
+html[data-madar-tier="pro"] .madar-buddy-panel{background:linear-gradient(150deg,#372913,#17110b);border-color:#d3a94d66}
+html[data-madar-tier="pro"] .madar-buddy-panel-mark{background:#eac15a;color:#2a1c0b}

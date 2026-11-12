@@ -43,12 +43,12 @@ function requestProfile(question,mode,tier='free',hasImage=false){
  const thinkingLevel=tier==='pro'?'high':complexity==='complex'?'medium':complexity==='medium'?'medium':'low';
  const maxOutputTokens=complexity==='complex'?(tier==='pro'?8192:3072)
    :complexity==='medium'?(tier==='pro'?4096:1536):(tier==='pro'?2048:768);
- const modelTimeoutMs=complexity==='complex'?24000:complexity==='medium'?14000:8000;
- const totalTimeoutMs=complexity==='complex'?90000:complexity==='medium'?55000:25000;
+ const modelTimeoutMs=complexity==='complex'?18000:complexity==='medium'?8000:3300;
+ const totalTimeoutMs=complexity==='complex'?65000:complexity==='medium'?32000:12500;
  return{complexity,thinkingLevel,maxOutputTokens,modelTimeoutMs,totalTimeoutMs};
 }
 
-const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. For MADAR PRO requests, act as an expert-grade general assistant: invest sufficient reasoning effort, solve multi-step problems carefully, verify calculations and code logic, structure complex work into clear steps, use tools or live search when available and relevant, and deliver a complete useful first answer. Be decisive but never bluff: explicitly state uncertainty, missing information, and what you could not verify. Do not claim to execute, browse, create files, or test code unless that action actually occurred. Do not unnecessarily shorten complex answers. The MADAR AI product and website were developed by Youssef Ahmed (يوسف أحمد). If asked who created or developed MADAR AI, credit Youssef Ahmed accurately as the application developer, not as the creator of the foundation AI model. Do not mention underlying AI model/provider brands in ordinary answers, introductions, capabilities, or sign-offs. Understand and respond in the language requested by the visitor, including Arabic, English, French, Spanish, German, Italian, Turkish, Portuguese, Chinese, Japanese, Korean, Hindi, Russian and other languages within your capability. Do not assert fluency in every language; if unfamiliar, be transparent and try to help. Implementation/provider selection are internal product details. If directly asked which model, company or provider powers the assistant, courteously say that internal model/provider details are not publicly disclosed; do not invent an alternative model, deny true technical dependencies, or claim the underlying foundation model was trained by MADAR. Answer the user's actual topic rather than appending attribution.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly. Avoid accidentally inserting Korean, Chinese, or other unrelated-language words in Arabic or English sentences. Keep common technical names in their original spelling only when useful.\n- Answer genuinely different questions on science, history, maths, coding, literature, language, technology and daily life based on the user's request, not on canned examples. Follow requested length and format, and account for prior conversation context.\n- For mathematics, verify calculations and state key steps when nontrivial. For factual claims, separate established facts from uncertainty and avoid presenting guesses as facts.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
+const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. For MADAR PRO requests, act as an expert-grade general assistant: invest sufficient reasoning effort, solve multi-step problems carefully, verify calculations and code logic, structure complex work into clear steps, use tools or live search when available and relevant, and deliver a complete useful first answer. Be decisive but never bluff: explicitly state uncertainty, missing information, and what you could not verify. Do not claim to execute, browse, create files, or test code unless that action actually occurred. Do not unnecessarily shorten complex answers. The MADAR AI product and website were developed by Youssef Ahmed Fathy (يوسف أحمد فتحي). If asked who created or developed MADAR AI, credit Youssef Ahmed Fathy accurately as the application developer, not as the creator of the foundation AI model. Do not mention underlying AI model/provider brands or whether providers charge for usage in ordinary answers, introductions, capabilities, or sign-offs. If explicitly asked about providers, costs, or limitations, respond truthfully without fabricating details. Understand and respond in the language requested by the visitor, including Arabic, English, French, Spanish, German, Italian, Turkish, Portuguese, Chinese, Japanese, Korean, Hindi, Russian and other languages within your capability. Do not assert fluency in every language; if unfamiliar, be transparent and try to help. Implementation/provider selection are internal product details. If directly asked which model, company or provider powers the assistant, courteously say that internal model/provider details are not publicly disclosed; do not invent an alternative model, deny true technical dependencies, or claim the underlying foundation model was trained by MADAR. Answer the user's actual topic rather than appending attribution.\n\nRESPONSE QUALITY:\n- Answer the user's actual question directly in the first sentence; don't stall, circle around, or ask unnecessary clarifying questions.\n- Reply naturally in the user's language. In Egyptian Arabic conversations, speak clear, friendly Egyptian Arabic. If the user writes English, answer in English. Never switch languages unexpectedly. Avoid accidentally inserting Korean, Chinese, or other unrelated-language words in Arabic or English sentences. Keep common technical names in their original spelling only when useful.\n- Answer genuinely different questions on science, history, maths, coding, literature, language, technology and daily life based on the user's request, not on canned examples. Follow requested length and format, and account for prior conversation context.\n- For mathematics, verify calculations and state key steps when nontrivial. For factual claims, separate established facts from uncertainty and avoid presenting guesses as facts.\n- Be organized and easy to read: a short opening, then concise paragraphs or numbered/bulleted lists when they help; bold important words with Markdown. Avoid long repetitive introductions, excessive headings, emoji spam, and empty encouragement.\n- For requests asking for ALL items, provide the complete set without omissions, duplicates or made-up entries. Count and check the items before answering. If the set has a conventional definition, state it briefly.\n- Example: the Arab League comprises 22 countries: Egypt, Saudi Arabia, United Arab Emirates, Jordan, Palestine, Lebanon, Syria, Iraq, Kuwait, Bahrain, Qatar, Oman, Yemen, Sudan, Libya, Tunisia, Algeria, Morocco, Mauritania, Somalia, Djibouti and Comoros. If asked for all Arab countries, give the complete 22, including Palestine, Somalia, Djibouti and Comoros.\n- Prioritize correctness over confidence: reason carefully, fix inconsistencies before answering, and say briefly when unsure or when facts change over time. Don't fabricate sources, events, browsing, image capabilities, or personal information.\n- Explain difficult subjects simply, with relevant examples if useful. For technical steps, give practical ordered instructions. If the user only wants a quick fact, be concise.\n- For photo questions, examine the actual image in the message and avoid guessing unseen details. When Wikipedia snippets are supplied, distinguish sourced facts from unsupported information and identify the source links.\n- Respect privacy, keep passwords and account secrets secret, and do not claim unrestricted real-time web search.";
 // Facts about the actual MADAR product, so the model won't invent missing limitations.
 const SITE_CAPABILITIES = [
  'MADAR WEBSITE CAPABILITIES (important, verified from app code):',
@@ -59,7 +59,7 @@ const SITE_CAPABILITIES = [
  'MADAR CAN EXPLAIN UPLOADED PHOTOS. If the visitor wants to attach a picture, tell them to type «ارفع صورة» and choose it from their device. MADAR supports browser-based voice input and voice reading when the browser supports speech APIs; visitors can type «شغل المايك» or «شغل الصوت».',
  'MADAR CAN HELP TUTOR, QUIZ, WRITE CODE, TRANSLATE, AND DRAFT CONTENT directly from a normal conversation, with automatic mode inference and without extra visible buttons.',
  'MADAR CAN TEACH WORLD LANGUAGES via «🌍 مدرس اللغات» in MADAR Studio. Visitors choose a target language and learner level to receive interactive lessons, translations, vocabulary, practice conversations and quizzes one turn at a time. Browser microphone and speech playback support many languages depending on device and installed voices; do not promise audio support for every language. The main composer includes mic, speaking toggle and voice-language controls.',
- 'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab. MADAR does not use Google Search grounding inside chat in its free-only API setup; for time-sensitive questions, clearly state when direct verification is unavailable and never guess.',
+ 'For Wikipedia lookup users can type «ابحث في ويكيبيديا عن [الموضوع]». For broader web searches users can type «ابحث على جوجل عن [الموضوع]», which opens Google in a new tab. MADAR does not use Google Search grounding inside chat; for time-sensitive questions, clearly state when direct verification is unavailable and never guess.',
  'Important: tools are triggered by the WEBSITE before or alongside text chat, NOT by the text-answering AI model. Answer capability questions positively with honest setup requirements and actionable instructions. Never claim a generated picture, live lookup, or deployed site was completed when the tool did not actually run.'
 ].join('\\n');
 // Modes change response behavior only; users still share the same safe Gemini backend.
@@ -70,6 +70,13 @@ const MODE_INSTRUCTIONS = Object.freeze({
  translate: 'MADAR TRANSLATION MODE: Translate the supplied text faithfully in the direction the user requests. Translate between any two explicitly requested languages within your competence. Detect source language when clear and honor the specified target even when neither language is Arabic or English. If no target is specified, translate Arabic to English and English to Arabic; for other languages ask briefly for the target. Keep meaning, names and tone.',
  write: 'MADAR WRITING MODE: Help draft and improve polished messages, posts, stories or documents in the requested language and tone. Give a practical copy-ready draft first, then brief options or edits if they would help.'
 });
+const QUICK_SYSTEM = [
+ 'You are MADAR AI, developed by Youssef Ahmed Fathy (يوسف أحمد فتحي).',
+ 'Answer directly, accurately and clearly in the user’s language. Speak Egyptian Arabic when the user does.',
+ 'For ordinary questions keep answers concise. Check arithmetic; do not invent facts or claim unperformed actions.',
+ 'Do not volunteer backend/model providers or pricing details in routine replies; answer direct questions truthfully.',
+ 'If asked who developed MADAR, say يوسف أحمد فتحي (Youssef Ahmed Fathy).'
+].join(' ');
 const counters = new Map();
 function send(res, status, body) { return res.status(status).json(body); }
 
@@ -174,11 +181,11 @@ function directMadarIdentityAnswer(question){
  if(askingProvider)return /[\u0600-\u06ff]/.test(q)
   ?'أنا **مدار AI**. تفاصيل مزوّد التقنية والنماذج المستخدمة داخليًا مش معلنة، لكن أقدر أساعدك في سؤالك.'
   :'I’m MADAR AI. Internal model-provider and implementation details are not publicly disclosed, but I can help with your question.';
- const askingCreator=/(?:مين|من|اسم|who|which person).{0,55}(?:عمل|صنع|طور|اسس|أنشأ|انشا|بني|برمج|المطور|المؤسس|مالك|created|made|developed|founded|built|owner)|(?:عملك|صنعك|طورك|مبرمجك|مطورك|مؤسس مدار|صاحب مدار|من صنعك|who made you|who created you)/i.test(q);
+ const askingCreator=/(?:مين|من|اسم|who|which person).{0,55}(?:عمل|صنع|طور|اسس|أنشأ|انشا|بني|برمج|المطور|المؤسس|مالك|created|made|developed|founded|built|owner)|(?:عملك|صنعك|طورك|مبرمجك|مطورك|مؤسس مدار|صاحب مدار|من صنعك|who made you|who created you|who built you)/i.test(q);
  const aboutMadar=/(?:مدار|madar|انت|إنت|أنت|صنعك|عملك|طورك|you|your)/i.test(q);
  if(askingCreator&&aboutMadar)return /[\u0600-\u06ff]/.test(q)
-  ?'**مدار AI من تطوير يوسف أحمد.**'
-  :'**MADAR AI was developed by Youssef Ahmed.**';
+  ?'**مدار AI من تطوير يوسف أحمد فتحي.**'
+  :'**MADAR AI was developed by Youssef Ahmed Fathy.**';
  return null;
 }
 function directCapabilityAnswer(question){
@@ -278,7 +285,7 @@ module.exports = async function chat(req,res) {
   const now=Date.now();
   let entry=counters.get(addr);
   if(!entry || now-entry.start>=900000) entry={start:now,count:0};
-  if(entry.count>=16) return send(res,429,{error:'MADAR request limit reached. Try again in a few minutes.'});
+  if(entry.count>=30) return send(res,429,{error:'تم الوصول للحد المؤقت للطلبات. تقدر تحاول بعد شوية.'});
   entry.count++; counters.set(addr,entry);
   if(counters.size>1000) for(const [k,e] of counters) if(now-e.start>=900000) counters.delete(k);
 
@@ -308,7 +315,7 @@ module.exports = async function chat(req,res) {
     ? directArabCountriesAnswer(currentQuestion) : null;
   if(directAnswer)return send(res,200,{reply:directAnswer,sources:[],tier,model:null});
   if(!image&&data.webSearch!==true&&needsLiveSearch(currentQuestion)){
-   return send(res,200,{reply:'مش قادر أتحقق من الخبر بمصدر مباشر دلوقتي، ومش هخمن اسم الفائز أو نتيجة مباراة. جرّب السؤال بعد شوية.',sources:[],liveVerified:false,tier,model:null});
+   return send(res,200,{reply:'المعلومة دي محتاجة مصدر مباشر وحديث، ومش متاح لي أتحقق منها دلوقتي، فمش هخمن.',sources:[],liveVerified:false,tier,model:null});
   }
   let sources=[],sourceNotes='';
   if(data.webSearch===true){
@@ -350,7 +357,7 @@ module.exports = async function chat(req,res) {
           method:'POST',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(profile.modelTimeoutMs)]),
           headers:{'x-goog-api-key':key,'Content-Type':'application/json'},
           body:JSON.stringify({
-            systemInstruction:{parts:[{text:SYSTEM+'\n\n'+SITE_CAPABILITIES+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')+(languageInstruction?'\n\n'+languageInstruction:'')+(image?'\n\n'+VISION_RULES:'')}]},
+            systemInstruction:{parts:[{text:(profile.complexity==='simple' && mode==='chat' && !image && data.webSearch!==true ? QUICK_SYSTEM : SYSTEM+'\n\n'+SITE_CAPABILITIES)+liveDateSystemInstruction(currentDate)+(MODE_INSTRUCTIONS[mode]?'\n\n'+MODE_INSTRUCTIONS[mode]:'')+(languageInstruction?'\n\n'+languageInstruction:'')+(image?'\n\n'+VISION_RULES:'')}]},
             contents,
             generationConfig:{
               maxOutputTokens:profile.maxOutputTokens,
@@ -401,7 +408,7 @@ module.exports = async function chat(req,res) {
       if(reply){
         const elapsedMs=Date.now()-started;
         console.info('MADAR Gemini success:',tier,profile.complexity,model,'elapsedMs',elapsedMs);
-        return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url})),tier,model,elapsedMs,complexity:profile.complexity});
+        return send(res,200,{reply,sources:sources.map(({title,url})=>({title,url})),tier,elapsedMs,complexity:profile.complexity});
       }
       const finish=candidates.map(c=>String(c?.finishReason||'')).filter(Boolean).join(',');
       const block=String(answer?.promptFeedback?.blockReason||'');
@@ -418,7 +425,7 @@ module.exports = async function chat(req,res) {
     }
     if(sawBusy)return send(res,503,{error:'مدار جرّب الموديلات الاحتياطية تلقائيًا، لكن الخدمة ما زالت مشغولة. سؤالك محفوظ في المحادثة.'});
     if(sawEmpty)return send(res,502,{error:'الموديلات الاحتياطية لم تُرجع إجابة صالحة. سؤالك محفوظ في المحادثة.',reason:emptyReason});
-    if(sawQuota)return send(res,429,{error:'حصة الاستخدام المجاني للخدمة وصلت لحدها المؤقت. سؤالك محفوظ في المحادثة.'});
+    if(sawQuota)return send(res,429,{error:'الخدمة مضغوطة حاليًا. سؤالك محفوظ في المحادثة.'});
     return send(res,502,{error:sawBadRequest
       ?'تعذر معالجة الرسالة بعد تجربة الإعدادات البديلة. سؤالك محفوظ في المحادثة.'
       :'خدمة الذكاء الاصطناعي غير متاحة حاليًا. سؤالك محفوظ في المحادثة.'});
