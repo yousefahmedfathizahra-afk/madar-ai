@@ -25,8 +25,12 @@ function realPhotoIntent(value){
  const q=normalize(value);
  if(!/(?:صوره|صور|photo|photos|picture|pictures)/i.test(q))return null;
  if(/(?:ارسم|صمم|تصميم|تخيل|خيالي|مولد|بالذكاء|generate|illustrat|draw|design|ai image)/i.test(q))return null;
- const p=PHOTO_PLACES.find(p=>p.test.test(q));
- return p?{type:'landmark-photo',id:p.id}:null;
+ const p=PHOTO_PLACES.find(p=>p.id!=='generic-mosque'&&p.test.test(q));
+ if(!p)return null;
+ if(/(?:^|[\s،.!؟:])(?:مش|موش|بدون|ليس|غير|not|without)\s+(?:ال)?(?:جامع|مسجد|mosque)(?=$|[\s،.!؟:])/i.test(q))return null;
+ const before=q.slice(Math.max(0,q.search(p.test)-25),q.search(p.test));
+ if(/(?:مش|موش|بدون|ليس|غير|not|without)\s*$/.test(before))return null;
+ return{type:'landmark-photo',id:p.id};
 }
 async function landmarkPhotos(id,signal){
  const place=PHOTO_PLACES.find(p=>p.id===id);
@@ -60,6 +64,11 @@ async function landmarkPhotos(id,signal){
 function detect(input,history=[]){
  const raw=String(input||'').trim(),text=normalize(raw);
  if(!text||text.length>1200)return null;
+ const prior=Array.isArray(history)?history[history.length-1]:null;
+ if(prior?.role==='assistant'&&prior.toolType==='image-clarify'
+   &&typeof prior.toolKey==='string'&&raw.length<=160
+   &&!/[؟?]/.test(raw)&&!/(?:^|\s)(?:اترك|الغي|cancel|stop)(?:\s|$)/i.test(text))
+  return{type:'image',prompt:(prior.toolKey+'\nتوضيح المستخدم: '+raw).slice(0,900)};
  const photoRequest=realPhotoIntent(raw);
  if(photoRequest)return photoRequest;
  const how=/^(?:(?:يا مدار|مدار|لو سمحت|بص|انا|ممكن|هو|هي|ايه|يعني)\s+){0,4}(?:ازاي|كيف|اشرح(?:لي)?|علمني|طريقه|خطوات|ليه|ايه|why|what|how|teach|explain)\s+/;
@@ -149,6 +158,8 @@ async function run(request,options={}){
   if(!maker?.generateFromChat)throw Error('خدمة تعديل الصور غير متاحة حاليًا.');
   if(!request.inputImage)throw Error('ارفع الصورة اللي عايز تعدّلها الأول.');
   const source=await maker.generateFromChat(request.prompt,{inputImage:request.inputImage});
+  if(source?.clarification)
+   return{content:source.clarification,toolType:'image-clarify',toolKey:request.prompt};
   const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
   pictures.set(id,{src:source,prompt:request.prompt});
   return{toolType:'image',toolKey:id,content:'🎨 عدّلت الصورة باستخدام الصورة الأصلية اللي رفعتها. راجع النتيجة واحفظها قبل ما تقفل الصفحة.'};
@@ -168,6 +179,7 @@ async function run(request,options={}){
    return{content:'ارفع الصورة الأصلية اللي عايز تعدّلها، عشان أقدر أعدّل بكسلاتها فعليًا.'};
   const imagePrompt=String(request.prompt||'').slice(0,900);
   const source=await window.MADAR_IMAGE_STUDIO.generateFromChat(imagePrompt,{inputImage:sourceImage});
+  if(source?.clarification)return{content:source.clarification};
   const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
   pictures.set(id,{src:source,prompt:imagePrompt});
   return{toolType:'image',toolKey:id,content:'🎨 عدّلت الصورة الأصلية حسب طلبك. راجع التفاصيل واحفظ النتيجة.'};
@@ -183,6 +195,8 @@ async function run(request,options={}){
   const maker=window.MADAR_IMAGE_STUDIO;
   if(!maker?.generateFromChat)throw Error('خدمة الصور مش جاهزة. حدّث الصفحة وجرب تاني.');
   const source=await maker.generateFromChat(request.prompt);
+  if(source?.clarification)
+   return{toolType:'image-clarify',toolKey:request.prompt,content:source.clarification};
   const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
   pictures.set(id,{src:source,prompt:request.prompt});
   return{toolType:'image',toolKey:id,content:'🎨 دي صورة مولَّدة بالذكاء الاصطناعي حسب وصفك، مش صورة فوتوغرافية موثقة لمكان حقيقي. تقدر تحفظها، لكنها مش بتفضل موجودة بعد تحديث الصفحة.'};

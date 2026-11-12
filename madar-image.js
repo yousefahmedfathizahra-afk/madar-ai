@@ -39,76 +39,74 @@ function normalizeLandmark(value){
   .replace(/\s+/g,' ').trim();
 }
 function prepareImagePrompt(description){
- const original=String(description||'').trim();
- const normalized=normalizeLandmark(original);
- // The best-known example from MADAR visitors:
- // "جامع عمرو ابن العاص" means the historic mosque in Old Cairo,
- // NOT a portrait of the historical person Amr ibn al-As.
- const amrMosque=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد)\s+عمرو\s+(?:بن|ابن)\s+العاص(?=$|[\s،.!؟:])/.test(normalized);
- if(amrMosque){
-  return [
-   'IMAGE SUBJECT: Mosque of Amr ibn al-As (Amr Ibn Al-As Mosque, جامع عمرو بن العاص) in Old Cairo, Egypt.',
-   'Depict the REAL-WORLD HISTORIC MOSQUE AS AN ARCHITECTURAL BUILDING: its courtyard, colonnades, arcades, historic Islamic architecture and exterior or interior as requested.',
-   'The words "Amr ibn al-As" here are part of the MOSQUE NAME, not a request to depict Amr ibn al-As as a person. NO standalone person portrait, human headshot or warrior replacing the mosque.',
-   'Honor the visitor-specific view, lighting, style and composition rather than inventing other subjects.',
-   'VISITOR REQUEST: '+original.slice(0,900)
-  ].join('\n');
- }
- const namedPlaces=[
-  {match:/(?:جامع|مسجد)\s+(?:محمد|محمّد)\s+علي(?:\s+(?:باشا|في\s+القلعه))?/,place:'Muhammad Ali Pasha Mosque at the Cairo Citadel: the monumental domed Ottoman-style mosque, NOT the human ruler Muhammad Ali Pasha.'},
-  {match:/(?:جامع|مسجد)\s+السلطان\s+حسن/,place:'Sultan Hassan Mosque-Madrasa in Cairo: an enormous Mamluk stone religious complex, NOT a portrait of Sultan Hassan.'},
-  {match:/(?:قلعه|قلعة)\s+(?:صلاح\s+الدين|الناصر\s+صلاح)/,place:'The historic Citadel of Salah al-Din in Cairo: stone fortress and ramparts, NOT a human portrait of Saladin.'}
- ];
- for(const place of namedPlaces){
-  if(place.match.test(normalized))
-   return [
-     'PRIMARY SUBJECT: '+place.place,
-     'Architectural landmark scene, with recognizable building architecture as the focus. Avoid replacing its namesake with a portrait.',
-     'Respect additional objects, scenery, style and viewpoint explicitly requested by the visitor.',
-     'VISITOR REQUEST: '+original.slice(0,900)
-   ].join('\n');
- }
- // A general mosque request still needs an unmistakable MOSQUE, not an
- // unrelated building, a face, a church or a religious symbol drawn in error.
- const mosque=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد)(?=$|[\s،.!؟:])/.test(normalized);
- if(mosque){
-  return [
-   'CREATE AN ARCHITECTURAL IMAGE OF A MOSQUE (Islamic place of worship).',
-   'VISUAL CATEGORY: mosque building itself, with traditional Islamic architectural cues such as arches, prayer hall/courtyard and a minaret or dome where appropriate to the visitor description.',
-   'Do not substitute a historical person, a portrait, a church, a generic palace, an unrelated religious monument, or a different type of building.',
-   'If a specific mosque name is supplied, depict the mosque as architecture. Any image generated from text is an AI illustration, NOT a verified photograph of that exact real-world site.',
-   'Follow the specific location, viewpoint, details, style and extra objects requested by the visitor.',
-   'VISITOR REQUEST: '+original.slice(0,900)
-  ].join('\n');
- }
- // Place names may contain historical personal names. Preserve the user's place
- // as the principal visual subject; people may still appear when explicitly asked.
- const landmark=/(?:^|[\s،.!؟:])(?:[لب])?(?:ال)?(?:جامع|مسجد|كنيسه|كاتدرائيه|قصر|قلعه|متحف|برج|معبد|ضريح|مقام|هرم|اهرام|مكتبه|جامعه|مدرسه)(?=$|[\s،.!؟:])/.exec(normalized);
- if(landmark){
-  const placeAt=landmark.index;
-  const human=/(?:^|[\s،.!؟:])(?:شخص|رجل|شاب|ست|سيده|امراه|بنت|طفل|ناس|اشخاص|صوره شخصيه|portrait|person|man|woman|selfie)(?=$|[\s،.!؟:])/.exec(normalized);
-  if(!human||human.index>placeAt){
-   return [
-    'PRIMARY IMAGE SUBJECT: the specific place, building, monument, or architectural landmark named below, NOT a portrait of a person whose name appears in the place name.',
-    'Show the requested structure itself with appropriate architectural details and setting; follow the exact viewpoint, style, weather, colors and composition in the visitor request.',
-    'People may appear only when requested as part of the scene. Do not replace the named landmark with a historical figure.',
-    'VISITOR REQUEST: '+original.slice(0,900)
-   ].join('\n');
-  }
- }
- // For other scenes, preserve exactly what the user asked for: subject, type,
- // number, relative positions and requested style. Don't merge a person, animal,
- // monument or sports object with another named thing in the same request.
- // The generator is a drawing engine, not a real photo retrieval service.
+ const original=String(description||'').trim().slice(0,900);
  return [
-  'GENERATE AN IMAGE of the visitor request below. Respect the actual requested subject types:',
-  '- Distinguish buildings and landmarks from people whose names appear in their titles.',
-  '- Distinguish animals from people, sports equipment from athletes, and real objects from logos or text.',
-  '- If several objects or characters are requested, include each separately with the requested counts, positions and relationships.',
-  '- Honor the requested colors, composition, location, viewpoint and visual style; do not swap the requested subject for a lookalike or add prominent unrelated subjects.',
-  '- Do not invent written labels or captions that were not requested.',
-  'VISITOR REQUEST: '+original.slice(0,900)
+  'Generate the image described by the user in their original language. Treat the request as the source of truth.',
+  'Preserve the exact main subject, counts, specified colors, attributes, locations, materials, poses, style, visual perspective, text and spatial relationships.',
+  'Words like مش, بدون, من غير, لا, not, without and no express exclusions, not subjects to include.',
+  'Do not substitute another type of building, person, object, animal, landmark or symbol just because a word resembles it.',
+  'No unrelated additions, watermarks or captions. Fill only details the user did not specify.',
+  'USER REQUEST: '+original
  ].join('\n');
+}
+async function planImageRequest(description,editing=false){
+ const original=String(description||'').trim().slice(0,900);
+ const fallback={action:'generate',prompt:prepareImagePrompt(original)};
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),7500);
+ try{
+  const response=await fetch('/api/image-intent',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({prompt:original,editing:!!editing}),signal:controller.signal
+  });
+  if(!response.ok)return fallback;
+  const plan=await response.json();
+  if(plan?.action==='clarify'&&!editing&&typeof plan.question==='string'&&plan.question.trim().length>=7){
+   return{action:'clarify',question:plan.question.trim().slice(0,240)};
+  }
+  if(plan?.action==='generate'&&typeof plan.prompt==='string'&&plan.prompt.trim().length>=30){
+   return{action:'generate',prompt:plan.prompt.slice(0,3800)};
+  }
+ }catch(e){console.warn('MADAR optional image planner not available:',e?.name||'temporary');}
+ finally{clearTimeout(timer);}
+ return fallback;
+}
+async function imageBackup(originalPrompt,options={}){
+ // Disabled by default on the backend. The server NEVER receives an API key from the browser.
+ const payload={prompt:String(originalPrompt||'').slice(0,3800)};
+ const input=options?.inputImage;
+ if(input){
+  if(typeof input==='string'&&/^data:image\/(?:png|jpeg|webp);base64,/i.test(input)){
+   payload.inputImage=input;
+  }else if(typeof input==='string'&&input.startsWith('blob:')){
+   const response=await fetch(input);
+   if(!response.ok)throw Error('تعذر قراءة الصورة الأصلية للاحتياطي.');
+   const data=await response.blob();
+   if(data.size>1900000)throw Error('الصورة الأصلية كبيرة جدًا للمحرّك الاحتياطي.');
+   payload.inputImage=await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(Error('تعذر تجهيز الصورة.'));
+    reader.readAsDataURL(data);
+   });
+  }else if(input instanceof Blob&&input.size<=1900000){
+   payload.inputImage=await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(Error('تعذر تجهيز الصورة.'));
+    reader.readAsDataURL(input);
+   });
+  }else throw Error('تعديل الصورة الاحتياطي يحتاج صورة أصلية بصيغة PNG أو JPEG أو WebP قابلة للقراءة.');
+ }
+ const response=await fetch('/api/image-backup',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify(payload)
+ });
+ const data=await response.json().catch(()=>null);
+ if(!response.ok)throw Error(data?.error||'المحرك الاحتياطي غير متاح.');
+ const src=String(data?.src||'');
+ if(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i.test(src))throw Error('الاحتياطي لم يرجع صورة صالحة.');
+ return src;
 }
 
 function note(message,bad=false){
@@ -282,7 +280,14 @@ async function generate(event){
    if(!puter?.ai?.txt2img)throw Error('Image generator unavailable.');
    if(!signedIn())throw {code:'not_authenticated',message:'Puter sign-in expired'};
    note('🎨 MADAR is creating your image. This can take a little while...');
-   const produced=await puter.ai.txt2img(prepareImagePrompt(description),selection);
+   const planned=await planImageRequest(description,false);
+   if(planned.action==='clarify'){note(planned.question,true);return;}
+   let produced;
+   try{produced=await puter.ai.txt2img(planned.prompt,selection);}
+   catch(primaryError){
+    const src=await imageBackup(planned.prompt);
+    produced={src};
+   }
    const source=typeof produced?.src==='string'?produced.src:'';
    if(!source || !(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
      throw Error('Image provider did not return a usable image.');
@@ -321,14 +326,19 @@ async function generateFromProvider(description,options={}){
   editSource=await loaded.blob();
  }
  const useEdit=!!editSource;
- const needsDetail=architecture||/(?:واقعي|واقعيه|واقعية|احترافي|احترافية|جودة\s*عالية|دقة\s*عالية|تفصيلي|لوجو|شعار|بوستر|كتاب|كتابة|نص|photorealistic|realistic|professional|high\s*quality|detailed|logo|poster|typography)/i.test(String(description||''));
- const params=useEdit
-  ?{...MODELS.detailed,input_images:[editSource]}
-  :needsDetail?MODELS.detailed:MODELS.fast;
+ const plan=options.imagePlan||await planImageRequest(description,useEdit);
+ if(plan.action==='clarify')return{clarification:plan.question};
+ const params=useEdit?{...MODELS.detailed,input_images:[editSource]}:MODELS.detailed;
  const actualPrompt=useEdit
-  ?'EDIT THE PROVIDED INPUT IMAGE following the instructions. Preserve the original subject, identity, layout and other details unless the user explicitly asks to change them. Do not replace the original with an unrelated picture. USER EDIT REQUEST: '+String(description||'').slice(0,900)
-  :prepareImagePrompt(description);
- const result=await instance.ai.txt2img(actualPrompt,params);
+  ?'EDIT THE PROVIDED ORIGINAL IMAGE. Keep unchanged everything the user did not request changing. '+plan.prompt
+  :plan.prompt;
+ let result;
+ try{result=await instance.ai.txt2img(actualPrompt,params);}
+ catch(primaryError){
+  // Try owner-controlled OpenAI backup only when explicitly enabled on the server.
+  try{return await imageBackup(actualPrompt,{inputImage:editSource});}
+  catch(backupError){throw primaryError;}
+ }
  const source=typeof result?.src==='string'?result.src:'';
  if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
    throw Error('Puter لم يرجع صورة صالحة. حاول تاني.');
@@ -338,16 +348,22 @@ async function generateFromChat(description,options={}){
  const promptText=String(description||'').trim().slice(0,900);
  if(promptText.length<3)throw Error('اكتب وصف الصورة بعد كلمة اعمل صورة.');
  if(chatImageRequest)throw Error('استنى الصورة الحالية تخلص الأول.');
+ const imagePlan=await planImageRequest(promptText,!!options.inputImage);
+ if(imagePlan.action==='clarify')return{clarification:imagePlan.question};
+ const readyOptions={...options,imagePlan};
  try{await loadSdk();}
- catch(e){throw Error('مش قادر أحمل خدمة الصور Puter. جرّب تغيير الشبكة أو المتصفح.');}
+ catch(e){
+  try{return await imageBackup(imagePlan.prompt,readyOptions);}
+  catch{return Promise.reject(Error('مش قادر أحمل خدمة الصور. جرّب تغيير الشبكة أو المتصفح.'));}
+ }
  if(signedIn()){
-   try{return await generateFromProvider(promptText,options);}
+   try{return await generateFromProvider(promptText,readyOptions);}
    catch(e){throw Error(errorText(e));}
  }
  // Puter authentication must be initiated from the user's Connect click
  // because browsers block login popups launched asynchronously.
  return await new Promise((resolve,reject)=>{
-   chatImageRequest={prompt:promptText,options,resolve,reject,started:false};
+   chatImageRequest={prompt:promptText,options:readyOptions,resolve,reject,started:false};
    prompt.value=promptText;
    open();
    note('🔐 كمّل تسجيل الدخول لخدمة الصور. بعد الاتصال، مدار هيكمل '+(options?.inputImage?'تعديل الصورة الأصلية':'توليد الصورة')+' تلقائيًا.');
