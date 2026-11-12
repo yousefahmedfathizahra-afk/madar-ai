@@ -96,6 +96,8 @@ async function imageBackup(originalPrompt,options={}){
     reader.onerror=()=>reject(Error('تعذر تجهيز الصورة.'));
     reader.readAsDataURL(input);
    });
+  }else if(typeof input==='string'&&/^https:\/\//i.test(input)){
+   payload.inputImageUrl=input;
   }else throw Error('تعديل الصورة الاحتياطي يحتاج صورة أصلية بصيغة PNG أو JPEG أو WebP قابلة للقراءة.');
  }
  const response=await fetch('/api/image-backup',{
@@ -340,8 +342,10 @@ async function generateFromProvider(description,options={}){
   catch(backupError){throw primaryError;}
  }
  const source=typeof result?.src==='string'?result.src:'';
- if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
-   throw Error('Puter لم يرجع صورة صالحة. حاول تاني.');
+ if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source))){
+  try{return await imageBackup(actualPrompt,{inputImage:editSource});}
+  catch{throw Error('خدمات الصور مش متاحة حاليًا. جرّب بعد شوية.');}
+ }
  return source;
 }
 async function generateFromChat(description,options={}){
