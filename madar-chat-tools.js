@@ -6,7 +6,7 @@
 'use strict';
 const PROJECTS_KEY='madar_chat_projects_v1';
 const MAX_PROJECTS=4;
-const projects=new Map(),projectKinds=new Map(),pictures=new Map();
+const projects=new Map(),projectKinds=new Map(),pictures=new Map(),videos=new Map();
 function normalize(text){
  return String(text||'').normalize('NFKC').toLowerCase()
   .replace(/[\u064b-\u065f\u0670]/g,'').replace(/ـ/g,'')
@@ -61,6 +61,22 @@ async function landmarkPhotos(id,signal){
 }
 // Natural Egyptian-Arabic wishes and English requests are creation intents.
 // Only act on an identifiable requested output, otherwise keep normal chat.
+// Video is a first-class MADAR chat action, not a link to another site.
+function detectVideo(input){
+ const raw=String(input||'').trim(),q=normalize(raw);
+ if(!q||q.length>1800)return null;
+ const noun=/(?:^|[\s،.!؟:])(?:(?:ال|ل))?(?:فيديو(?:هات)?|فديو(?:هات)?|ڤيديو(?:هات)?|كليب|مقطع فيديو|video|videos|clip)(?=$|[\s،.!؟:])/i;
+ const m=noun.exec(q);if(!m)return null;
+ if(/^(?:(?:يا مدار|مدار|ممكن|لو سمحت)\s+){0,3}(?:ازاي|كيف|اشرح|ليه|ايه|ما هو|how|why|what|explain)\s+/i.test(q))return null;
+ if(/(?:^|\s)(?:مش عايز|مش عاوز|متعملش|لا تعمل|don't|do not)\s+/i.test(q))return null;
+ const pic=/(?:^|[\s،.!؟:])(?:ال)?(?:صوره|صور|image|picture|photo)(?=$|[\s،.!؟:])/i.exec(q);
+ const anim=/(?:حول|حوّل|حرك|حرّك|animate|turn|convert|transform)\s+(?:(?:ال|a|the)\s*)?(?:صوره|صور|image|photo|picture)/i.test(q);
+ if(pic&&pic.index<m.index&&!anim)return null;
+ const act=/(?:^|[\s،.!؟:])(?:اعمل(?:لي|نا)?|اصنع(?:لي)?|انشئ|صمم(?:لي)?|هات(?:لي)?|عايز|عاوز|محتاج|طلع(?:لي)?|ولد|ولّد|انتج|حرك|حوّل|حول|make|create|generate|produce|animate|turn|i want|i need|please)/i;
+ if(!act.test(q)&&!/^(?:فيديو|فديو|ڤيديو|video)\s+/.test(q))return null;
+ const remain=q.replace(act,' ').replace(noun,' ').replace(/[\s،.!؟:]+/g,' ').trim();
+ return remain.length<3?{type:'clarify',kind:'video'}:{type:'video',prompt:raw.slice(0,1800)};
+}
 function detect(input,history=[]){
  const raw=String(input||'').trim(),text=normalize(raw);
  if(!text||text.length>1200)return null;
@@ -80,6 +96,8 @@ function detect(input,history=[]){
    ||/^(?:بتعرف|تقدر)\s+/i.test(text))return null;
  const wants=/(?:^|[\s،.!؟:])(?:اعمل(?:لي|نا|ي)?|اصنع(?:لي)?|انشئ|سوي|صمم(?:لي)?|ارسم(?:لي|ي)?|هات|طلع(?:لي)?|ابني(?:لي)?|عايز(?:ه|ها|ك|ره)?|عاوز(?:ه|ها|ك)?|محتاج(?:ه)?|نفسي\s+في|ياريت|اتمني|اريد|ابغي|ودي\s+ب|ممكن|ينفع|خلينا\s+نعمل|i want|i need|i(?:'d| would) like|i wish|can you|could you|please|make|create|build|generate|design|draw)/;
  const action=wants.exec(text);
+ const videoIntent=detectVideo(raw);
+ if(videoIntent)return videoIntent;
  // "ارسملي منظر طبيعي" is clearly a picture request without the noun "صورة".
  const draw=text.match(/^(?:(?:يا مدار|مدار|لو سمحت|بص)\s+){0,2}(?:ارسم(?:لي|ي)?|رسملي|draw me)\s+(.+)$/);
  if(draw&&!/(?:لعبه|موقع|تطبيق|game|website|app)(?=$|[\s،.!؟:])/.test(draw[1]))
@@ -152,7 +170,7 @@ function detectUploadedImageEdit(value){
   || /(?:اعمل(?:لي)?|اصنع|صمم|create|make|generate)\s+(?:(?:صوره|نسخه)\s+)?(?:نفس|زي|شبه|مثل|similar|a version|based on|from this)/i.test(q);
 }
 async function run(request,options={}){
- if(request?.type==='need-image')return{content:'ارفع الصورة الأصلية من زر +، واكتب التعديل المطلوب؛ هعدل نفس الصورة بدل ما أعمل صورة مختلفة.'};
+ if(request?.type==='need-image')return{content:'ارفع الصورة الأصلية من زر «تعديل صورة»، واكتب التعديل المطلوب؛ هعدل نفس الصورة بدل ما أعمل صورة مختلفة.'};
  if(request?.type==='edit-uploaded-image'){
   const maker=window.MADAR_IMAGE_STUDIO;
   if(!maker?.generateFromChat)throw Error('خدمة تعديل الصور غير متاحة حاليًا.');
@@ -165,8 +183,8 @@ async function run(request,options={}){
   return{toolType:'image',toolKey:id,content:'🎨 عدّلت الصورة باستخدام الصورة الأصلية اللي رفعتها. راجع النتيجة واحفظها قبل ما تقفل الصفحة.'};
  }
  if(request?.type==='clarify'){
-  const type=request.kind==='image'?'الصورة':request.kind==='website'?'الموقع':request.kind==='tool'?'التطبيق':'اللعبة';
-  const example=request.kind==='image'?'عايز صورة قطة بيضا في حديقة وقت الغروب':
+  const type=request.kind==='image'?'الصورة':request.kind==='video'?'الفيديو':request.kind==='website'?'الموقع':request.kind==='tool'?'التطبيق':'اللعبة';
+  const example=request.kind==='video'?'اعمل فيديو لمدينة على البحر وقت الغروب':request.kind==='image'?'عايز صورة قطة بيضا في حديقة وقت الغروب':
    request.kind==='website'?'عايز موقع لمحل هدوم فيه منتجات وأسعار':
    request.kind==='tool'?'عايز تطبيق للمهام فيه إضافة وحذف':'عايز لعبة عربيات 3D فيها سباق ومراحل وتحكم موبايل';
   return{content:'تمام! 💜 بس عشان أعمل '+type+' زي ما إنت عايز بالظبط، اوصفهالي شوية. مثال: «'+example+'».'};
@@ -190,6 +208,15 @@ async function run(request,options={}){
   const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
   pictures.set(id,{kind:'reference',photos,name:place.name});
   return{toolType:'image',toolKey:id,content:'📷 دي صور حقيقية منشورة باسم **'+place.name+'** على Wikimedia Commons، مش صور متخيلة. افتح مصدر كل صورة للتأكد من المعلومات والترخيص.'};
+ }
+ if(request?.type==='video'){
+  if(request.inputImage)return{content:'تحويل الصورة المرفوعة نفسها لفيديو مش متاح حاليًا. تقدر تعمل فيديو من الوصف مباشرة.'};
+  const maker=window.MADAR_VIDEO_STUDIO;
+  if(!maker?.generateFromChat)throw Error('إنشاء الفيديو مش جاهز حاليًا.');
+  const clip=await maker.generateFromChat(request.prompt,{signal:options.signal});
+  const id=globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2);
+  videos.set(id,clip);
+  return{toolType:'video',toolKey:id,content:'🎬 فيديو مدار جاهز. شغّله واحفظه من الشات.'};
  }
  if(request?.type==='image'){
   const maker=window.MADAR_IMAGE_STUDIO;
@@ -230,6 +257,15 @@ function element(tag,cls,text){
  if(text!==undefined)node.textContent=text;return node;
 }
 function render(message,body){
+ if(message?.toolType==='video'){
+  const clip=videos.get(message.toolKey);
+  if(!clip?.url){body.append(element('p','madar-tool-note','الفيديو غير محفوظ بعد تحديث الصفحة. ابعت وصفه من جديد.'));return;}
+  const player=element('video','madar-chat-video');
+  player.src=clip.url;player.controls=true;player.playsInline=true;player.preload='metadata';
+  const save=element('a','madar-chat-action','⬇ عرض / حفظ الفيديو');
+  save.href=clip.url;save.target='_blank';save.rel='noopener noreferrer';
+  body.append(player,save);return;
+ }
  if(message?.toolType==='image'){
   const picture=pictures.get(message.toolKey);
   if(picture?.kind==='reference'&&Array.isArray(picture.photos)){
@@ -294,5 +330,5 @@ function render(message,body){
  }
 }
 restore();
-window.MADAR_CHAT_TOOLS={detect,detectUploadedImageEdit,run,render};
+window.MADAR_CHAT_TOOLS={detect,detectVideo,detectUploadedImageEdit,run,render};
 })();
