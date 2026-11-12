@@ -28,7 +28,8 @@ const SDK_SOURCES=[
 ];
 const MODELS={
  fast:{model:'@cf/black-forest-labs/flux-1-schnell',provider:'cloudflare',steps:4},
- detailed:{model:'gemini-3.1-flash-image',provider:'gemini',quality:'1K'}
+ detailed:{model:'gemini-3.1-flash-image',provider:'gemini',quality:'1K'},
+ editFallback:{model:'@cf/black-forest-labs/flux-2-dev',provider:'cloudflare',steps:25}
 };
 // Ground place requests BEFORE passing them to the AI image provider.
 // A mosque/church/landmark named after a person must not turn into a portrait.
@@ -123,8 +124,8 @@ function updateConnection(){
  const connected=ready&&signedIn();
  connectButton.disabled=connecting||!ready;
  connectButton.hidden=connected;
- connectButton.textContent=connecting?'⏳ Connecting...':!ready?'⏳ Loading Puter...':'🔐 Connect Puter';
- accountState.textContent=connected?'✅ Puter connected — you can now generate images.':'Step 1: Connect your own Puter account to enable image creation.';
+ connectButton.textContent=connecting?'⏳ جاري الربط...':!ready?'⏳ جاري التحميل...':'🔐 ربط خدمة الصور';
+ accountState.textContent=connected?'✅ خدمة الصور جاهزة.':'اربط حساب خدمة صور خارجية في نافذة تسجيل الدخول بموافقتك عند أول استخدام.';
  generateButton.disabled=pending||!connected;
 }
 function busy(value){
@@ -188,8 +189,8 @@ function open(){
  }
  // Warm the SDK while the visitor chooses a prompt; do not sign in or generate.
  updateConnection();
- loadSdk().then(()=>{updateConnection();if(!signedIn())note('Click Connect Puter first. The Puter account is separate from your MADAR account.');})
-  .catch(error=>{updateConnection();note('Puter could not load: '+String(error?.message||'Try again later.').slice(0,140),true);});
+ loadSdk().then(()=>{updateConnection();if(!signedIn())note('اربط حساب خدمة الصور عند أول استخدام.');})
+  .catch(error=>{updateConnection();note('تعذّر تجهيز الصور. جرّب تحديث الصفحة.',true);});
 }
 function cancelChatImage(){
  if(chatImageRequest&&!chatImageRequest.started){
@@ -202,43 +203,36 @@ function close(){
  cancelChatImage();
  dialog.close();
 }
+function validGeneratedImage(result){
+ const src=typeof result==='string'?result:(result&&typeof result.src==='string'?result.src:'');
+ return /^(?:data:image\/(?:png|jpeg|webp);base64,|blob:|https:\/\/)/i.test(src)?src:'';
+}
+function retryableImageError(error){
+ const value=String(error?.errorCode||error?.code||'')+' '+String(error?.message||'');
+ return !/(?:safety|moderation|insufficient|balance|credit|quota|unauthoriz|auth token|popup|cancel|bad_request)/i.test(value);
+}
 function errorText(error){
  const code=String(error?.errorCode||error?.code||error?.name||'').toLowerCase();
- const message=String(error?.message||error?.error||'').trim();
- const lower=message.toLowerCase();
- if(code.includes('insufficient_funds')||lower.includes('insufficient funds')||lower.includes('balance'))
-   return 'Your Puter account has insufficient image credits. MADAR will never charge you automatically.';
- if(code.includes('moderation_flagged')||lower.includes('safety')||lower.includes('moderation'))
-   return 'The image request was declined by the safety filter. Try changing the prompt.';
- if(code.includes('not_authenticated')||code.includes('unauthoriz')||lower.includes('sign in')||lower.includes('auth token'))
-   return 'Puter sign-in is required or expired. Press Connect Puter and try again.';
- if(code.includes('unsupported_origin')||lower.includes('unsupported origin'))
-   return 'Puter cannot connect from this page. Open MADAR directly in your browser over HTTPS.';
- if(code.includes('popup')||lower.includes('popup')||lower.includes('blocked'))
-   return 'Puter sign-in may be blocked. Allow popups for this website and press Connect Puter again.';
- if(code.includes('cancel'))return 'Sign-in or image generation was cancelled.';
- if(code.includes('rate_limit')||code.includes('too_many'))return 'Puter rate limit reached. Please try again later.';
- if(code.includes('upstream_failed')||code.includes('upstream_timeout'))
-   return 'The selected image model failed at the provider. Try another model or try again later. ('+code+')';
- if(code==='network_error'||code==='request_timeout')
-   return 'Cannot reach Puter image servers. Check your connection and try again. ('+code+')';
- if(code==='bad_request')
-   return 'Puter rejected the request'+(message?': '+message.slice(0,180):'. Try another prompt or model.');
- if(message && message.length<=180 && !/bearer |api[_ -]?key|token=|password|https?:\/\//i.test(message))
-   return 'Puter: '+message+(code?' ('+code+')':'');
- return 'Puter could not generate this image'+(code?' (error: '+code.slice(0,64)+')':'')+'. Try switching the image model.';
+ const msg=String(error?.message||error?.error||'').toLowerCase();
+ if(/insufficient|balance|credit|quota/.test(code+' '+msg))return 'الحصة المجانية للصور خلصت أو غير متاحة للحساب. مفيش شراء تلقائي.';
+ if(/moderation|safety/.test(code+' '+msg))return 'تعذر إنشاء الصورة بسبب ضوابط الأمان. جرّب وصفًا مختلفًا.';
+ if(/not_authenticated|unauthoriz|sign in|auth token/.test(code+' '+msg))return 'اربط حساب خدمة الصور مرة واحدة وبعدها جرّب تاني.';
+ if(/popup|blocked window/.test(code+' '+msg))return 'المتصفح منع نافذة الربط. اسمح بالنوافذ المنبثقة.';
+ if(/cancel/.test(code+' '+msg))return 'تم إلغاء طلب الصورة.';
+ if(/rate.limit|too.many/.test(code+' '+msg))return 'طلبات الصور وصلت للحد المتاح. جرّب بعد شوية.';
+ return 'مدار ما قدرش يعمل الصورة حاليًا بعد تجربة البدائل. جرّب وصف تاني.';
 }
 async function connect(){
  // Call signIn synchronously inside the Connect button's click handler:
  // browsers may block an auth popup if it starts after an awaited SDK load.
  if(connecting||signedIn()){updateConnection();return;}
  const puter=window.puter;
- if(!puter?.auth?.signIn){note('Image service is still loading. Wait a few seconds and try Connect Puter.',true);return;}
+ if(!puter?.auth?.signIn){note('خدمة الصور لسه بتتحمّل. جرّب زر الربط بعد شوية.',true);return;}
  connecting=true;updateConnection();
  let request;
  try{
    request=puter.auth.signIn();
-   note('Complete the Puter sign-in window. Then return to MADAR.');
+   note('كمّل تسجيل الدخول في نافذة الخدمة الخارجية وارجع لمدار.');
  }catch(error){
    connecting=false;updateConnection();note(errorText(error),true);return;
  }
@@ -258,9 +252,9 @@ async function connect(){
         note(errorText(err),true);
         task.reject(Error(errorText(err)));
       });
-    }else note('✅ Connected to Puter. Describe your image and press Generate image.');
+    }else note('✅ خدمة الصور جاهزة.');
    }
-   else note('Puter sign-in did not finish. Please try Connect Puter again.',true);
+   else note('ربط خدمة الصور ما اكتملش. جرّب تاني.',true);
  }catch(error){note(errorText(error),true);}
  finally{connecting=false;updateConnection();}
 }
@@ -273,7 +267,7 @@ async function generate(event){
  const selection=MODELS[model.value];
  if(!selection){note('Please choose an image model.',true);return;}
  if(!signedIn()){
-   note('First press Connect Puter, finish signing in, then press Generate image.',true);
+   note('اربط حساب خدمة الصور من الزر، وبعدها مدار هيكمل التوليد.',true);
    updateConnection();return;
  }
  busy(true);note('Connecting to the image studio...');
@@ -284,13 +278,7 @@ async function generate(event){
    note('🎨 MADAR is creating your image. This can take a little while...');
    const planned=await planImageRequest(description,false);
    if(planned.action==='clarify'){note(planned.question,true);return;}
-   let produced;
-   try{produced=await puter.ai.txt2img(planned.prompt,selection);}
-   catch(primaryError){
-    const src=await imageBackup(planned.prompt);
-    produced={src};
-   }
-   const source=typeof produced?.src==='string'?produced.src:'';
+   const source=await generateFromProvider(description,{imagePlan:planned,modelPreference:model.value});
    if(!source || !(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source)))
      throw Error('Image provider did not return a usable image.');
    image.src=source;
@@ -334,19 +322,21 @@ async function generateFromProvider(description,options={}){
  const actualPrompt=useEdit
   ?'EDIT THE PROVIDED ORIGINAL IMAGE. Keep unchanged everything the user did not request changing. '+plan.prompt
   :plan.prompt;
- let result;
- try{result=await instance.ai.txt2img(actualPrompt,params);}
- catch(primaryError){
-  // Try owner-controlled OpenAI backup only when explicitly enabled on the server.
-  try{return await imageBackup(actualPrompt,{inputImage:editSource});}
-  catch(backupError){throw primaryError;}
+ const first=useEdit?params:(options.modelPreference==='detailed'?MODELS.detailed:MODELS.fast);
+ const alternate=useEdit?{...MODELS.editFallback,input_images:[editSource]}:(first===MODELS.fast?MODELS.detailed:MODELS.fast);
+ let lastError=null;
+ for(const candidate of [first,alternate]){
+  try{
+   const result=await instance.ai.txt2img(actualPrompt,candidate);
+   const src=validGeneratedImage(result);
+   if(src)return src;
+   throw Error('Image response missing data');
+  }catch(error){
+   lastError=error;
+   if(!retryableImageError(error))break;
+  }
  }
- const source=typeof result?.src==='string'?result.src:'';
- if(!source||!(source.startsWith('data:image/')||source.startsWith('blob:')||/^https:\/\//i.test(source))){
-  try{return await imageBackup(actualPrompt,{inputImage:editSource});}
-  catch{throw Error('خدمات الصور مش متاحة حاليًا. جرّب بعد شوية.');}
- }
- return source;
+ throw lastError||Error('Image temporarily unavailable');
 }
 async function generateFromChat(description,options={}){
  const promptText=String(description||'').trim().slice(0,900);
@@ -356,10 +346,7 @@ async function generateFromChat(description,options={}){
  if(imagePlan.action==='clarify')return{clarification:imagePlan.question};
  const readyOptions={...options,imagePlan};
  try{await loadSdk();}
- catch(e){
-  try{return await imageBackup(imagePlan.prompt,readyOptions);}
-  catch{return Promise.reject(Error('مش قادر أحمل خدمة الصور. جرّب تغيير الشبكة أو المتصفح.'));}
- }
+ catch(e){throw Error('خدمة الصور غير متاحة حاليًا. جرّب تحديث الصفحة أو شبكة مختلفة.');}
  if(signedIn()){
    try{return await generateFromProvider(promptText,readyOptions);}
    catch(e){throw Error(errorText(e));}
@@ -370,7 +357,7 @@ async function generateFromChat(description,options={}){
    chatImageRequest={prompt:promptText,options:readyOptions,resolve,reject,started:false};
    prompt.value=promptText;
    open();
-   note('🔐 كمّل تسجيل الدخول لخدمة الصور. بعد الاتصال، مدار هيكمل '+(options?.inputImage?'تعديل الصورة الأصلية':'توليد الصورة')+' تلقائيًا.');
+   note('🔐 كمّل ربط حساب خدمة الصور مرة واحدة، وبعدها مدار هيكمل '+(options?.inputImage?'تعديل الصورة الأصلية':'توليد الصورة')+' في الشات.');
  });
 }
 
