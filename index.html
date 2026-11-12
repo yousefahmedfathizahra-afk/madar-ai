@@ -350,6 +350,15 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
 #madarVideoStatus{min-height:21px;margin:12px 0 8px;color:var(--text);font-size:12px}
 #madarVideoPreview{width:100%;max-height:320px;border-radius:12px;background:#000}
 .madar-video-footnote{display:block;margin-top:8px}
+.madar-external-card{margin-top:14px;border:1px solid var(--line-strong);background:var(--soft);border-radius:14px;padding:14px;display:grid;gap:9px}
+.madar-external-card h3{color:var(--fg);font-size:15px;margin:0}
+.madar-external-card p{color:var(--text);font-size:12px;line-height:1.9;margin:0}
+.madar-external-links{display:flex;gap:8px;flex-wrap:wrap}
+.madar-external-links a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid var(--line-strong);border-radius:10px;padding:10px 12px;color:var(--fg);font-size:12px;font-weight:750;background:var(--control)}
+.madar-external-links a:hover,.madar-external-links a:focus-visible{border-color:var(--purple);color:var(--purple-light)}
+.madar-external-card small{font-size:11px;line-height:1.8;color:var(--muted)}
+.madar-external-tool-link{cursor:pointer;text-decoration:none!important}
+.madar-external-tool-link:focus-visible{outline:2px solid var(--purple-light);outline-offset:2px}
 
 
 .madar-document-chip{display:flex;gap:9px;align-items:center;background:var(--soft);border:1px solid var(--line-strong);border-radius:12px;padding:9px;margin-bottom:9px;font-size:12px;color:var(--fg)}
@@ -532,6 +541,9 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
             <button id="cameraBtn" type="button" class="madar-attach-choice" title="فتح كاميرا مدار"><span class="madar-attach-icon" aria-hidden="true">📷</span><span><strong>تصوير بالكاميرا</strong><small>صوّر سؤال أو أي حاجة وابعته لمدار</small></span></button>
             <button id="photoBtn" type="button" class="madar-attach-choice" title="اختيار صورة من المعرض أو الجهاز"><span class="madar-attach-icon" aria-hidden="true">🖼️</span><span><strong>إرسال صورة</strong><small>من المعرض أو ملفات الجهاز</small></span></button>
             <button id="documentBtn" type="button" class="madar-attach-choice" title="إرسال مستند إلى مدار"><span class="madar-attach-icon" aria-hidden="true">📎</span><span><strong>إضافة ملفات</strong><small>PDF · Word · Excel · PowerPoint · TXT · Code</small></span></button>
+            <a id="madarMatchCutQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.textmatchcut.app/" target="_blank" rel="noopener noreferrer" title="افتح محرر تأثير العناوين المتحركة الخارجي"><span class="madar-attach-icon" aria-hidden="true">✂️</span><span><strong>فيديو عناوين متحركة</strong><small>TextMatchCut · مجاني بإعلان قصير · يفتح موقعًا خارجيًا</small></span></a>
+            <a id="madarCanvaQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.canva.com/ai-image-generator/" target="_blank" rel="noopener noreferrer" title="افتح Canva لإنشاء الصور"><span class="madar-attach-icon" aria-hidden="true">🎨</span><span><strong>صور Canva</strong><small>توليد صور وتعديلها · حصة مجانية محدودة · موقع خارجي</small></span></a>
+            <a id="madarVidoGridQuick" class="madar-attach-choice madar-external-tool-link" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer" title="استكشف VidoGrid للصور والفيديوهات"><span class="madar-attach-icon" aria-hidden="true">🎞️</span><span><strong>VidoGrid للصور والفيديوهات</strong><small>أداة خارجية · قد تحتاج رصيدًا مدفوعًا</small></span></a>
             <button id="madarShowTools" type="button" class="madar-attach-choice" aria-expanded="false" title="إظهار أو إخفاء أدوات مدار الأخرى"><span class="madar-attach-icon" aria-hidden="true">⚙️</span><span><strong>باقي الأدوات</strong><small>فيديو · بحث · تصميم · تعليم · ميكروفون</small></span></button>
           </div>
           <div class="tools-row" role="toolbar" aria-label="AI tools">
@@ -823,6 +835,15 @@ window.addEventListener('pagehide',cleanup);render();
       <button id="madarGenerateImage" class="madar-image-generate" type="submit" disabled>✦ Generate image</button>
       <p id="madarImageState" class="madar-image-state" role="status" aria-live="polite"></p>
     </form>
+    <section class="madar-external-card" aria-label="بدائل الصور الخارجية">
+      <h3>🎨 بدائل لإنشاء وتعديل الصور</h3>
+      <p>لو عايز تجرب أداة مختلفة، Canva بتولّد الصور من الوصف وتسمح بتعديلها. VidoGrid بيقدم صور وفيديوهات؛ لكن قد يحتاج رصيدًا مدفوعًا.</p>
+      <div class="madar-external-links">
+        <a id="madarCanvaImages" href="https://www.canva.com/ai-image-generator/" target="_blank" rel="noopener noreferrer">صور Canva ↗</a>
+        <a id="madarVidoGridImages" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer">VidoGrid ↗</a>
+      </div>
+      <small>دي أدوات خارجية بتفتح في تبويب جديد، ومش متصلة بمحادثة مدار أو بمفتاح API. Canva Free له حصة استخدام محدودة؛ راجع أي طلب دفع داخل الموقع الخارجي قبل الاستخدام.</small>
+    </section>
     <section id="madarImageResult" class="madar-image-result" aria-label="Generated image" hidden>
       <img id="madarImagePreview" alt="Your generated image">
       <div><a id="madarImageDownload" class="madar-image-download" href="#" rel="noopener noreferrer" target="_blank">⬇ Save image</a></div>
@@ -847,6 +868,16 @@ window.addEventListener('pagehide',cleanup);render();
       <div class="madar-video-buttons"><button id="madarVideoSample" type="button">✍️ استخدم وصفًا جاهزًا</button><button id="madarVideoGenerate" type="button">🎬 ولّد الفيديو</button><a id="madarVideoDownload" hidden target="_blank" rel="noopener noreferrer">⬇ عرض / حفظ الفيديو</a></div>
       <p id="madarVideoStatus" role="status" aria-live="polite"></p><video id="madarVideoPreview" controls playsinline preload="none" hidden></video>
       <small class="madar-video-footnote">مدار يثبت موديل LTX 2.5 المجاني فقط، ولا يختار Kling أو Veo أو أي موديل فيديو مدفوع. دقة الإخراج حسب إعدادات LTX 2.5 المتاحة في حساب Magic Hour، وقد يستهلك الطلب من رصيد Magic Hour المجاني بعد موافقتك.</small>
+      <section class="madar-external-card" aria-label="أدوات الفيديو الخارجية">
+        <h3>✂️ تأثيرات وفيديوهات خارجية</h3>
+        <p><strong>TextMatchCut:</strong> تأثير عناوين صحف ونصوص متحركة، مش فيديو مولّد من أي وصف. <strong>Canva:</strong> مونتاج وفيديوهات قصيرة بمزايا تختلف حسب الخطة. <strong>VidoGrid:</strong> توليد فيديو من وصف أو صورة بخدمات تعتمد على الرصيد.</p>
+        <div class="madar-external-links">
+          <a id="madarMatchCutVideo" href="https://www.textmatchcut.app/" target="_blank" rel="noopener noreferrer">TextMatchCut ↗</a>
+          <a id="madarCanvaVideo" href="https://www.canva.com/video-editor/ai/" target="_blank" rel="noopener noreferrer">Canva فيديو ↗</a>
+          <a id="madarVidoGridVideo" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer">VidoGrid ↗</a>
+        </div>
+        <small>هذه مواقع مستقلة تُفتح في تبويب جديد. TextMatchCut مجاني ويعرض إعلانًا قصيرًا، لكن VidoGrid API مدفوع بالرصيد، وبعض ميزات الفيديو المتقدمة في Canva تتطلب خطة مدفوعة. مدار لا يرسل طلبك إليها تلقائيًا.</small>
+      </section>
     </section>
   </dialog>
   <dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle" lang="ar" dir="rtl">
