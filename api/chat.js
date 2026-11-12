@@ -43,8 +43,8 @@ function requestProfile(question,mode,tier='free',hasImage=false){
  const thinkingLevel=tier==='pro'?'high':complexity==='complex'?'medium':complexity==='medium'?'medium':'low';
  const maxOutputTokens=complexity==='complex'?(tier==='pro'?8192:3072)
    :complexity==='medium'?(tier==='pro'?4096:1536):(tier==='pro'?2048:768);
- const modelTimeoutMs=complexity==='complex'?18000:complexity==='medium'?8000:3300;
- const totalTimeoutMs=complexity==='complex'?65000:complexity==='medium'?32000:12500;
+ const modelTimeoutMs=complexity==='complex'?17500:complexity==='medium'?12000:9000;
+ const totalTimeoutMs=complexity==='complex'?54000:complexity==='medium'?42000:24000;
  return{complexity,thinkingLevel,maxOutputTokens,modelTimeoutMs,totalTimeoutMs};
 }
 
@@ -53,9 +53,9 @@ const SYSTEM = "You are MADAR AI, a friendly, capable and accurate assistant. Fo
 const SITE_CAPABILITIES = [
  'MADAR WEBSITE CAPABILITIES (important, verified from app code):',
  'MADAR is more than a text-only assistant. It answers questions about school, sport, programming, everyday life, writing and general knowledge using AI, within model reliability limits.',
- 'MADAR CAN GENERATE AI IMAGES. Users type a creation request, e.g. «اعمل صورة قطة في الفضاء» / "create a picture of a cat in space", and the website routes that to its integrated Puter image generator and displays the resulting image in chat. Image generation requires the visitor to connect their own Puter account once; availability and image credits depend on that external provider. Never say "I can only respond with text" or "I cannot create images" as a blanket statement.',
+ 'MADAR CAN GENERATE AI IMAGES. Users type a creation request, e.g. «اعمل صورة قطة في الفضاء» / "create a picture of a cat in space", and the website routes that to its integrated image generator and displays the resulting image in chat. Image generation requires the visitor to connect an external image-service account once; availability and image credits depend on that external provider. Never say "I can only respond with text" or "I cannot create images" as a blanket statement.',
  'MADAR SITE BUILDER CAN CREATE RESPONSIVE WEB FRONTS for shops, restaurants, educational platforms, communities, blogs, dashboards, portfolio sites, and small games. A visitor types e.g. «ابني منصة تعليمية» or «اعمل متجر إلكتروني» and MADAR runs the website builder in chat, gives a preview and downloadable standalone HTML/CSS/JS. These are frontend demos, NOT already deployed sites and NOT production backends, real user accounts, databases or payment systems. If AI times out a clearly labeled functional local starter may be returned. The game tool can launch Shadow Unit 3D as well.',
- 'MADAR CREATIVE STUDIO is accessible from the visible «✦ مدار ستوديو» button at the top of the homepage, with five sections: (1) entrepreneur project pack with concept, marketing caption, logo description and handoff to site builder; (2) smart tutor with lesson explanations, five-question interactive quizzes and photo homework upload; (3) browser game maker; (4) design studio powered by a separately signed-in Puter account for posters, logos and thumbnails; (5) code repair where a visitor pastes HTML/CSS/JS, receives an AI repair suggestion, then previews it in an isolated iframe. Generated products are DRAFTS and should be verified. Real cloud login, payments and automatic publication are not offered by Studio.',
+ 'MADAR CREATIVE STUDIO is accessible from the visible «✦ مدار ستوديو» button at the top of the homepage, with five sections: (1) entrepreneur project pack with concept, marketing caption, logo description and handoff to site builder; (2) smart tutor with lesson explanations, five-question interactive quizzes and photo homework upload; (3) browser game maker; (4) design studio powered by a separately connected image service for posters, logos and thumbnails; (5) code repair where a visitor pastes HTML/CSS/JS, receives an AI repair suggestion, then previews it in an isolated iframe. Generated products are DRAFTS and should be verified. Real cloud login, payments and automatic publication are not offered by Studio.',
  'MADAR CAN EXPLAIN UPLOADED PHOTOS. If the visitor wants to attach a picture, tell them to type «ارفع صورة» and choose it from their device. MADAR supports browser-based voice input and voice reading when the browser supports speech APIs; visitors can type «شغل المايك» or «شغل الصوت».',
  'MADAR CAN HELP TUTOR, QUIZ, WRITE CODE, TRANSLATE, AND DRAFT CONTENT directly from a normal conversation, with automatic mode inference and without extra visible buttons.',
  'MADAR CAN TEACH WORLD LANGUAGES via «🌍 مدرس اللغات» in MADAR Studio. Visitors choose a target language and learner level to receive interactive lessons, translations, vocabulary, practice conversations and quizzes one turn at a time. Browser microphone and speech playback support many languages depending on device and installed voices; do not promise audio support for every language. The main composer includes mic, speaking toggle and voice-language controls.',
@@ -198,8 +198,8 @@ function directCapabilityAnswer(question){
  const wantsImages=/(?:صور|صوره|رسم|صميم|بوستر|لوجو|شعار|image|picture|photo|draw|poster|logo)/i.test(q);
  if(wantsImages){
   return /[\u0600-\u06ff]/.test(q)
-    ? 'أيوه، **مدار يقدر يعمل صور بالذكاء الاصطناعي** 🎨. اكتب مثلًا «اعمل صورة قطة في الفضاء» وهبدأ إنشاء الصورة في الشات. أول مرة ممكن تحتاج تضغط Connect Puter وتدخل لحسابك عشان خدمة الصور تشتغل؛ الخدمة حسب رصيد وتوافر Puter.'
-    : 'Yes! **MADAR can create AI images.** Try “Create an image of a cat in space.” You may need to connect a Puter account the first time; image generation depends on the provider being available and your image credits.';
+    ? 'أيوه، **مدار يقدر يعمل صور بالذكاء الاصطناعي** 🎨. اكتب مثلًا «اعمل صورة قطة في الفضاء» وهبدأ إنشاء الصورة في الشات. أول مرة ممكن تحتاج تربط حساب خدمة صور خارجية بموافقتك، والصور حسب الحصة المتاحة.'
+    : 'Yes! **MADAR can create AI images.** Try “Create an image of a cat in space.” You may need to authorize an external image service; results depend on available credits.';
  }
  const wantsBuilder=/(?:لعبه|العاب|موقع|مواقع|منصه|متجر|مدونه|لوحه تحكم|تطبيق|game|website|web ?site|platform|store|dashboard|app)/i.test(q);
  if(wantsBuilder){
