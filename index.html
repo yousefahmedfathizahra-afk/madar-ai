@@ -541,6 +541,7 @@ html[data-theme=light] { color-scheme: light; --bg:#f7f7fc; --sidebar:#fff; --pa
             <button id="cameraBtn" type="button" class="madar-attach-choice" title="فتح كاميرا مدار"><span class="madar-attach-icon" aria-hidden="true">📷</span><span><strong>تصوير بالكاميرا</strong><small>صوّر سؤال أو أي حاجة وابعته لمدار</small></span></button>
             <button id="photoBtn" type="button" class="madar-attach-choice" title="اختيار صورة من المعرض أو الجهاز"><span class="madar-attach-icon" aria-hidden="true">🖼️</span><span><strong>إرسال صورة</strong><small>من المعرض أو ملفات الجهاز</small></span></button>
             <button id="documentBtn" type="button" class="madar-attach-choice" title="إرسال مستند إلى مدار"><span class="madar-attach-icon" aria-hidden="true">📎</span><span><strong>إضافة ملفات</strong><small>PDF · Word · Excel · PowerPoint · TXT · Code</small></span></button>
+            <a id="madarCapCutQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.capcut.com/tools/free-ai-video-generator" target="_blank" rel="noopener noreferrer" title="افتح CapCut لإنشاء فيديوهات AI أو مونتاج مقاطع"><span class="madar-attach-icon" aria-hidden="true">🎬</span><span><strong>CapCut للفيديوهات</strong><small>إنشاء فيديو من وصف أو مونتاج · أدوات مجانية وحدود لرصيد AI · موقع خارجي</small></span></a>
             <a id="madarMatchCutQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.textmatchcut.app/" target="_blank" rel="noopener noreferrer" title="افتح محرر تأثير العناوين المتحركة الخارجي"><span class="madar-attach-icon" aria-hidden="true">✂️</span><span><strong>فيديو عناوين متحركة</strong><small>TextMatchCut · مجاني بإعلان قصير · يفتح موقعًا خارجيًا</small></span></a>
             <a id="madarCanvaQuick" class="madar-attach-choice madar-external-tool-link" href="https://www.canva.com/ai-image-generator/" target="_blank" rel="noopener noreferrer" title="افتح Canva لإنشاء الصور"><span class="madar-attach-icon" aria-hidden="true">🎨</span><span><strong>صور Canva</strong><small>توليد صور وتعديلها · حصة مجانية محدودة · موقع خارجي</small></span></a>
             <a id="madarVidoGridQuick" class="madar-attach-choice madar-external-tool-link" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer" title="استكشف VidoGrid للصور والفيديوهات"><span class="madar-attach-icon" aria-hidden="true">🎞️</span><span><strong>VidoGrid للصور والفيديوهات</strong><small>أداة خارجية · قد تحتاج رصيدًا مدفوعًا</small></span></a>
@@ -870,13 +871,15 @@ window.addEventListener('pagehide',cleanup);render();
       <small class="madar-video-footnote">مدار يثبت موديل LTX 2.5 المجاني فقط، ولا يختار Kling أو Veo أو أي موديل فيديو مدفوع. دقة الإخراج حسب إعدادات LTX 2.5 المتاحة في حساب Magic Hour، وقد يستهلك الطلب من رصيد Magic Hour المجاني بعد موافقتك.</small>
       <section class="madar-external-card" aria-label="أدوات الفيديو الخارجية">
         <h3>✂️ تأثيرات وفيديوهات خارجية</h3>
-        <p><strong>TextMatchCut:</strong> تأثير عناوين صحف ونصوص متحركة، مش فيديو مولّد من أي وصف. <strong>Canva:</strong> مونتاج وفيديوهات قصيرة بمزايا تختلف حسب الخطة. <strong>VidoGrid:</strong> توليد فيديو من وصف أو صورة بخدمات تعتمد على الرصيد.</p>
+        <p><strong>CapCut:</strong> مونتاج مجاني وأدوات AI لتحويل النصوص والصور لفيديو حسب الحصة المتاحة. <strong>TextMatchCut:</strong> تأثير عناوين صحف ونصوص متحركة، مش فيديو مولّد من أي وصف. <strong>Canva:</strong> مونتاج وفيديوهات قصيرة بمزايا تختلف حسب الخطة. <strong>VidoGrid:</strong> توليد فيديو من وصف أو صورة بخدمات تعتمد على الرصيد.</p>
         <div class="madar-external-links">
+          <a id="madarCapCutAiVideo" href="https://www.capcut.com/tools/free-ai-video-generator" target="_blank" rel="noopener noreferrer">🎬 CapCut فيديو AI ↗</a>
+          <a id="madarCapCutEditor" href="https://www.capcut.com/tools/ai-video-editor" target="_blank" rel="noopener noreferrer">✂️ CapCut مونتاج ↗</a>
           <a id="madarMatchCutVideo" href="https://www.textmatchcut.app/" target="_blank" rel="noopener noreferrer">TextMatchCut ↗</a>
           <a id="madarCanvaVideo" href="https://www.canva.com/video-editor/ai/" target="_blank" rel="noopener noreferrer">Canva فيديو ↗</a>
           <a id="madarVidoGridVideo" href="https://vidogrid.ai/" target="_blank" rel="noopener noreferrer">VidoGrid ↗</a>
         </div>
-        <small>هذه مواقع مستقلة تُفتح في تبويب جديد. TextMatchCut مجاني ويعرض إعلانًا قصيرًا، لكن VidoGrid API مدفوع بالرصيد، وبعض ميزات الفيديو المتقدمة في Canva تتطلب خطة مدفوعة. مدار لا يرسل طلبك إليها تلقائيًا.</small>
+        <small>هذه مواقع مستقلة تُفتح في تبويب جديد. أدوات المونتاج الأساسية في CapCut مجانية؛ إنشاء فيديو AI قد يحتاج رصيدًا أو اشتراكًا حسب حسابك وبلدك. TextMatchCut مجاني بإعلان قصير، وVidoGrid وبعض ميزات Canva قد تكون مدفوعة. مدار لا يرسل طلبك إليها تلقائيًا ولا يفعّل أي دفع.</small>
       </section>
     </section>
   </dialog>
